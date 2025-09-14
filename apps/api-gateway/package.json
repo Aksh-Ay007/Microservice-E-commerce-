@@ -1,0 +1,34 @@
+{
+  "name": "@./api-gateway",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "targets": {
+      "serve": {
+        "executor": "@nx/js:node",
+        "defaultConfiguration": "development",
+        "dependsOn": [
+          "build"
+        ],
+        "options": {
+          "buildTarget": "@./api-gateway:build",
+          "runBuildTargetDependencies": false
+        },
+        "configurations": {
+          "development": {
+            "buildTarget": "@./api-gateway:build:development"
+          },
+          "production": {
+            "buildTarget": "@./api-gateway:build:production"
+          }
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.9",
+    "@types/express-http-proxy": "^1.6.7",
+    "@types/morgan": "^1.9.10",
+    "@types/swagger-ui-express": "^4.1.8"
+  }
+}
