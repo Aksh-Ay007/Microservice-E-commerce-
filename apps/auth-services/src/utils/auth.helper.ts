@@ -56,7 +56,7 @@ export const checkOtpRegistration = async (
 };
 
 export const trackOtpRequests = async (email: string,next:NextFunction) => {
- 
+
     const otpRequestKey=`otp_request_count:${email}`;
     let otpRequests=parseInt((await redis.get(otpRequestKey))|| "0") ;
 
@@ -146,16 +146,17 @@ export const handleForgotPassword=async(req:Request,res:Response,next:NextFuncti
 
     //generate otp and sent email
 
-    await sendOtp(email,user.name,'forgot-password-user-mail')
+    await sendOtp(user.name,email,'forgot-password-user-mail')
+
 
     res.status(200).json({message:'otp sent to email.Please varify your account.!'})
 
 
-    
+
   } catch (error) {
 
       return next(error);
-    
+
   }
 }
 
@@ -176,9 +177,9 @@ export const varifyForgotPasswordOtp=async(req:Request,res:Response,next:NextFun
     await varifyOtp(email,otp,next)
 
     res.status(200).json({message:'Otp varified.You can now reset your password.'})
-    
+
   } catch (error) {
-    
+
     next (error)
   }
 }
