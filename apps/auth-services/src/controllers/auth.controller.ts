@@ -420,7 +420,7 @@ export const createStripeConnectLink = async (
     const account = await stripe.accounts.create({
       type: "express",
       email: seller?.email,
-      country: "AE",
+      country: "GB",
       capabilities: {
         card_payments: {
           requested: true,
@@ -440,34 +440,24 @@ export const createStripeConnectLink = async (
       },
     });
 
+    const accountLink = await stripe.accountLinks.create({
+      account: account.id,
+      refresh_url: `http://localhost:3000/success`,
+      return_url: `http://localhost:3000/success`,
+      type: "account_onboarding",
+    });
+
     res.status(201).json({
       success: true,
       account,
+      url: accountLink.url,
     });
-
-    const accountLink=await stripe.accountLinks.create({
-
-      account:account.id,
-      refresh_url:`http://localhost:3000/success`,
-      return_url:`http://localhost:3000/success`,
-      type:"account_onboarding",
-    });
-
-
-    res.json({url:accountLink.url})
-
-
-
   } catch (error) {
     return next(error);
   }
 };
 
-
-
 //login seller
-
-
 
 export const loginSeller = async (
   req: Request,
@@ -527,7 +517,11 @@ export const loginSeller = async (
 
 //get logged in Seller
 
-export const getSeller = async (req: any, res: Response, next: NextFunction) => {
+export const getSeller = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const seller = req.seller;
 
