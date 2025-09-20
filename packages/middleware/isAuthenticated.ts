@@ -2,11 +2,13 @@ import prisma from "@packages/libs/prisma";
 import { NextFunction, Response } from "express";
 import jwt from "jsonwebtoken";
 
+// 3. Fix isAuthenticated middleware - consistent token checking
 const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
   try {
+    // Check for access tokens first, then fallback to authorization header
     const token =
       req.cookies["access_token"] ||
-      req.cookies["seller-access_token"] ||
+      req.cookies["seller_access_token"] ||
       req.headers.authorization?.split(" ")[1];
 
     if (!token) {
@@ -40,8 +42,6 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
       req.seller = account;
     }
 
-    // Attach user to request
-
     if (!account) {
       return res.status(401).json({ message: "Account not found" });
     }
@@ -51,9 +51,10 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
     return next();
   } catch (error) {
     return res.status(401).json({
-      message: "Unauthorized  Token expired or invalid!",
+      message: "Unauthorized Token expired or invalid!",
     });
   }
 };
+
 
 export default isAuthenticated;

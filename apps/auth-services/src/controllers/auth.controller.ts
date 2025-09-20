@@ -111,6 +111,9 @@ export const loginUser = async (
       return next(new AuthError("invalid email or password"));
     }
 
+    res.clearCookie("seller_access_token");
+    res.clearCookie("seller_refresh_token");
+
     const accessToken = jwt.sign(
       {
         id: user.id.toString(),
@@ -119,6 +122,7 @@ export const loginUser = async (
       process.env.ACCESS_TOKEN_SECRET as string,
       { expiresIn: "15m" }
     );
+
 
     const refreshToken = jwt.sign(
       {
@@ -131,8 +135,8 @@ export const loginUser = async (
 
     //we have to store the refresh and access token in an http secure cokkie
 
-    setCookie(res, "refresh_token", refreshToken);
-    setCookie(res, "access_token", accessToken);
+  setCookie(res, "access_token", accessToken);
+  setCookie(res, "refresh_token", refreshToken);
 
     res.status(200).json({
       message: "Login successfull!",
@@ -143,15 +147,18 @@ export const loginUser = async (
   }
 };
 
-//refresh token user
+//refresh token
 
+// 2. Fix refreshToken controller - inconsistent cookie handling
 export const refreshToken = async (
-  req: Request,
+  req: any,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const refreshToken = req.cookies.refresh_token;
+    const refreshToken =
+      req.cookies["refresh_token"] ||
+      req.cookies["seller_refresh_token"];
 
     if (!refreshToken) {
       return next(new ValidationError("Unauthorized: No refresh token."));
@@ -166,9 +173,22 @@ export const refreshToken = async (
       return next(new JsonWebTokenError("Forbidden! Invalid refresh token."));
     }
 
-    const user = await prisma.users.findUnique({ where: { id: decoded.id } });
+    let account;
 
-    if (!user) {
+    if (decoded.role === "user") {
+      account = await prisma.users.findUnique({
+        where: { id: decoded.id },
+      });
+    } else if (decoded.role === "seller") {
+      account = await prisma.sellers.findUnique({
+        where: { id: decoded.id },
+        include: {
+          shop: true,
+        },
+      });
+    }
+
+    if (!account) {
       return next(new AuthError("Forbidden! User/Seller not found"));
     }
 
@@ -181,9 +201,28 @@ export const refreshToken = async (
       { expiresIn: "15m" }
     );
 
-    setCookie(res, "access_token", newAccessToken);
+    // Generate new refresh token as well for security
+    const newRefreshToken = jwt.sign(
+      {
+        id: decoded.id,
+        role: decoded.role,
+      },
+      process.env.REFRESH_TOKEN_SECRET as string,
+      { expiresIn: "7d" }
+    );
 
-    return res.status(201).json({ success: true });
+    // Set cookies based on role
+    if (decoded.role === "user") {
+      setCookie(res, "access_token", newAccessToken);
+      setCookie(res, "refresh_token", newRefreshToken);
+    } else if (decoded.role === "seller") {
+      setCookie(res, "seller_access_token", newAccessToken);
+      setCookie(res, "seller_refresh_token", newRefreshToken);
+    }
+
+    req.role = decoded.role;
+
+    return res.status(200).json({ success: true });
   } catch (error) {
     return next(error);
   }
@@ -262,7 +301,9 @@ export const resetUserPassword = async (
       data: { password: hashPassword },
     });
 
+
     res.status(200).json({ message: "password reset successfully.!" });
+
   } catch (error) {
     next(error);
   }
@@ -483,6 +524,11 @@ export const loginSeller = async (
       return next(new AuthError("invalid email or password"));
     }
 
+       res.clearCookie("access_token");
+       res.clearCookie("refresh_token");
+
+
+
     const accessToken = jwt.sign(
       {
         id: seller.id.toString(),
@@ -491,6 +537,8 @@ export const loginSeller = async (
       process.env.ACCESS_TOKEN_SECRET as string,
       { expiresIn: "15m" }
     );
+
+
 
     const refreshToken = jwt.sign(
       {
@@ -503,8 +551,8 @@ export const loginSeller = async (
 
     //we have to store the refresh and access token in an http secure cokkie
 
-    setCookie(res, "seller-refresh_token", refreshToken);
-    setCookie(res, "seller-access_token", accessToken);
+    setCookie(res, "seller_refresh_token", refreshToken);
+    setCookie(res, "seller_access_token", accessToken);
 
     res.status(200).json({
       message: "Login successfull!",
@@ -523,7 +571,10 @@ export const getSeller = async (
   next: NextFunction
 ) => {
   try {
+
     const seller = req.seller;
+
+    console.log(seller,'seller')
 
     res.status(200).json({
       success: true,

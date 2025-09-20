@@ -5,34 +5,33 @@ import axiosInstance from '../utils/axiosinstance';
 
 //fetch user data from API
 
-const fetchUser=async()=>{
+const fetchUser = async () => {
+  try {
+    const response = await axiosInstance.get("/api/logged-in-user");
+    return response.data.user;
+  } catch (error) {
+    console.error("Failed to fetch user:", error);
+    throw error;
+  }
+};
 
-   const response = await axiosInstance.get("/api/logged-in-user");
-   console.log(response,'user ui data from login user');
+const useUser = () => {
+  const {
+    data: user,
+    isLoading,
+    isError,
+    refetch,
+    error,
+  } = useQuery({
+    queryKey: ["user"],
+    queryFn: fetchUser,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 1,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+  });
 
+  return { user, isLoading, isError, refetch, error };
+};
 
-   return response.data.user
-}
-
-
-const useUser=()=>{
-
-   const{
-
-      data:user,
-      isLoading,
-      isError,
-      refetch
-   }=useQuery({
-
-      queryKey:['user'],
-      queryFn:fetchUser,
-      staleTime:1000*60*5,  //store data of user for 5 min
-      retry:1,
-   })
-
-   return {user,isLoading,isError,refetch}
-}
-
-
-export default useUser
+export default useUser;
