@@ -1,7 +1,6 @@
-import {useQuery} from '@tanstack/react-query'
-import axiosInstance from '../utils/axiosinstance';
 
-
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "../utils/axiosinstance";
 
 //fetch user data from API
 

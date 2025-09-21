@@ -1,13 +1,13 @@
 "use client";
 
 import { ChevronRightIcon } from "lucide-react";
+import ColorSelector from "packages/components/color-selector";
+import CustomSpecifications from "packages/components/custom-specifications";
 import Input from "packages/components/input";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import ColorSelector from "packages/components/color-selector";
+import CustomProperties from "../../../../../../../packages/components/custom-properties";
 import ImagePlaceHolder from "../../../../shared/components/image-placeholder";
-import CustomSpecifications from 'packages/components/custom-specifications';
-import CustomProperties from '../../../../../../../packages/components/custom-properties';
 
 const Page = () => {
   const {
@@ -233,18 +233,61 @@ const Page = () => {
               )}
             </div>
 
+            {/*Color */}
+
             <div className="mt-2">
               <ColorSelector control={control} errors={errors} />
             </div>
+
+            {/*CustomSpecifications  */}
 
             <div className="mt-2">
               <CustomSpecifications control={control} errors={errors} />
             </div>
 
+            {/*CustomProperties  */}
+
             <div className="mt-2">
               <CustomProperties control={control} errors={errors} />
             </div>
+
+            {/*Cash on delivery */}
+
+            <div className="mt-2">
+              <label className="block font-semibold text-gray-300 mb-1">
+                Cash On Delivery *
+              </label>
+              <select
+                {...register("cash_on_delivery", {
+                  required: "Cash on delivery is required",
+                })}
+                defaultValue="yes"
+                className="w-full border outline-none border-gray-700 bg-transparent text-white p-2 rounded"
+              >
+                <option value="yes" className="bg-black">
+                  Yes
+                </option>
+                <option value="no" className="bg-black">
+                  No
+                </option>
+              </select>
+              {errors.cash_on_delivery && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.cash_on_delivery.message as string}
+                </p>
+              )}
+            </div>
+
+
           </div>
+
+          <div className='w-2/4'>
+
+             <label className='block font-semibold text-gray-300 mb-1'>Category *</label>
+
+          </div>
+
+
         </div>
       </div>
     </form>

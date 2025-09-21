@@ -20,7 +20,7 @@ const ColorSelector = ({ control, errors }: any) => {
 
   return (
     <div className="mt-2">
-      <label className="block font-semibold text-gray-300 mb-1">Colors</label>
+      <label className="block font-semibold text-gray-300 mb-1">Colors *</label>
 
       <Controller
         name="colors"
