@@ -1,6 +1,17 @@
 "use client";
 
-import { BellPlus, BellRing, CalendarPlus, Headset, ListOrdered, LogOut, Mail, PackageSearch, Settings, SquarePlus, TicketPercent } from "lucide-react";
+import {
+  BellPlus,
+  BellRing,
+  CalendarPlus,
+  ListOrdered,
+  LogOut,
+  Mail,
+  PackageSearch,
+  Settings,
+  SquarePlus,
+  TicketPercent,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
@@ -45,7 +56,7 @@ const SideBarWrapper = () => {
         <Box>
           <Link href={"/"} className="flex justify-center text-center gap-2">
             <Logo size={50} fill="#0085ff" />
-            
+
             <Box>
               <h3 className=" text-xl font-medium text-[#ecedee]">
                 {seller?.shop?.name}
