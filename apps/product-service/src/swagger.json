@@ -1,0 +1,26 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "MicroMart Product Service",
+    "description": "API documentation for the MicroMart Product Service",
+    "version": "1.0.0"
+  },
+  "host": "localhost:6002",
+  "basePath": "/product/api",
+  "schemes": ["http"],
+  "paths": {
+    "/get-categories": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    }
+  }
+}

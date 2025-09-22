@@ -1,6 +1,6 @@
+"use client";
+import { atom } from "jotai";
 
-import {atom} from "jotai"
 
-export const activeSideBarItem=atom<string>
-("/dashboard")
 
+export const activeSideBarItem = atom<string>("/dashboard");

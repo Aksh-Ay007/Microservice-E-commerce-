@@ -2,9 +2,9 @@ import { errorMiddleware } from "@packages/error-handler/error-middleware";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
-import swaggerUi from "swagger-ui-express";
-import router from "./routes/auth.router";
-const swaggerDocument = require("./swagger.json");
+import router from './routes/product-router';
+// import swaggerUi from "swagger-ui-express";
+// const swaggerDocument = require("./swagger.json");
 
 const app = express();
 
@@ -20,25 +20,25 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
-  res.send({ message: "Hello everyon e testing auth-services!" });
+  res.send({ message: "Hello everyon is testing product-services!" });
 });
 
 //swagger
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.get("/api-docs.json", (req, res) => {
-  res.json(swaggerDocument);
-});
+// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// // app.get("/api-docs.json", (req, res) => {
+//   res.json(swaggerDocument);
+// });
 
 //Routes
-app.use("/api", router);
+ app.use("/api", router);
 
 // Error middleware should be last
 app.use(errorMiddleware);
 
-let port = process.env.PORT || 6001;
+let port = process.env.PORT || 6002;
 
 const server = app.listen(port, () => {
-  console.log(`Auth service is running at http://localhost:${port}/api`);
+  console.log(`Product service is running at http://localhost:${port}/api`);
   console.log(`Swagger UI is available at http://localhost:${port}/docs`);
 });
 
