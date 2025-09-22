@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRightIcon } from "lucide-react";
+import Link from "next/link";
 import ColorSelector from "packages/components/color-selector";
 import CustomSpecifications from "packages/components/custom-specifications";
 import Input from "packages/components/input";
@@ -102,7 +103,9 @@ const Page = () => {
       </h2>
 
       <div className="flex items-center">
-        <span className="text-[#80Deea] cursor-pointer">Dashboard</span>
+        <Link href="/dashboard" className="text-[#80Deea] cursor-pointer">
+          Dashboard
+        </Link>
         <ChevronRightIcon size={20} className="opacity-[.8]" />
         <span>Create Product</span>
       </div>
@@ -556,9 +559,12 @@ const Page = () => {
             Save Draft
           </button>
         )}
-        <button type="submit" className='px-4 py-2 bg-blue-600 text-white rounded-md' disabled={loading}>
-
-          {loading ?"Creating...":"Create"}
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md"
+          disabled={loading}
+        >
+          {loading ? "Creating..." : "Create"}
         </button>
       </div>
     </form>
