@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
-import "react-quill-new/dist/quill.snow.css";
+import { useEffect, useRef, useState } from "react";
 import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 
 const RichTextEditor = ({
   value,
@@ -12,25 +12,20 @@ const RichTextEditor = ({
   const [editorValue, setEditorValue] = useState(value || ""); // Single state
   const quillRef = useRef(false);
 
-
-
   useEffect(() => {
     if (!quillRef.current) {
       quillRef.current = true; // Mark as mounted
 
       // 🔥 Fix: Ensure only one toolbar is present
       setTimeout(() => {
-        document
-          .querySelectorAll(".ql-toolbar")
-          .forEach((toolbar, index) => {
-            if (index > 0) {
-              toolbar.remove(); // Remove extra toolbars
-            }
-          });
+        document.querySelectorAll(".ql-toolbar").forEach((toolbar, index) => {
+          if (index > 0) {
+            toolbar.remove(); // Remove extra toolbars
+          }
+        });
       }, 100); // Short delay ensures Quill is fully initialized
     }
   }, []);
-  
 
   return (
     <div className="relative">

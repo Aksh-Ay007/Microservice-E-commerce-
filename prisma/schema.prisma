@@ -15,6 +15,8 @@ model images {
   shopId  String? @unique @db.ObjectId
   users   users?  @relation(fields: [userId], references: [id])
   shops   shops?  @relation(fields: [shopId], references: [id])
+  products products? @relation(fields: [productsId], references: [id])
+  productsId String? @db.ObjectId
 
 }
 
@@ -67,6 +69,7 @@ model shops{
   sellers sellers @relation(fields: [sellerId], references: [id])
    createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  products products[]
 
 
 }
@@ -107,4 +110,47 @@ model discount_codes{
   sellerId           String @db.ObjectId
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+}
+
+
+enum productStatus {
+  Active
+  Pending
+  Draft
+
+}
+
+
+model products {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String   @unique
+  category    String
+  subCategory String
+   short_description String
+  detailed_description String
+  images      images[]
+  video_url  String?
+  tags       String[]
+  brand      String?
+  colors     String[]
+  sizes      String[]
+  starting_date DateTime?
+  ending_date   DateTime?
+  stock       Int
+  sale_price       Float
+  regular_price  Float
+  ratings     Float   @default(5)
+  warranty    String?
+  custom_specifications Json?
+  custom_properties Json
+  isDeleted  Boolean? @default(false)
+  cashOnDelivery String?
+  discount_codes  String[] @db.ObjectId
+  status     productStatus  @default(Active)
+  deletedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  shopId    String @db.ObjectId
+  Shop    shops @relation(fields: [shopId], references: [id])
 }

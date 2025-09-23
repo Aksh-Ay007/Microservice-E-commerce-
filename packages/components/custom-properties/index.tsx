@@ -17,10 +17,10 @@ const CustomProperties = ({ control, errors }: any) => {
           name="customProperties"
           control={control}
           render={({ field }) => {
-            // ✅ Hook at top level
+            // ✅ useEffect must be at top-level, not inside render
             useEffect(() => {
               field.onChange(properties);
-            }, [properties, field]);
+            }, [properties]);
 
             const addProperty = () => {
               if (!newLabel.trim()) return;

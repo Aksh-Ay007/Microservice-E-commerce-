@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRightIcon } from "lucide-react";
+import { ChevronRightIcon, Wand, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import ColorSelector from "packages/components/color-selector";
 import CustomSpecifications from "packages/components/custom-specifications";
@@ -9,10 +10,19 @@ import Input from "packages/components/input";
 import RichTextEditor from "packages/components/rich-text-editor";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import CustomProperties from "../../../../../../../packages/components/custom-properties";
-import SizeSelector from "../../../../../../../packages/components/size-selector";
+import CustomProperties from "packages/components/custom-properties";
+import SizeSelector from "packages/components/size-selector";
 import ImagePlaceHolder from "../../../../shared/components/image-placeholder";
+import { enhancements } from "../../../../utils/AI.enhancements";
 import axiosInstance from "../../../../utils/axiosinstance";
+import { useRouter } from "next/navigation";
+;
+import toast from 'react-hot-toast';
+
+interface UploadedImage {
+  fileId: string;
+  file_url: string;
+}
 
 const Page = () => {
   const {
@@ -26,8 +36,14 @@ const Page = () => {
 
   const [openImageModal, setOpenImageModal] = useState(false);
   const [isChanged, setIsChanged] = useState(true);
-  const [images, setImages] = useState<(File | null)[]>([null]);
+  const [activeEffect, setActiveEffect] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState("");
+  const [pictureUploadingLoader, setPictureUploadingLoader] = useState(false);
+  const [images, setImages] = useState<(UploadedImage | null)[]>([null]);
   const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const router = useRouter();
+
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["categories"],
@@ -44,6 +60,14 @@ const Page = () => {
     retry: 2,
   });
 
+  const { data: discountCodes = [], isLoading: discountLoading } = useQuery({
+    queryKey: ["shop-discount"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/product/api/get-discount-codes");
+      return res?.data?.discount_codes || [];
+    },
+  });
+
   const categories = data?.categories || [];
   const subCategoriesData = data?.subCategories || {};
 
@@ -54,39 +78,107 @@ const Page = () => {
     return selectedCategory ? subCategoriesData[selectedCategory] || [] : [];
   }, [selectedCategory, subCategoriesData]);
 
-  const handleImageChange = (file: File | null, index: number) => {
-    const newImages = [...images];
-    newImages[index] = file;
-
-    if (index === images.length - 1 && images.length < 8) {
-      newImages.push(null);
-      setValue("images", newImages);
-    }
-
-    setImages(newImages);
+  const convertFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
   };
 
-  const handleRemoveImage = (index: number) => {
-    setImages((prevImages) => {
-      let updatedImages = [...prevImages];
+  const handleImageChange = async (file: File | null, index: number) => {
+    if (!file) return;
+    setPictureUploadingLoader(true);
 
-      if (index === -1) {
-        updatedImages[0] = null;
-      } else {
-        updatedImages.splice(index, 1);
+    try {
+      const fileName = await convertFileToBase64(file);
+      const response = await axiosInstance.post(
+        "/product/api/upload-product-image",
+        { fileName }
+      );
+
+      const uploadedImages: UploadedImage = {
+        fileId: response.data.fileId,
+        file_url: response.data.file_url,
+      };
+
+      const updatedImages = [...images];
+
+      updatedImages[index] = uploadedImages;
+
+      if (index === images.length - 1 && updatedImages.length < 8) {
+        updatedImages.push(null);
       }
 
+      setImages(updatedImages);
+      setValue("images", updatedImages);
+    } catch (error) {
+      console.log(error, "got errororor");
+    } finally {
+      setPictureUploadingLoader(false);
+    }
+  };
+
+  const handleRemoveImage = async (index: number) => {
+    try {
+      const updatedImages = [...images];
+      const imageToDelete = updatedImages[index];
+
+      if (imageToDelete && typeof imageToDelete === "object") {
+        await axiosInstance.delete("/product/api/delete-product-image", {
+          data: {
+            fileId: imageToDelete.fileId!,
+          },
+        });
+      }
+
+      updatedImages.splice(index, 1);
+
+      //add null placeholder
       if (!updatedImages.includes(null) && updatedImages.length < 8) {
         updatedImages.push(null);
       }
-      return updatedImages;
-    });
 
-    setValue("images", images);
+      setImages(updatedImages);
+      setValue("images", updatedImages);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const onSubmit = (data: any) => {
-    console.log(data);
+  const onSubmit = async(data: any) => {
+
+    try {
+      setLoading(true);
+          await axiosInstance.post("/product/api/create-product", data);
+          router.push("/dashboard/all-products")
+
+
+
+    } catch (error:any) {
+      toast.error(error?.data?.message || "Failed to create product");
+    }
+    finally {
+      setLoading(false);
+    }
+
+  };
+
+  const applyTransformation = async (transformation: string) => {
+    if (!selectedImage || processing) return;
+    setProcessing(true);
+    setActiveEffect(transformation);
+
+    try {
+      const transformedUrl = `${selectedImage}?tr=${transformation}`;
+
+      setSelectedImage(transformedUrl);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const handleSaveDraft = () => {};
@@ -119,9 +211,12 @@ const Page = () => {
             <ImagePlaceHolder
               setOpenImageModal={setOpenImageModal}
               size="765*850"
+              images={images}
+              pictureUploadingLoader={pictureUploadingLoader}
               small={false}
               index={0}
               onImageChange={handleImageChange}
+              setSelectedImage={setSelectedImage}
               onRemove={handleRemoveImage}
             />
           )}
@@ -131,8 +226,11 @@ const Page = () => {
               <ImagePlaceHolder
                 setOpenImageModal={setOpenImageModal}
                 size="765*850"
+                images={images}
+                pictureUploadingLoader={pictureUploadingLoader}
                 key={index}
                 small
+                setSelectedImage={setSelectedImage}
                 index={index + 1}
                 onImageChange={handleImageChange}
                 onRemove={handleRemoveImage}
@@ -168,8 +266,8 @@ const Page = () => {
                   cols={10}
                   label="Short Description * (Max 150 words)"
                   placeholder="Enter product description for quick view"
-                  {...register("description", {
-                    required: "Description is required",
+                  {...register("short_description", {
+                    required: "short_description is required",
                     validate: (value) => {
                       const wordCount = value.trim().split(/\s+/).length;
                       return (
@@ -179,9 +277,9 @@ const Page = () => {
                     },
                   })}
                 />
-                {errors.description && (
+                {errors.short_description && (
                   <p className="text-red-500 text-xs mt-1">
-                    {errors.description.message as string}
+                    {errors.short_description.message as string}
                   </p>
                 )}
               </div>
@@ -539,15 +637,114 @@ const Page = () => {
                 <SizeSelector control={control} errors={errors} />
               </div>
 
+              {/* discount codes */}
+
               <div className="mt-3">
-                <label className="block font-semibold text-gray-300 mb-1">
+                <label className="block font-semibold text-gray-300 mb-2">
                   Select Discount Codes (optional)
                 </label>
+
+                {discountLoading ? (
+                  <p className="text-gray-400">Loading discount codes...</p>
+                ) : (
+                  <div className="flex flex-wrap gap-3">
+                    {discountCodes?.map((code: any) => {
+                      const selected = watch("discountCodes")?.includes(
+                        code.id
+                      );
+
+                      return (
+                        <button
+                          key={code.id}
+                          type="button"
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border shadow-sm transition ${
+                            selected
+                              ? "bg-blue-600 text-white border-blue-500"
+                              : "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700"
+                          }`}
+                          onClick={() => {
+                            const currentSelection =
+                              watch("discountCodes") || [];
+                            const updatedSelection = selected
+                              ? currentSelection.filter(
+                                  (id: string) => id !== code.id
+                                )
+                              : [...currentSelection, code.id];
+
+                            setValue("discountCodes", updatedSelection);
+                          }}
+                        >
+                          <span className="font-semibold">
+                            {code?.public_name}
+                          </span>
+                          <span className="text-xs opacity-80">
+                            ({code.discountValue}
+                            {code.discountType === "percentage" ? "%" : "$"})
+                          </span>
+                          {selected && (
+                            <span className="ml-1 text-xs bg-white/20 px-2 py-0.5 rounded">
+                              ✔
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {openImageModal && (
+        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-60 z-50">
+          <div className="bg-gray-800 p-6 rounded-lg w-[450px] text-white">
+            <div className="flex justify-between items-center pb-3 mb-4">
+              <h2 className="text-lg font-semibold">Enhance Product Image</h2>
+              <X
+                size={20}
+                className="cursor-pointer"
+                onClick={() => setOpenImageModal(!openImageModal)}
+              />
+            </div>
+
+            <div className="relative w-full h-[250px] rounded-md overflow-hidden border border-gray-600">
+              <Image
+                src={selectedImage}
+                alt="product-image"
+                fill
+                className="object-contain"
+              />
+            </div>
+
+            {selectedImage && (
+              <div className="mt-4 space-y-2">
+                <h3 className="text-white text-sm font-semibold">
+                  AI Enhancement
+                </h3>
+                <div className="grid grid-cols-2 gap-3 max-h-[250px] overflow-y-auto">
+                  {enhancements?.map(({ label, effect }) => (
+                    <button
+                      key={effect}
+                      className={`p-2 rounded-md flex items-center gap-2 ${
+                        activeEffect === effect
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-700 hover:bg-gray-600"
+                      }`}
+                      onClick={() => applyTransformation(effect)}
+                      disabled={processing}
+                    >
+                      <Wand size={18} />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="mt-6 flex justify-end gap-3">
         {isChanged && (
