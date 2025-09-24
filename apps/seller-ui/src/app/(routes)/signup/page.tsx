@@ -125,7 +125,7 @@ const SignUp = () => {
   }
 
   return (
-    <div className="w-full flex flex-col items-center pt-10 min-h-screen">
+    <div className="w-full flex flex-col items-center pt-10 min-h-screen ">
       {/* Stepper*/}
 
       <div className="relative flex items-center justify-between md:w-[50%] mb-8">
