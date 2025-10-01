@@ -437,63 +437,49 @@ export const getAllProducts = async (
   next: NextFunction
 ) => {
   try {
-    // Extract pagination parameters from URL query
-    const page = parseInt(req.query.page as string) || 1
+    const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
-    const type = req.query.type
+    const type = req.query.type;
 
-    // Calculate how many items to skip
     const skip = (page - 1) * limit;
 
-    // Filter to exclude events (products have null startingDate and endingDate)
-    const baseFilter = {
-      OR: [{ starting_date: null }, { ending_date: null }],
+    const baseFilter: Prisma.productsWhereInput = {
+      isDeleted: false,
+      status: "Active",
     };
 
-    // Define sorting options
     const orderBy: Prisma.productsOrderByWithRelationInput =
-      type === "latest"
-        ? { createdAt: "desc" as Prisma.SortOrder }
-        : { totalSales: "desc" as Prisma.SortOrder };
-
-
+      type === "latest" ? { createdAt: "desc" } : { totalSales: "desc" };
 
     const [products, total, top10Products] = await Promise.all([
       prisma.products.findMany({
         skip,
         take: limit,
-        include: {
-          images: true, // Include product images
-          Shop: true, // Include shop information
-        },
+        include: { images: true, Shop: true },
         where: baseFilter,
-        orderBy: {
-          totalSales: "desc",
-        },
+        orderBy,
       }),
 
-
-      prisma.products.count({
-        where: baseFilter,
-      }),
+      prisma.products.count({ where: baseFilter }),
 
       prisma.products.findMany({
         take: 10,
         where: baseFilter,
         orderBy,
-
       }),
     ]);
 
     res.status(200).json({
       products,
-      top10By:type==="latest"?"latest":"topSales",
+      top10By: type === "latest" ? "latest" : "topSales",
       top10Products,
       total,
-      currentPage:page,
+      currentPage: page,
       totalPages: Math.ceil(total / limit),
     });
   } catch (error) {
+    console.error("GetAllProducts Error:", error);
     next(error);
   }
 };
+

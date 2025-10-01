@@ -1,4 +1,4 @@
-//@ts-check
+// @ts-check
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { composePlugins, withNx } = require("@nx/next");
@@ -8,18 +8,22 @@ const { composePlugins, withNx } = require("@nx/next");
  **/
 const nextConfig = {
   nx: {
-    // Set this to true if you would like to use SVGR
-    // See: https://github.com/gregberge/svgr
     svgr: false,
   },
   images: {
-    domains: ["ik.imagekit.io"], // ✅ allow ImageKit
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "ik.imagekit.io",
+      },
+      {
+        protocol: "https",
+        hostname: "www.freemockupworld.com", // if you want to allow placeholder/mockup images
+      },
+    ],
   },
 };
 
-const plugins = [
-  // Add more Next.js plugins to this list if needed.
-  withNx,
-];
+const plugins = [withNx];
 
 module.exports = composePlugins(...plugins)(nextConfig);
