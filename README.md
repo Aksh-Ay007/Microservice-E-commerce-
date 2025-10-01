@@ -245,3 +245,17 @@ taskkill /F /IM node.exe
 Then retry:
 
 npx nx reset
+
+
+If you want to support time-limited products in the future, add the date filter only when you actually have products with dates set:
+
+const now = new Date();
+const baseFilter: Prisma.productsWhereInput = {
+  isDeleted: false,
+  status: "Active",
+  // Only add date logic when needed
+  OR: [
+    { starting_date: null, ending_date: null },
+    { starting_date: { lte: now }, ending_date: { gte: now } },
+  ],
+};

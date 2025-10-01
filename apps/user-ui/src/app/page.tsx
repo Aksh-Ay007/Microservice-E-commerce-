@@ -54,7 +54,7 @@ console.log(res.data, "FULL API RESPONSE");
           </div>
         )}
         {!isLoading && !isError && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
+          <div className=" m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
             {products?.map((product: any) => (
               <ProductCard key={product.id} product={product} />
             ))}

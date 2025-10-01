@@ -20,6 +20,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "www.freemockupworld.com", // if you want to allow placeholder/mockup images
       },
+      {
+        protocol: "https",
+        hostname: "ui-avatars.com", // if you want to allow placeholder/mockup images
+      },
     ],
   },
 };
