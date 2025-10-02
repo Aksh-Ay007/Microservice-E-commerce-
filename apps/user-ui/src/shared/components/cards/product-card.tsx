@@ -2,12 +2,12 @@ import { Eye, Heart, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import useDeviceTracking from "../../../hooks/useDeviceTracking";
+import useLocationTracking from "../../../hooks/useLocationTracking";
+import useUser from "../../../hooks/useUser";
 import { useStore } from "../../../store";
 import Ratings from "../ratings";
 import ProductDetailsCard from "./product-details.card";
-import useUser from '../../../hooks/useUser';
-import useLocationTracking from '../../../hooks/useLocationTracking';
-import useDeviceTracking from '../../../hooks/useDeviceTracking';
 
 interface ProductCardProps {
   product: any;
@@ -21,9 +21,9 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
 
   const [timeLeft, setTimeLeft] = useState("");
   const [open, setOpen] = useState(false);
-  const {user} =useUser()
-  const location=useLocationTracking();
-  const deviceInfo=useDeviceTracking();
+  const { user } = useUser();
+  const location = useLocationTracking();
+  const deviceInfo = useDeviceTracking();
   const addToCart = useStore((state: any) => state.addToCart);
   const removeFromCart = useStore((state: any) => state.removeFromCart);
   const addToWishList = useStore((state: any) => state.addToWishList);
@@ -89,7 +89,6 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
                       location,
                       deviceInfo
                     );
-
               }}
             >
               <Heart
@@ -98,7 +97,6 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
                 fill={isWishlisted ? "red" : "transparent"}
                 stroke={isWishlisted ? "red" : "#4B5563"}
                 strokeWidth={2}
-
               />
             </div>
 
@@ -125,7 +123,13 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                !isInCart && addToCart({ ...product, quantity: 1 }, user, location, deviceInfo);
+                !isInCart &&
+                  addToCart(
+                    { ...product, quantity: 1 },
+                    user,
+                    location,
+                    deviceInfo
+                  );
               }}
             >
               <ShoppingBag
