@@ -13,6 +13,7 @@ import {
   getShopProducts,
   getStripeAccount,
   restoreProduct,
+  searchProducts,
   uploadProductImage,
 } from "../controllers/product.controller";
 
@@ -34,5 +35,6 @@ router.get("/get-stripe-account",isAuthenticated,isSeller,getStripeAccount )
 
 router.get('/get-all-products',getAllProducts )
 
+router.get("/search/:query", searchProducts);
 
 export default router;

@@ -1,5 +1,5 @@
-import { StarFilled, HalfStar, StarOutline } from "apps/user-ui/src/assets/svgs/star-icon";
-import React, { FC } from "react";
+import { HalfStar, StarFilled, StarOutline } from "apps/user-ui/src/assets/svgs/star-icon";
+import { FC } from "react";
 
 type Props = {
   rating: number;

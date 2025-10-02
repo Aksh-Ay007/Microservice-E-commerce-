@@ -431,7 +431,11 @@ export const getStripeAccount = async (
 
 //get all Products
 
-export const getAllProducts = async (req: Request, res: Response, next: NextFunction) => {
+export const getAllProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
@@ -479,3 +483,36 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+export const searchProducts = async (
+  req:Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { query } = req.params;
+
+    if (!query) {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+
+    // Simple case-insensitive search
+    const products = await prisma.products.findMany({
+      where: {
+        isDeleted: false,
+        status: "Active",
+        OR: [
+          { title: { contains: query, mode: "insensitive" } },
+          { short_description: { contains: query, mode: "insensitive" } },
+          { detailed_description: { contains: query, mode: "insensitive" } },
+          { tags: { hasSome: [query] } }, // if tags is a string[] column
+        ],
+      },
+      include: { images: true },
+      take: 20, // Limit results
+    });
+
+    return res.status(200).json({ success: true, products });
+  } catch (error) {
+    return next(error);
+  }
+};

@@ -2,8 +2,12 @@ import { Eye, Heart, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useStore } from "../../../store";
 import Ratings from "../ratings";
 import ProductDetailsCard from "./product-details.card";
+import useUser from '../../../hooks/useUser';
+import useLocationTracking from '../../../hooks/useLocationTracking';
+import useDeviceTracking from '../../../hooks/useDeviceTracking';
 
 interface ProductCardProps {
   product: any;
@@ -17,6 +21,17 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
 
   const [timeLeft, setTimeLeft] = useState("");
   const [open, setOpen] = useState(false);
+  const {user} =useUser()
+  const location=useLocationTracking();
+  const deviceInfo=useDeviceTracking();
+  const addToCart = useStore((state: any) => state.addToCart);
+  const removeFromCart = useStore((state: any) => state.removeFromCart);
+  const addToWishList = useStore((state: any) => state.addToWishList);
+  const removeFromWishList = useStore((state: any) => state.removeFromWishList);
+  const wishlist = useStore((state: any) => state.wishlist);
+  const isWishlisted = wishlist?.some((item: any) => item.id === product.id);
+  const cart = useStore((state: any) => state.cart);
+  const isInCart = cart?.some((item: any) => item.id === product.id);
 
   useEffect(() => {
     if (isEvent && product?.ending_date) {
@@ -66,14 +81,24 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                isWishlisted
+                  ? removeFromWishList(product.id, user, location, deviceInfo)
+                  : addToWishList(
+                      { ...product, quantity: 1 },
+                      user,
+                      location,
+                      deviceInfo
+                    );
+
               }}
             >
               <Heart
                 className="hover:scale-110 transition-transform"
                 size={20}
-                fill={"red"}
-                stroke="red"
+                fill={isWishlisted ? "red" : "transparent"}
+                stroke={isWishlisted ? "red" : "#4B5563"}
                 strokeWidth={2}
+
               />
             </div>
 
@@ -100,6 +125,7 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                !isInCart && addToCart({ ...product, quantity: 1 }, user, location, deviceInfo);
               }}
             >
               <ShoppingBag
