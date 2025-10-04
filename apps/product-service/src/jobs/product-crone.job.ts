@@ -3,7 +3,6 @@ import cron from 'node-cron';
 
 
 cron.schedule('0 * * * *', async () => {
-  console.log('Running product deletion cron job...');
    try {
       const now = new Date();
        await prisma.products.deleteMany({
@@ -19,5 +18,3 @@ cron.schedule('0 * * * *', async () => {
       console.error('Error during product deletion cron job:', error);
    }
 });
-
-

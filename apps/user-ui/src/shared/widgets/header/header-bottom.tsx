@@ -31,7 +31,6 @@ const HeaderBottom = () => {
     queryKey: ["categories"],
     queryFn: async () => {
       const res = await axiosInstance.get("/product/api/get-categories");
-      console.log(res,'categories');
 
       return res.data;
     },

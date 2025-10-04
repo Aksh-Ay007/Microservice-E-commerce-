@@ -78,7 +78,6 @@ const ProductList = () => {
         accessorKey: "images",
         header: "Images",
         cell: ({ row }: any) => {
-          console.log(row.original.images);
 
           return (
             <Image

@@ -26,7 +26,7 @@ const initializeSiteConfig = async () => {
         },
       });
 
-      console.log("Site configuration initialized successfully");
+  
     }
   } catch (error) {
     console.error("Error initializing site configuration:", error);

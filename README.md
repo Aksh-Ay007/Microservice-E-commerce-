@@ -1,4 +1,3 @@
-
 ---
 
 ## 🚀 Features
@@ -40,6 +39,7 @@
 - **Dockerfile**: For containerized deployment.
 
 #### Key Flows:
+
 - **User Registration**: Validates input, checks for existing user, sends OTP, tracks OTP requests, and creates user after OTP verification.
 - **Seller Registration**: Similar to user, but with additional fields (phone, country).
 - **Login**: Validates credentials, issues JWT access and refresh tokens, sets secure cookies.
@@ -58,6 +58,7 @@
 - **React Hook Form**: For robust form validation and UX.
 
 #### Key Flows:
+
 - **Signup**: Multi-step with OTP, password visibility toggle, Google signup.
 - **Login**: Email/password, Google login, "Remember Me", error handling.
 - **Forgot Password**: Email submission, OTP verification, password reset.
@@ -98,7 +99,7 @@
    ```bash
    git clone https://github.com/yourusername/E-commerceProject-Microservice.git
    cd E-commerceProject-Microservice
-
+   ```
 
 <<<<<<< SEARCH
 
@@ -127,23 +128,22 @@ Error handling, Prisma, Redis, and middleware are reused across services.
 CI/CD
 GitHub Actions run tests and build on push/PR.
 
-
 flowchart TD
-    subgraph Frontend
-        A1[User UI (Next.js)]
-        A2[Seller UI (Next.js)]
-    end
-    subgraph Gateway
-        B[API Gateway (Express)]
-    end
-    subgraph Services
-        C[Auth Service (Express, Prisma, Redis)]
-        D[Other Microservices]
-    end
-    subgraph DB
-        E[(MongoDB)]
-        F[(Redis)]
-    end
+subgraph Frontend
+A1[User UI (Next.js)]
+A2[Seller UI (Next.js)]
+end
+subgraph Gateway
+B[API Gateway (Express)]
+end
+subgraph Services
+C[Auth Service (Express, Prisma, Redis)]
+D[Other Microservices]
+end
+subgraph DB
+E[(MongoDB)]
+F[(Redis)]
+end
 
     A1 -- "API Calls" --> B
     A2 -- "API Calls" --> B
@@ -153,36 +153,44 @@ flowchart TD
     C -- "OTP, Rate Limit" --> F
 
 =======
+
 ## 🛠️ Project Workflow
 
 The workflow below describes the high-level user and system interactions in the E-commerce microservices platform. Each step is designed to ensure security, scalability, and a seamless user experience.
 
 1. **User/Seller visits UI (Next.js)**
+
    - Users and sellers can register, login, or reset their password from the respective Next.js frontends.
 
 2. **Registration**
+
    - User/Seller submits the registration form.
    - Auth Service validates the data, checks for existing accounts, and sends an OTP via email.
    - User/Seller enters the OTP to verify their account.
    - On successful verification, the account is created in MongoDB via Prisma.
 
 3. **Login**
+
    - User/Seller submits their credentials.
    - Auth Service validates the credentials, issues JWT access and refresh tokens, and sets secure cookies.
    - The UI stores the session and fetches user data via `/api/logged-in-user`.
 
 4. **Password Reset**
+
    - User/Seller requests a password reset.
    - Auth Service sends an OTP to the registered email.
    - User/Seller verifies the OTP and sets a new password.
 
 5. **Token Refresh**
+
    - If the access token expires, the UI uses the refresh token to obtain a new one (handled automatically by the axios interceptor).
 
 6. **API Gateway**
+
    - Routes requests to the appropriate microservices (auth, user, seller, etc.).
 
 7. **Shared Packages**
+
    - Error handling, Prisma, Redis, and middleware are reused across all services for consistency and maintainability.
 
 8. **CI/CD**
@@ -259,3 +267,23 @@ const baseFilter: Prisma.productsWhereInput = {
     { starting_date: { lte: now }, ending_date: { gte: now } },
   ],
 };
+
+
+
+
+<!-- nx erroor -->
+
+<!-- isuueee -->
+npx nx g @nx/express:app apps/kafka-service
+
+
+ NX   The name should match the pattern "(?:^@[a-zA-Z0-9-*~][a-zA-Z0-9-*._~]*\/[a-zA-Z0-9-~][a-zA-Z0-9-._~]*|^[a-zA-Z][^:]*)$". The provided value "@./kafka-service-e2e" does not match.
+
+Pass --verbose to see the stacktrace.
+
+
+
+
+solution
+npx nx g @nx/express:app kafka-service --directory=apps/kafka-service --e2eTestRunner=none
+```

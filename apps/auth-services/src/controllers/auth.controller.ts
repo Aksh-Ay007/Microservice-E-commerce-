@@ -232,7 +232,7 @@ export const refreshToken = async (
 
 export const getUser = async (req: any, res: Response, next: NextFunction) => {
   try {
-    
+
     const user = req.user;
 
     res.status(200).json({
@@ -574,7 +574,6 @@ export const getSeller = async (
 
     const seller = req.seller;
 
-    console.log(seller,'seller')
 
     res.status(200).json({
       success: true,

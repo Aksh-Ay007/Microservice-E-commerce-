@@ -24,7 +24,6 @@ const Header = () => {
     try {
       const res = await axiosInstance.get(`/product/api/search/${searchQuery}`);
 
-      console.log(res, "search response");
 
       setSuggestions(res.data.products.slice(0, 10));
     } catch (error) {

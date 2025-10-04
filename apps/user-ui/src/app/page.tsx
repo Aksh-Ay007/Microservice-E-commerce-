@@ -17,7 +17,6 @@ const Page = () => {
       const res = await axiosInstance.get(
         "/product/api/get-all-products?page=1&limit=10"
       );
-console.log(res.data, "FULL API RESPONSE");
 
       return res.data.products;
     },
