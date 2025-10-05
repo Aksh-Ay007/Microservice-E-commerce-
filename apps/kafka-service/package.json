@@ -5,21 +5,22 @@
   "nx": {
     "targets": {
       "serve": {
-        "executor": "@nx/js:node",
+        "executor": "nx:run-commands",
         "defaultConfiguration": "development",
         "dependsOn": [
           "build"
         ],
         "options": {
-          "buildTarget": "@./kafka-service:build",
-          "runBuildTargetDependencies": false
+          "command": "node apps/kafka-service/dist/main.js",
+          "color": true,
+          "parallel": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@./kafka-service:build:development"
+            "command": "node apps/kafka-service/dist/main.js"
           },
           "production": {
-            "buildTarget": "@./kafka-service:build:production"
+            "command": "node apps/kafka-service/dist/main.js"
           }
         }
       }

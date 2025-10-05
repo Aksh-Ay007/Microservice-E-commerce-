@@ -287,3 +287,14 @@ Pass --verbose to see the stacktrace.
 solution
 npx nx g @nx/express:app kafka-service --directory=apps/kafka-service --e2eTestRunner=none
 ```
+
+
+
+ taskkill /F /IM node.exe
+
+
+
+
+ netstat -ano | findstr 9229
+
+ taskkill /PID 23068 /F

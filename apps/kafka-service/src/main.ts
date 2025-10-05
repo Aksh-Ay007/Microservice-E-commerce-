@@ -1,3 +1,6 @@
+console.log("=== Kafka Service Started ===");
+process.stdout.write("=== Kafka Service Started (stdout) ===\n");
+
 import { kafka } from "@packages/utils/kafka";
 import { updateUserAnalytics } from "./services/analytics.service";
 
@@ -13,13 +16,14 @@ const processQueue = async () => {
 
   for (const event of events) {
     if (event.action === "shop_visit") {
-      //update the shop visit count in the database
+      // update the shop visit count in the database
     }
 
     const validActions = [
       "add_to_wishlist",
       "add_to_cart",
       "product_view",
+      "remove_from_cart",
       "remove_from_wishlist",
     ];
 
@@ -38,21 +42,31 @@ const processQueue = async () => {
 setInterval(processQueue, 3000); // Process the queue every 3 seconds
 
 export const consumeKafkaMessages = async () => {
-  //connect to kafka broker
-  await consumer.connect();
-  await consumer.subscribe({ topic: "users-events", fromBeginning: false });
+  try {
+    console.log("Connecting to Kafka...");
+    await consumer.connect();
+    console.log("Connected to Kafka. Subscribing...");
+    await consumer.subscribe({ topic: "users-events", fromBeginning: false });
+    console.log("Subscribed to topic users-events. Waiting for messages...");
 
-  await consumer.run({
-    eachMessage: async ({ message }) => {
-      if (!message.value) return;
-      try {
-        const event = JSON.parse(message.value.toString());
-        eventQueue.push(event);
-      } catch (error) {
-        console.error("Failed to parse Kafka message:", error);
-      }
-    },
-  });
+    await consumer.run({
+      eachMessage: async ({ message }) => {
+        if (!message.value) return;
+        try {
+          const event = JSON.parse(message.value.toString());
+          console.log("Received Kafka message:", event);
+          eventQueue.push(event);
+        } catch (error) {
+          console.error("Failed to parse Kafka message:", error);
+        }
+      },
+    });
+
+    console.log("Kafka consumer is running and waiting for messages...");
+  } catch (err) {
+    console.error("Kafka consumer failed to start:", err);
+    process.exit(1);
+  }
 };
 
-consumeKafkaMessages().catch(console.error);
+consumeKafkaMessages();
