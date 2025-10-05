@@ -45,8 +45,12 @@ export const consumeKafkaMessages = async () => {
   await consumer.run({
     eachMessage: async ({ message }) => {
       if (!message.value) return;
-      const event = JSON.parse(message.value!.toString());
-      eventQueue.push(event);
+      try {
+        const event = JSON.parse(message.value.toString());
+        eventQueue.push(event);
+      } catch (error) {
+        console.error("Failed to parse Kafka message:", error);
+      }
     },
   });
 };

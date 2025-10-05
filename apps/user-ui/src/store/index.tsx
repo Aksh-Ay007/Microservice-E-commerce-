@@ -93,7 +93,7 @@ export const useStore = create<Store>()(
         const removeProduct = get().cart.find((item) => item.id === id);
 
         set((state) => ({
-          cart: state.cart.filter((item) => item.id !== id),
+          cart: state.cart?.filter((item) => item.id !== id),
         }));
 
         //send event to kafka

@@ -1,8 +1,7 @@
 import prisma from "@packages/libs/prisma";
 
-/**
- * Updates user analytics based on events.
- */
+console.log("Analytics Service Started");
+
 export const updateUserAnalytics = async (event: any) => {
   try {
     if (!event.userId) {
@@ -15,18 +14,17 @@ export const updateUserAnalytics = async (event: any) => {
       where: { userId: event.userId },
     });
 
-    let updatedActions: any[] = existingData?.actions || [];
+    let updatedActions: any = existingData?.actions || [];
 
     // Check if this action already exists
     const actionExists = updatedActions.some(
       (entry: any) =>
         entry.productId === event.productId && entry.action === event.action
     );
-
     // Add actions based on event type
     if (event.action === "product_view") {
       updatedActions.push({
-        productId: event.productId,
+        productId: event?.productId,
         shopId: event.shopId,
         action: "product_view",
         timestamp: new Date(),
@@ -36,14 +34,14 @@ export const updateUserAnalytics = async (event: any) => {
       !actionExists
     ) {
       updatedActions.push({
-        productId: event.productId,
-        shopId: event.shopId,
-        action: event.action,
+        productId: event?.productId,
+        shopId: event?.shopId,
+        action: event?.action,
         timestamp: new Date(),
       });
     } else if (event.action === "remove_from_cart") {
       updatedActions = updatedActions.filter(
-        (entry) =>
+        (entry: any) =>
           !(
             entry.productId === event.productId &&
             entry.action === "add_to_cart"
@@ -51,7 +49,7 @@ export const updateUserAnalytics = async (event: any) => {
       );
     } else if (event.action === "remove_from_wishlist") {
       updatedActions = updatedActions.filter(
-        (entry) =>
+        (entry: any) =>
           !(
             entry.productId === event.productId &&
             entry.action === "add_to_wishlist"
@@ -63,14 +61,19 @@ export const updateUserAnalytics = async (event: any) => {
     if (updatedActions.length > 100) {
       updatedActions = updatedActions.slice(-100);
     }
-
     const extraFields: Record<string, any> = {};
-    if (event.country) extraFields.country = event.country;
-    if (event.city) extraFields.city = event.city;
-    if (event.device) extraFields.device = event.device;
+    if (event.country) {
+      extraFields.country = event.country;
+    }
+    if (event.city) {
+      extraFields.city = event.city;
+    }
+    if (event.device) {
+      extraFields.device = event.device;
+    }
 
-    // Upsert user analytics
-    const result = await prisma.userAnalytics.upsert({
+    // update or create  user analytics
+    const res=await prisma.userAnalytics.upsert({
       where: { userId: event.userId },
       update: {
         lastVisited: new Date(),
@@ -78,14 +81,13 @@ export const updateUserAnalytics = async (event: any) => {
         ...extraFields,
       },
       create: {
-        userId: event.userId,
+        userId: event?.userId,
         lastVisited: new Date(),
         actions: updatedActions,
         ...extraFields,
       },
     });
-
-    console.log("✅ User analytics updated:", result);
+    console.log("User analytics updated:", res);
 
     // Update product analytics
     await updateProductAnalytics(event);
@@ -114,7 +116,7 @@ export const updateProductAnalytics = async (event: any) => {
       updateFields.wishListAdds = { decrement: 1 };
     if (event.action === "purchase") updateFields.purchases = { increment: 1 };
 
-    const result = await prisma.productAnalytics.upsert({
+    await prisma.productAnalytics.upsert({
       where: { productId: event.productId },
       update: {
         lastViewedAt: new Date(),
@@ -130,8 +132,6 @@ export const updateProductAnalytics = async (event: any) => {
         lastViewedAt: new Date(),
       },
     });
-
-    console.log("✅ Product analytics updated:", result);
   } catch (error) {
     console.error("Error updating product analytics:", error);
   }
