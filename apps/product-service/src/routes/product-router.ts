@@ -1,4 +1,4 @@
-import { isSeller } from '@packages/middleware/authorizeRoles';
+import { isSeller } from "@packages/middleware/authorizeRoles";
 import express, { Router } from "express";
 import isAuthenticated from "../../../../packages/middleware/isAuthenticated";
 import {
@@ -10,6 +10,7 @@ import {
   getAllProducts,
   getCategories,
   getDiscountCodes,
+  getProductDetails,
   getShopProducts,
   getStripeAccount,
   restoreProduct,
@@ -31,10 +32,12 @@ router.get("/get-shop-products", isAuthenticated, getShopProducts);
 router.delete("/delete-product/:productId", isAuthenticated, deleteProduct);
 router.put("/restore-product/:productId", isAuthenticated, restoreProduct);
 
-router.get("/get-stripe-account",isAuthenticated,isSeller,getStripeAccount )
+router.get("/get-stripe-account", isAuthenticated, isSeller, getStripeAccount);
 
-router.get('/get-all-products',getAllProducts )
+router.get("/get-all-products", getAllProducts);
 
 router.get("/search/:query", searchProducts);
+
+router.get("/get-product/:slug", getProductDetails);
 
 export default router;
