@@ -1,6 +1,5 @@
 import prisma from "@packages/libs/prisma";
 
-console.log("Analytics Service Started");
 
 export const updateUserAnalytics = async (event: any) => {
   try {
@@ -88,7 +87,7 @@ export const updateUserAnalytics = async (event: any) => {
         ...extraFields,
       },
     });
-    console.log("User analytics updated:", res);
+
 
     // Update product analytics
     await updateProductAnalytics(event);

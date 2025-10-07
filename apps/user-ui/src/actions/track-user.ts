@@ -28,7 +28,6 @@ export async function sendkafkaEvent(eventData: {
       topic: "users-events",
       messages: [{ value: JSON.stringify(eventData) }],
     });
-    console.log("Kafka event sent:", eventData.action);
   } catch (error) {
     console.error("Error sending Kafka event:", error);
     // Retry connection on error

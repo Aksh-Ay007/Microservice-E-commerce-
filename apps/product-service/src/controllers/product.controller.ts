@@ -62,6 +62,8 @@ export const createDiscountCodes = async (
       },
     });
 
+    console.log(discount_code, "discount code creation");
+
     res.status(201).json({
       success: true,
       discount_code,
@@ -78,6 +80,10 @@ export const getDiscountCodes = async (
   next: NextFunction
 ) => {
   try {
+    if (!req.seller || !req.seller.id) {
+      return next(new AuthError("Unauthorized access. Seller not found"));
+    }
+
     const discount_codes = await prisma.discount_codes.findMany({
       where: {
         sellerId: req.seller.id,
@@ -483,40 +489,6 @@ export const getAllProducts = async (
   }
 };
 
-export const searchProducts = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { query } = req.params;
-
-    if (!query) {
-      return res.status(400).json({ message: "Search query is required" });
-    }
-
-    // Simple case-insensitive search
-    const products = await prisma.products.findMany({
-      where: {
-        isDeleted: false,
-        status: "Active",
-        OR: [
-          { title: { contains: query, mode: "insensitive" } },
-          { short_description: { contains: query, mode: "insensitive" } },
-          { detailed_description: { contains: query, mode: "insensitive" } },
-          { tags: { hasSome: [query] } }, // if tags is a string[] column
-        ],
-      },
-      include: { images: true },
-      take: 20, // Limit results
-    });
-
-    return res.status(200).json({ success: true, products });
-  } catch (error) {
-    return next(error);
-  }
-};
-
 //get product details
 
 export const getProductDetails = async (
@@ -751,5 +723,119 @@ export const getFilteredShops = async (
     });
   } catch (error) {
     next(error);
+  }
+};
+
+//serach products
+
+export const searchProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const query = req.query.q as string;
+
+    if (!query || query.trim().length === 0) {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+
+    const products = await prisma.products.findMany({
+      where: {
+        isDeleted: false,
+        status: "Active",
+        OR: [
+          {
+            title: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+          {
+            short_description: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+      },
+      take: 10,
+      orderBy: { createdAt: "desc" },
+    });
+
+    return res.status(200).json({ products });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+//top shop
+
+export const topShops = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    //aggreagate total sales per shop from orders
+
+    const topShopsData = await prisma.orders.groupBy({
+      by: ["shopId"],
+      _sum: {
+        total: true,
+      },
+      orderBy: {
+        _sum: {
+          total: "desc",
+        },
+      },
+      take: 10,
+    });
+
+    //fetch corresponding shop details
+
+    const shopIds = topShopsData.map((item) => item.shopId);
+
+    const shops = await prisma.shops.findMany({
+      where: {
+        id: { in: shopIds },
+      },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        coverBanner: true,
+        address: true,
+        ratings: true,
+        followers: true,
+        category: true,
+      },
+    });
+
+    //merge sales with shop data
+
+    const enrichedShops = shops.map((shop) => {
+      const salesData = topShopsData.find((data) => data.shopId === shop.id);
+
+      return {
+        ...shop,
+        totalSales: salesData?._sum.total || 0,
+      };
+    });
+
+    const top10Shops = enrichedShops
+      .sort((a, b) => b.totalSales - a.totalSales)
+      .slice(0, 10);
+
+    return res.status(200).json({ shops: top10Shops });
+  } catch (error) {
+    console.log(error, "top shop error");
+
+    return next(error);
   }
 };

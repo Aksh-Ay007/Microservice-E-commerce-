@@ -44,8 +44,6 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
   const addToCart = useStore((state: any) => state.addToCart);
   const cart = useStore((state: any) => state.cart);
   const isInCart = cart?.some((item: any) => item.id === productDetails.id);
-  const removeFromCart = useStore((state: any) => state.removeFromCart);
-
   const addToWishList = useStore((state: any) => state.addToWishList);
   const removeFromWishList = useStore((state: any) => state.removeFromWishList);
   const wishlist = useStore((state: any) => state.wishlist);
@@ -94,6 +92,8 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
       const res = await axiosInstance.get(
         `/product/api/get-filtered-products?${query.toString()}`
       );
+
+      console.log(res.data.products,'recommented products')
 
       setRecommendedProducts(res.data.products);
     } catch (error) {

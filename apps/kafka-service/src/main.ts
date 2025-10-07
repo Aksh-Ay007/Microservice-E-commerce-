@@ -28,7 +28,7 @@ const processQueue = async () => {
     ];
 
     if (!event.action || !validActions.includes(event.action)) {
-      console.log("Invalid action:", event.action);
+
       continue;
     }
     try {
@@ -43,18 +43,14 @@ setInterval(processQueue, 3000); // Process the queue every 3 seconds
 
 export const consumeKafkaMessages = async () => {
   try {
-    console.log("Connecting to Kafka...");
     await consumer.connect();
-    console.log("Connected to Kafka. Subscribing...");
     await consumer.subscribe({ topic: "users-events", fromBeginning: false });
-    console.log("Subscribed to topic users-events. Waiting for messages...");
 
     await consumer.run({
       eachMessage: async ({ message }) => {
         if (!message.value) return;
         try {
           const event = JSON.parse(message.value.toString());
-          console.log("Received Kafka message:", event);
           eventQueue.push(event);
         } catch (error) {
           console.error("Failed to parse Kafka message:", error);
@@ -62,7 +58,6 @@ export const consumeKafkaMessages = async () => {
       },
     });
 
-    console.log("Kafka consumer is running and waiting for messages...");
   } catch (err) {
     console.error("Kafka consumer failed to start:", err);
     process.exit(1);

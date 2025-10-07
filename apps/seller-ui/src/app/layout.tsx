@@ -1,6 +1,6 @@
 import './global.css';
 import Providers from './providers';
-import { Poppins } from "next/font/google";
+import { Poppins,Roboto } from "next/font/google";
 
 export const metadata = {
   title: 'MicroMart seller',
@@ -9,6 +9,12 @@ export const metadata = {
 
 
 
+
+const roboto = Roboto({
+  subsets: ["latin"],
+  weight: ["100", "300", "400", "500", "700", "900"],
+  variable: "--font-roboto",
+});
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -23,7 +29,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`min-h-screen bg-slate-500 font-sans antialiased ${poppins.variable}`}>
+      <body className={`${roboto.variable} ${poppins.variable}`}>
         <Providers>{children}</Providers>
       </body>
     </html>

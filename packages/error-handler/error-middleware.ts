@@ -19,7 +19,6 @@ export const errorMiddleware = (
     });
   }
 
-  console.log("unhandled error", err);
   return res.status(500).json({
     error: "something went wrong please try again later",
   });
