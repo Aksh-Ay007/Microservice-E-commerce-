@@ -489,6 +489,64 @@ export const getAllProducts = async (
   }
 };
 
+//get all events
+
+export const getAllEvents = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+
+    const skip = (page - 1) * limit;
+
+    const baseFilter = {
+      AND: [
+        {
+          starting_date: {
+            not: null,
+          },
+        },
+        {
+          ending_date: {
+            not: null,
+          },
+        },
+      ],
+    };
+
+    const [events, total, top10BySales] = await Promise.all([
+      prisma.products.findMany({
+        skip,
+        take: limit,
+        include: { images: true, Shop: true },
+        where: baseFilter,
+        orderBy: { totalSales: "desc" },
+      }),
+
+      prisma.products.count({ where: baseFilter }),
+
+      prisma.products.findMany({
+        take: 10,
+        where: baseFilter,
+        orderBy: { totalSales: "desc" },
+      }),
+    ]);
+
+    res.status(200).json({
+      events,
+      top10BySales,
+      total,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching events", error });
+  }
+};
+
 //get product details
 
 export const getProductDetails = async (
@@ -540,7 +598,6 @@ export const getFilteredProducts = async (
         gte: parsedPriceRange[0],
         lte: parsedPriceRange[1],
       },
-      starting_date: null,
     };
 
     if (categories && (categories as string[]).length > 0) {

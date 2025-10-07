@@ -1,0 +1,94 @@
+[
+  {
+    "_id": { "$oid": "6704e0011111111111111001" },
+    "userId": { "$oid": "6704df001111111111111001" },
+    "shopId": { "$oid": "68dd2bb567c9d968ef43b0bf" },
+    "total": 1198,
+    "status": "Paid",
+    "deliveryStatus": "Delivered",
+    "couponCode": null,
+    "discountAmount": 0,
+    "createdAt": { "$date": "2025-10-08T10:10:00Z" },
+    "updatedAt": { "$date": "2025-10-08T10:10:00Z" },
+    "items": [
+      {
+        "_id": { "$oid": "6704e0011111111111112001" },
+        "orderId": "6704e0011111111111111001",
+        "productId": "68dd38ab27cb8696e4562cef",
+        "quantity": 2,
+        "price": 599,
+        "selectedOptions": {},
+        "createdAt": { "$date": "2025-10-08T10:10:00Z" }
+      }
+    ]
+  },
+  {
+    "_id": { "$oid": "6704e0011111111111111002" },
+    "userId": { "$oid": "6704df001111111111111002" },
+    "shopId": { "$oid": "68dd2bb567c9d968ef43b0bf" },
+    "total": 599,
+    "status": "Paid",
+    "deliveryStatus": "Shipped",
+    "couponCode": null,
+    "discountAmount": 0,
+    "createdAt": { "$date": "2025-10-08T11:00:00Z" },
+    "updatedAt": { "$date": "2025-10-08T11:00:00Z" },
+    "items": [
+      {
+        "_id": { "$oid": "6704e0011111111111112002" },
+        "orderId": "6704e0011111111111111002",
+        "productId": "68dd38ab27cb8696e4562cef",
+        "quantity": 1,
+        "price": 599,
+        "selectedOptions": {},
+        "createdAt": { "$date": "2025-10-08T11:00:00Z" }
+      }
+    ]
+  },
+  {
+    "_id": { "$oid": "6704e0011111111111111003" },
+    "userId": { "$oid": "6704df001111111111111003" },
+    "shopId": { "$oid": "68e41c48c4c9c19a5243a497" },
+    "total": 38,
+    "status": "Paid",
+    "deliveryStatus": "Delivered",
+    "couponCode": null,
+    "discountAmount": 0,
+    "createdAt": { "$date": "2025-10-08T11:10:00Z" },
+    "updatedAt": { "$date": "2025-10-08T11:10:00Z" },
+    "items": [
+      {
+        "_id": { "$oid": "6704e0011111111111112003" },
+        "orderId": "6704e0011111111111111003",
+        "productId": "68e43f47b4adba2df59e543f",
+        "quantity": 2,
+        "price": 19,
+        "selectedOptions": {},
+        "createdAt": { "$date": "2025-10-08T11:10:00Z" }
+      }
+    ]
+  },
+  {
+    "_id": { "$oid": "6704e0011111111111111004" },
+    "userId": { "$oid": "6704df001111111111111004" },
+    "shopId": { "$oid": "68e41c48c4c9c19a5243a497" },
+    "total": 48,
+    "status": "Paid",
+    "deliveryStatus": "Processing",
+    "couponCode": null,
+    "discountAmount": 0,
+    "createdAt": { "$date": "2025-10-08T11:20:00Z" },
+    "updatedAt": { "$date": "2025-10-08T11:20:00Z" },
+    "items": [
+      {
+        "_id": { "$oid": "6704e0011111111111112004" },
+        "orderId": "6704e0011111111111111004",
+        "productId": "68e4d4ac787b01735253c073",
+        "quantity": 3,
+        "price": 16,
+        "selectedOptions": {},
+        "createdAt": { "$date": "2025-10-08T11:20:00Z" }
+      }
+    ]
+  }
+]
