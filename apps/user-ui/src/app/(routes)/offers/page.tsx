@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, X } from "lucide-react";
+import { ChevronRight, Filter, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -12,7 +12,7 @@ import axiosInstance from "../../../utils/axiosinstance";
 const MIN = 0;
 const MAX = 1199;
 
-const Page = () => {
+export default function Page() {
   const router = useRouter();
   const [isProductLoading, setIsProductLoading] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 1199]);
@@ -23,6 +23,7 @@ const Page = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [tempPriceRange, setTempPriceRange] = useState([0, 1199]);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   const colors = [
     { name: "Red", code: "#FF0000" },
@@ -68,12 +69,10 @@ const Page = () => {
         `product/api/get-filtered-offers?${query.toString()}`
       );
 
-      console.log(res.data, "filtered products");
-
       setProducts(res.data.products);
       setTotalPages(res.data.pagination.totalPages);
     } catch (error) {
-      console.log(error, "failed to fetch products");
+      console.log("failed to fetch products", error);
     } finally {
       setIsProductLoading(false);
     }
@@ -113,12 +112,6 @@ const Page = () => {
     );
   };
 
-  // Scroll to top when page changes
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [page]);
-
-  // Clear all filters
   const clearAllFilters = () => {
     setSelectedCategories([]);
     setSelectedColors([]);
@@ -128,223 +121,209 @@ const Page = () => {
     setPage(1);
   };
 
-  // Disable Apply button if no price change
   const isApplyDisabled =
     tempPriceRange[0] === priceRange[0] && tempPriceRange[1] === priceRange[1];
 
+  const FiltersPanel = (
+    <div className="space-y-6">
+      {/* Price Range */}
+      <div>
+        <h3 className="text-lg font-medium border-b pb-1 mb-3">Price Range</h3>
+        <Range
+          step={1}
+          min={MIN}
+          max={MAX}
+          values={tempPriceRange}
+          onChange={(values) => setTempPriceRange(values)}
+          renderTrack={({ props, children }) => {
+            const [min, max] = tempPriceRange;
+            const left = ((min - MIN) / (MAX - MIN)) * 100;
+            const right = ((max - MIN) / (MAX - MIN)) * 100;
+            return (
+              <div
+                {...props}
+                className="h-[6px] bg-blue-200 rounded relative"
+                style={{ ...props.style }}
+              >
+                <div
+                  className="absolute h-full bg-blue-600 rounded"
+                  style={{ left: `${left}%`, width: `${right - left}%` }}
+                />
+                {children}
+              </div>
+            );
+          }}
+          renderThumb={({ props }) => (
+            <div
+              {...props}
+              className="w-[16px] h-[16px] bg-blue-600 rounded-full shadow-md"
+            />
+          )}
+        />
+        <div className="flex justify-between mt-2 items-center">
+          <p className="text-sm text-gray-600">
+            ${tempPriceRange[0]} - ${tempPriceRange[1]}
+          </p>
+          <button
+            disabled={isApplyDisabled}
+            onClick={() => {
+              setPriceRange(tempPriceRange);
+              setPage(1);
+            }}
+            className={`text-sm px-4 py-1 rounded ${
+              isApplyDisabled
+                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
+          >
+            Apply
+          </button>
+        </div>
+      </div>
+
+      {/* Categories */}
+      <div>
+        <h3 className="text-lg font-medium border-b pb-1 mb-3">Categories</h3>
+        {isLoading ? (
+          <p>Loading...</p>
+        ) : (
+          <ul className="space-y-2">
+            {data?.categories?.map((category: any) => (
+              <li key={category}>
+                <label className="flex items-center gap-3 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes(category)}
+                    onChange={() => toggleCategory(category)}
+                    className="accent-blue-600"
+                  />
+                  {category}
+                </label>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Colors */}
+      <div>
+        <h3 className="text-lg font-medium border-b pb-1 mb-3">Colors</h3>
+        <ul className="space-y-2">
+          {colors.map((color) => (
+            <li key={color.name}>
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={selectedColors.includes(color.name)}
+                  onChange={() => toggleColor(color.name)}
+                  className="accent-blue-600"
+                />
+                <span
+                  className={`w-[18px] h-[18px] rounded-full border-2 ${
+                    selectedColors.includes(color.name)
+                      ? "border-blue-600"
+                      : "border-gray-300"
+                  }`}
+                  style={{ backgroundColor: color.code }}
+                ></span>
+                {color.name}
+              </label>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Sizes */}
+      <div>
+        <h3 className="text-lg font-medium border-b pb-1 mb-3">Sizes</h3>
+        <ul className="space-y-2">
+          {sizes.map((size) => (
+            <li key={size}>
+              <label className="flex items-center gap-3 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={selectedSizes.includes(size)}
+                  onChange={() => toggleSize(size)}
+                  className="accent-blue-600"
+                />
+                {size}
+              </label>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <button
+        onClick={clearAllFilters}
+        className="text-red-600 text-sm underline mt-2"
+      >
+        Clear All
+      </button>
+    </div>
+  );
+
   return (
-    <div className="w-full bg-[#f5f5f5] pb-10">
-      <div className="w-[90%] lg:w-[80%] m-auto">
-        <div className="pb-[50px]">
-          <h1 className="md:pt-[40px] font-medium text-[44px] mb-[14px] font-jost">
+    <div className="w-full bg-gray-50 min-h-screen pb-10">
+      <div className="w-[90%] lg:w-[80%] mx-auto">
+        <div className="pb-6 pt-6 text-center">
+          <h1 className="text-3xl md:text-4xl font-semibold mb-2">
             All Offers
           </h1>
-          <div className="flex items-center text-sm">
-            <Link href="/" className="text-[#55585b] hover:underline">
+          <div className="flex items-center justify-center text-sm text-gray-500">
+            <Link href="/" className="hover:text-blue-600">
               Home
             </Link>
-            <ChevronRight size={16} className="mx-2 text-[#a8acb0]" />
-            <span className="text-[#55585b]">All Offers</span>
+            <ChevronRight size={16} className="mx-2 text-gray-400" />
+            <span>All Offers</span>
           </div>
         </div>
 
-        {/* Active Filters Section */}
-        {(selectedCategories.length > 0 ||
-          selectedColors.length > 0 ||
-          selectedSizes.length > 0 ||
-          priceRange[0] !== 0 ||
-          priceRange[1] !== 1199) && (
-          <div className="flex flex-wrap gap-2 items-center mb-6">
-            {[...selectedCategories, ...selectedColors, ...selectedSizes].map(
-              (filter) => (
-                <span
-                  key={filter}
-                  className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-sm"
-                >
-                  {filter}
-                  <X
-                    size={14}
-                    className="cursor-pointer"
-                    onClick={() => {
-                      toggleCategory(filter);
-                      toggleColor(filter);
-                      toggleSize(filter);
-                    }}
-                  />
-                </span>
-              )
-            )}
-            <button
-              onClick={clearAllFilters}
-              className="text-sm text-red-600 underline ml-2"
-            >
-              Clear All
-            </button>
-          </div>
-        )}
+        {/* Mobile filter button */}
+        <div className="lg:hidden flex justify-end mb-4">
+          <button
+            onClick={() => setMobileFilterOpen(true)}
+            className="flex items-center gap-2 text-blue-600 border border-blue-200 px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm bg-white"
+          >
+            <Filter size={16} />
+            Filters
+          </button>
+        </div>
 
-        <div className="w-full flex flex-col lg:flex-row gap-8">
-          {/* Sidebar */}
-          <aside className="w-full lg:w-[270px] rounded bg-white p-4 space-y-6 shadow-md">
-            <h3 className="text-xl font-Poppins font-medium">Price Filter</h3>
-            <div className="ml-2">
-              <Range
-                step={1}
-                min={MIN}
-                max={MAX}
-                values={tempPriceRange}
-                onChange={(values) => setTempPriceRange(values)}
-                renderTrack={({ props, children }) => {
-                  const [min, max] = tempPriceRange;
-                  const left = ((min - MIN) / (MAX - MIN)) * 100;
-                  const right = ((max - MIN) / (MAX - MIN)) * 100;
-                  return (
-                    <div
-                      {...props}
-                      className="h-[6px] bg-blue-200 rounded relative"
-                      style={{ ...props.style }}
-                    >
-                      <div
-                        className="absolute h-full bg-blue-600 rounded"
-                        style={{
-                          left: `${left}%`,
-                          width: `${right - left}%`,
-                        }}
-                      />
-                      {children}
-                    </div>
-                  );
-                }}
-                renderThumb={({ props }) => {
-                  const {key,...rest} = props;
-                  return (
-                  <div
-                    key={key}
-                     {...rest}
-                    className="w-[16px] h-[16px] bg-blue-600 rounded-full shadow-md"
-                  />
-                  );
-                }}
-              />
-            </div>
-            <div className="flex justify-between items-center mt-2">
-              <div className="text-sm text-gray-600">
-                ${tempPriceRange[0]} - ${tempPriceRange[1]}
-              </div>
-              <button
-                disabled={isApplyDisabled}
-                onClick={() => {
-                  setPriceRange(tempPriceRange);
-                  setPage(1);
-                }}
-                className={`text-sm px-4 py-1 rounded transition ${
-                  isApplyDisabled
-                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : "bg-blue-600 text-white hover:bg-blue-700"
-                }`}
-              >
-                Apply
-              </button>
-            </div>
-
-            {/* Categories */}
-            <h3 className="text-xl font-Poppins font-medium border-b border-slate-300 pb-1">
-              Categories
-            </h3>
-            <ul className="space-y-2 mt-3">
-              {isLoading ? (
-                <p>Loading...</p>
-              ) : (
-                data?.categories?.map((category: any) => (
-                  <li key={category}>
-                    <label className="flex items-center gap-3 text-sm text-gray-700">
-                      <input
-                        type="checkbox"
-                        checked={selectedCategories.includes(category)}
-                        onChange={() => toggleCategory(category)}
-                        className="accent-blue-600"
-                      />
-                      {category}
-                    </label>
-                  </li>
-                ))
-              )}
-            </ul>
-
-            {/* Colors */}
-            <h3 className="text-xl font-Poppins font-medium border-b border-slate-300 pb-1 mt-6">
-              Filter by Color
-            </h3>
-            <ul className="space-y-2 mt-3">
-              {colors.map((color) => (
-                <li key={color.name}>
-                  <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={selectedColors.includes(color.name)}
-                      onChange={() => toggleColor(color.name)}
-                      className="accent-blue-600"
-                    />
-                    <span
-                      className={`w-[18px] h-[18px] rounded-full border-2 ${
-                        selectedColors.includes(color.name)
-                          ? "border-blue-600"
-                          : "border-gray-300"
-                      }`}
-                      style={{ backgroundColor: color.code }}
-                    ></span>
-                    {color.name}
-                  </label>
-                </li>
-              ))}
-            </ul>
-
-            {/* Sizes */}
-            <h3 className="text-xl font-Poppins font-medium border-b border-slate-300 pb-1 mt-6">
-              Filter by Size
-            </h3>
-            <ul className="space-y-2 mt-3">
-              {sizes.map((size) => (
-                <li key={size}>
-                  <label className="flex items-center gap-3 text-sm text-gray-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedSizes.includes(size)}
-                      onChange={() => toggleSize(size)}
-                      className="accent-blue-600"
-                    />
-                    <span className="font-medium">{size}</span>
-                  </label>
-                </li>
-              ))}
-            </ul>
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar - visible on lg+ */}
+          <aside className="hidden lg:block w-[270px] rounded bg-white p-4 shadow-md">
+            {FiltersPanel}
           </aside>
 
-          {/* Product Grid */}
-          <div className="flex-1 px-2 lg:px-3">
+          {/* Main Grid */}
+          <div className="flex-1">
             {isProductLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
-                {Array.from({ length: 10 }).map((_, index) => (
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                {Array.from({ length: 8 }).map((_, index) => (
                   <div
                     key={index}
-                    className="h-[250px] bg-gray-300 animate-pulse rounded-xl"
-                  ></div>
+                    className="h-[220px] bg-gray-200 animate-pulse rounded-xl"
+                  />
                 ))}
               </div>
             ) : products.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {products.map((product) => (
-                  <ProductCard key={product.id} product={product} isEvent={true} />
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    isEvent={true}
+                  />
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-[300px] bg-white rounded-lg shadow-sm">
+              <div className="flex flex-col items-center justify-center h-[250px] bg-white rounded-xl shadow-sm">
                 <p className="text-lg font-medium text-gray-600 mb-2">
-                  No products match your filters.
+                  No Offers Found
                 </p>
                 <button
                   onClick={clearAllFilters}
-                  className="text-blue-600 text-sm underline"
+                  className="text-blue-600 text-sm underline hover:text-blue-700"
                 >
                   Clear filters and try again
                 </button>
@@ -358,10 +337,10 @@ const Page = () => {
                   <button
                     key={index + 1}
                     onClick={() => setPage(index + 1)}
-                    className={`px-3 py-1 rounded border border-gray-200 text-sm ${
+                    className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-lg border transition-all duration-200 ${
                       page === index + 1
-                        ? "bg-blue-600 text-white"
-                        : "bg-white text-black hover:bg-gray-100"
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100"
                     }`}
                   >
                     {index + 1}
@@ -372,8 +351,28 @@ const Page = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile filter drawer */}
+      {mobileFilterOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setMobileFilterOpen(false)}
+          />
+          <div className="relative ml-auto w-[85%] max-w-[360px] bg-white h-full shadow-xl overflow-y-auto p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Filters</h3>
+              <button
+                onClick={() => setMobileFilterOpen(false)}
+                className="p-2 rounded-md hover:bg-gray-100"
+              >
+                <X />
+              </button>
+            </div>
+            {FiltersPanel}
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
-export default Page;
+}

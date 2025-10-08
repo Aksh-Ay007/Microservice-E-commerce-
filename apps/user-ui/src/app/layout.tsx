@@ -2,6 +2,7 @@ import Header from "../shared/widgets/header";
 import "./global.css";
 import { Poppins, Roboto } from "next/font/google";
 import Providers from "./providers";
+import Footer from '../shared/widgets/footer/footer';
 
 export const metadata = {
   title: "Welcome to MicroMart",
@@ -31,6 +32,7 @@ export default function RootLayout({
         <Providers>
           <Header />
           {children}
+          <Footer/>
         </Providers>
       </body>
     </html>

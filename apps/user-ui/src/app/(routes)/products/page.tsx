@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, X } from "lucide-react";
+import { ChevronRight, Filter, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -23,6 +23,7 @@ const Page = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [tempPriceRange, setTempPriceRange] = useState([0, 1199]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false); // mobile filter drawer
 
   const colors = [
     { name: "Red", code: "#FF0000" },
@@ -70,7 +71,7 @@ const Page = () => {
       setProducts(res.data.products);
       setTotalPages(res.data.pagination.totalPages);
     } catch (error) {
-      console.log(error, "failed to fetch products");
+      console.error(error, "failed to fetch products");
     } finally {
       setIsProductLoading(false);
     }
@@ -110,12 +111,10 @@ const Page = () => {
     );
   };
 
-  // Scroll to top when page changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [page]);
 
-  // Clear all filters
   const clearAllFilters = () => {
     setSelectedCategories([]);
     setSelectedColors([]);
@@ -125,17 +124,28 @@ const Page = () => {
     setPage(1);
   };
 
-  // Disable Apply button if no price change
   const isApplyDisabled =
     tempPriceRange[0] === priceRange[0] && tempPriceRange[1] === priceRange[1];
 
   return (
-    <div className="w-full bg-[#f5f5f5] pb-10">
+    <div className="w-full bg-[#f9fafb] pb-10">
       <div className="w-[90%] lg:w-[80%] m-auto">
-        <div className="pb-[50px]">
-          <h1 className="md:pt-[40px] font-medium text-[44px] mb-[14px] font-jost">
-            All Products
-          </h1>
+        <div className="pb-[30px]">
+          <div className="flex items-center justify-between">
+            <h1 className="md:pt-[30px] font-semibold text-[28px] md:text-[44px] mb-[10px] font-jost">
+              All Products
+            </h1>
+
+            {/* Mobile Filter Toggle */}
+            <button
+              onClick={() => setIsFilterOpen(true)}
+              className="md:hidden flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+            >
+              <Filter size={18} />
+              Filters
+            </button>
+          </div>
+
           <div className="flex items-center text-sm">
             <Link href="/" className="text-[#55585b] hover:underline">
               Home
@@ -145,7 +155,7 @@ const Page = () => {
           </div>
         </div>
 
-        {/* Active Filters Section */}
+        {/* Active Filters */}
         {(selectedCategories.length > 0 ||
           selectedColors.length > 0 ||
           selectedSizes.length > 0 ||
@@ -180,156 +190,47 @@ const Page = () => {
           </div>
         )}
 
-        <div className="w-full flex flex-col lg:flex-row gap-8">
-          {/* Sidebar */}
-          <aside className="w-full lg:w-[270px] rounded bg-white p-4 space-y-6 shadow-md">
-            <h3 className="text-xl font-Poppins font-medium">Price Filter</h3>
-            <div className="ml-2">
-              <Range
-                step={1}
-                min={MIN}
-                max={MAX}
-                values={tempPriceRange}
-                onChange={(values) => setTempPriceRange(values)}
-                renderTrack={({ props, children }) => {
-                  const [min, max] = tempPriceRange;
-                  const left = ((min - MIN) / (MAX - MIN)) * 100;
-                  const right = ((max - MIN) / (MAX - MIN)) * 100;
-                  return (
-                    <div
-                      {...props}
-                      className="h-[6px] bg-blue-200 rounded relative"
-                      style={{ ...props.style }}
-                    >
-                      <div
-                        className="absolute h-full bg-blue-600 rounded"
-                        style={{
-                          left: `${left}%`,
-                          width: `${right - left}%`,
-                        }}
-                      />
-                      {children}
-                    </div>
-                  );
-                }}
-                renderThumb={({ props }) => {
-                  const { key, ...rest } = props;
-                  return (
-                    <div
-                      key={key}
-                      {...rest}
-                      className="w-[16px] h-[16px] bg-blue-600 rounded-full shadow-md"
-                    />
-                  );
-                }}
-              />
-            </div>
-            <div className="flex justify-between items-center mt-2">
-              <div className="text-sm text-gray-600">
-                ${tempPriceRange[0]} - ${tempPriceRange[1]}
-              </div>
-              <button
-                disabled={isApplyDisabled}
-                onClick={() => {
-                  setPriceRange(tempPriceRange);
-                  setPage(1);
-                }}
-                className={`text-sm px-4 py-1 rounded transition ${
-                  isApplyDisabled
-                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : "bg-blue-600 text-white hover:bg-blue-700"
-                }`}
-              >
-                Apply
-              </button>
-            </div>
-
-            {/* Categories */}
-            <h3 className="text-xl font-Poppins font-medium border-b border-slate-300 pb-1">
-              Categories
-            </h3>
-            <ul className="space-y-2 mt-3">
-              {isLoading ? (
-                <p>Loading...</p>
-              ) : (
-                data?.categories?.map((category: any) => (
-                  <li key={category}>
-                    <label className="flex items-center gap-3 text-sm text-gray-700">
-                      <input
-                        type="checkbox"
-                        checked={selectedCategories.includes(category)}
-                        onChange={() => toggleCategory(category)}
-                        className="accent-blue-600"
-                      />
-                      {category}
-                    </label>
-                  </li>
-                ))
-              )}
-            </ul>
-
-            {/* Colors */}
-            <h3 className="text-xl font-Poppins font-medium border-b border-slate-300 pb-1 mt-6">
-              Filter by Color
-            </h3>
-            <ul className="space-y-2 mt-3">
-              {colors.map((color) => (
-                <li key={color.name}>
-                  <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={selectedColors.includes(color.name)}
-                      onChange={() => toggleColor(color.name)}
-                      className="accent-blue-600"
-                    />
-                    <span
-                      className={`w-[18px] h-[18px] rounded-full border-2 ${
-                        selectedColors.includes(color.name)
-                          ? "border-blue-600"
-                          : "border-gray-300"
-                      }`}
-                      style={{ backgroundColor: color.code }}
-                    ></span>
-                    {color.name}
-                  </label>
-                </li>
-              ))}
-            </ul>
-
-            {/* Sizes */}
-            <h3 className="text-xl font-Poppins font-medium border-b border-slate-300 pb-1 mt-6">
-              Filter by Size
-            </h3>
-            <ul className="space-y-2 mt-3">
-              {sizes.map((size) => (
-                <li key={size}>
-                  <label className="flex items-center gap-3 text-sm text-gray-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedSizes.includes(size)}
-                      onChange={() => toggleSize(size)}
-                      className="accent-blue-600"
-                    />
-                    <span className="font-medium">{size}</span>
-                  </label>
-                </li>
-              ))}
-            </ul>
+        {/* Layout */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Sidebar (hidden on mobile) */}
+          <aside className="hidden lg:block w-[270px] rounded bg-white p-4 space-y-6 shadow-md">
+            <FilterSection
+              {...{
+                MIN,
+                MAX,
+                tempPriceRange,
+                setTempPriceRange,
+                priceRange,
+                setPriceRange,
+                isApplyDisabled,
+                isLoading,
+                data,
+                toggleCategory,
+                selectedCategories,
+                colors,
+                toggleColor,
+                selectedColors,
+                sizes,
+                toggleSize,
+                selectedSizes,
+                clearAllFilters,
+              }}
+            />
           </aside>
 
           {/* Product Grid */}
-          <div className="flex-1 px-2 lg:px-3">
+          <div className="flex-1">
             {isProductLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
-                {Array.from({ length: 10 }).map((_, index) => (
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
                   <div
-                    key={index}
-                    className="h-[250px] bg-gray-300 animate-pulse rounded-xl"
-                  ></div>
+                    key={i}
+                    className="h-[220px] bg-gray-200 animate-pulse rounded-xl"
+                  />
                 ))}
               </div>
             ) : products.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {products.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
@@ -339,9 +240,9 @@ const Page = () => {
                 <img
                   src="/no-results.svg"
                   alt="No Results"
-                  className="w-32 h-32 mb-4 opacity-80"
+                  className="w-28 h-28 mb-3 opacity-80"
                 />
-                <p className="text-lg font-semibold text-gray-600 mb-1">
+                <p className="text-base md:text-lg font-semibold text-gray-600 mb-1">
                   No Products Found
                 </p>
                 <p className="text-sm text-gray-500 mb-3">
@@ -363,10 +264,10 @@ const Page = () => {
                   <button
                     key={index + 1}
                     onClick={() => setPage(index + 1)}
-                    className={`px-3 py-1 rounded border border-gray-200 text-sm ${
+                    className={`px-3 py-1 rounded border text-sm ${
                       page === index + 1
                         ? "bg-blue-600 text-white"
-                        : "bg-white text-black hover:bg-gray-100"
+                        : "bg-white text-black border-gray-200 hover:bg-gray-100"
                     }`}
                   >
                     {index + 1}
@@ -377,8 +278,206 @@ const Page = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Filter Drawer */}
+      {isFilterOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex justify-end">
+          <div className="w-[85%] max-w-[320px] bg-white h-full shadow-lg p-4 overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Filters</h3>
+              <button
+                onClick={() => setIsFilterOpen(false)}
+                className="text-gray-600 hover:text-black"
+              >
+                <X />
+              </button>
+            </div>
+
+            <FilterSection
+              {...{
+                MIN,
+                MAX,
+                tempPriceRange,
+                setTempPriceRange,
+                priceRange,
+                setPriceRange,
+                isApplyDisabled,
+                isLoading,
+                data,
+                toggleCategory,
+                selectedCategories,
+                colors,
+                toggleColor,
+                selectedColors,
+                sizes,
+                toggleSize,
+                selectedSizes,
+                clearAllFilters,
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default Page;
+
+/* ------------------------------ Reusable Filter Section ------------------------------ */
+const FilterSection = ({
+  MIN,
+  MAX,
+  tempPriceRange,
+  setTempPriceRange,
+  priceRange,
+  setPriceRange,
+  isApplyDisabled,
+  isLoading,
+  data,
+  toggleCategory,
+  selectedCategories,
+  colors,
+  toggleColor,
+  selectedColors,
+  sizes,
+  toggleSize,
+  selectedSizes,
+  clearAllFilters,
+}: any) => (
+  <>
+    {/* Price Filter */}
+    <h3 className="text-xl font-medium font-Poppins">Price Range</h3>
+    <div className="ml-2">
+      <Range
+        step={1}
+        min={MIN}
+        max={MAX}
+        values={tempPriceRange}
+        onChange={(values) => setTempPriceRange(values)}
+        renderTrack={({ props, children }) => {
+          const [min, max] = tempPriceRange;
+          const left = ((min - MIN) / (MAX - MIN)) * 100;
+          const right = ((max - MIN) / (MAX - MIN)) * 100;
+          return (
+            <div
+              {...props}
+              className="h-[6px] bg-blue-200 rounded relative"
+              style={{ ...props.style }}
+            >
+              <div
+                className="absolute h-full bg-blue-600 rounded"
+                style={{
+                  left: `${left}%`,
+                  width: `${right - left}%`,
+                }}
+              />
+              {children}
+            </div>
+          );
+        }}
+        renderThumb={({ props }) => (
+          <div
+            {...props}
+            className="w-[16px] h-[16px] bg-blue-600 rounded-full shadow-md"
+          />
+        )}
+      />
+    </div>
+    <div className="flex justify-between items-center mt-2">
+      <div className="text-sm text-gray-600">
+        ${tempPriceRange[0]} - ${tempPriceRange[1]}
+      </div>
+      <button
+        disabled={isApplyDisabled}
+        onClick={() => setPriceRange(tempPriceRange)}
+        className={`text-sm px-4 py-1 rounded transition ${
+          isApplyDisabled
+            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+            : "bg-blue-600 text-white hover:bg-blue-700"
+        }`}
+      >
+        Apply
+      </button>
+    </div>
+
+    {/* Categories */}
+    <h3 className="text-lg font-medium border-b border-slate-300 pb-1 mt-5">
+      Categories
+    </h3>
+    <ul className="space-y-2 mt-3">
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : (
+        data?.categories?.map((category: any) => (
+          <li key={category}>
+            <label className="flex items-center gap-3 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={selectedCategories.includes(category)}
+                onChange={() => toggleCategory(category)}
+                className="accent-blue-600"
+              />
+              {category}
+            </label>
+          </li>
+        ))
+      )}
+    </ul>
+
+    {/* Colors */}
+    <h3 className="text-lg font-medium border-b border-slate-300 pb-1 mt-5">
+      Colors
+    </h3>
+    <ul className="space-y-2 mt-3">
+      {colors.map((color) => (
+        <li key={color.name}>
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={selectedColors.includes(color.name)}
+              onChange={() => toggleColor(color.name)}
+              className="accent-blue-600"
+            />
+            <span
+              className={`w-[18px] h-[18px] rounded-full border-2 ${
+                selectedColors.includes(color.name)
+                  ? "border-blue-600"
+                  : "border-gray-300"
+              }`}
+              style={{ backgroundColor: color.code }}
+            ></span>
+            {color.name}
+          </label>
+        </li>
+      ))}
+    </ul>
+
+    {/* Sizes */}
+    <h3 className="text-lg font-medium border-b border-slate-300 pb-1 mt-5">
+      Sizes
+    </h3>
+    <ul className="space-y-2 mt-3">
+      {sizes.map((size) => (
+        <li key={size}>
+          <label className="flex items-center gap-3 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={selectedSizes.includes(size)}
+              onChange={() => toggleSize(size)}
+              className="accent-blue-600"
+            />
+            <span className="font-medium">{size}</span>
+          </label>
+        </li>
+      ))}
+    </ul>
+
+    <button
+      onClick={clearAllFilters}
+      className="text-red-600 underline text-sm mt-4"
+    >
+      Clear All
+    </button>
+  </>
+);

@@ -7,7 +7,7 @@ interface ShopCardProps {
   shop: {
     id: string;
     name: string;
-    description: string;
+    description?: string;
     avatar: string;
     coverBanner?: string;
     address?: string;
@@ -19,9 +19,9 @@ interface ShopCardProps {
 
 const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
   return (
-    <div className="group w-full rounded-xl cursor-pointer bg-white border border-gray-200 shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+    <div className="group w-full rounded-xl cursor-pointer bg-white border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 hover:-translate-y-1">
       {/* Cover photo */}
-      <div className="h-[120px] w-full relative">
+      <div className="h-[100px] sm:h-[120px] w-full relative">
         <Image
           src={
             shop?.coverBanner ||
@@ -31,13 +31,12 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
           fill
           className="object-cover w-full h-full"
         />
-        {/* subtle gradient overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
       </div>
 
       {/* Avatar */}
-      <div className="relative flex justify-center -mt-8">
-        <div className="w-16 h-16 rounded-full border-4 border-white overflow-hidden shadow-md group-hover:scale-105 transition-transform duration-300">
+      <div className="relative flex justify-center -mt-8 sm:-mt-9">
+        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-4 border-white overflow-hidden shadow-md group-hover:scale-105 transition-transform duration-300">
           <Image
             src={
               shop?.avatar ||
@@ -51,9 +50,9 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
         </div>
       </div>
 
-      {/* Shop info */}
-      <div className="p-4 pb-5 pt-2 text-center">
-        <h3 className="text-base font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+      {/* Info */}
+      <div className="p-3 sm:p-4 text-center">
+        <h3 className="text-sm sm:text-base font-semibold text-gray-800 group-hover:text-blue-600 transition-colors truncate">
           {shop?.name}
         </h3>
 
@@ -61,37 +60,34 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
           {shop?.followers?.length || 0} Followers
         </p>
 
-        {/* Address + Rating */}
-        <div className="flex items-center justify-center text-xs text-gray-500 mt-3 gap-4 flex-wrap">
+        <div className="flex items-center justify-center text-xs text-gray-500 mt-2 gap-3 flex-wrap">
           {shop?.address && (
-            <span className="flex items-center gap-1 max-w-[140px]">
-              <MapPin className="w-4 h-4 shrink-0 text-gray-400" />
-              <span className="truncate">{shop?.address}</span>
+            <span className="flex items-center gap-1 max-w-[120px] sm:max-w-[150px] truncate">
+              <MapPin className="w-3.5 h-3.5 text-gray-400" />
+              <span>{shop?.address}</span>
             </span>
           )}
           <span className="flex items-center gap-1">
-            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+            <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
             {shop.rating ?? "N/A"}
           </span>
         </div>
 
-        {/* Category */}
         {shop?.category && (
-          <div className="mt-3 flex flex-wrap justify-center gap-2 text-xs">
-            <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium capitalize">
+          <div className="mt-2">
+            <span className="bg-blue-50 text-blue-600 px-2 py-[2px] rounded-full text-[11px] sm:text-xs font-medium capitalize">
               {shop.category}
             </span>
           </div>
         )}
 
-        {/* Visit button */}
-        <div className="mt-4">
+        <div className="mt-3">
           <Link
             href={`/shops/${shop.id}`}
-            className="inline-flex items-center text-sm text-blue-600 font-medium hover:underline"
+            className="inline-flex items-center text-xs sm:text-sm text-blue-600 font-medium hover:underline"
           >
             Visit Shop
-            <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
+            <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
       </div>
