@@ -59,10 +59,10 @@ const ProfilePage = () => {
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col">
       <main className="flex-grow px-4 md:px-6 py-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto space-y-8">
           {/* Greeting */}
-          <div className="text-center mb-10">
-            <h1 className="text-3xl font-bold text-gray-800">
+          <div className="text-center">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
               Welcome back,{" "}
               <span className="text-blue-600">
                 {isLoading ? (
@@ -75,7 +75,7 @@ const ProfilePage = () => {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <StatCard
               title="Total Orders"
               count={user?.ordersCount || 0}
@@ -106,24 +106,38 @@ const ProfilePage = () => {
 
             {/* Sidebar */}
             <aside
-              className={`bg-white p-4 rounded-md shadow-sm border border-gray-100 w-full lg:w-1/5 absolute lg:static z-20 transition-all duration-300 ${
+              className={`bg-white rounded-md shadow-sm border border-gray-100 w-full lg:w-1/4 lg:static z-20 transition-all duration-300 fixed top-0 left-0 h-full lg:h-auto p-5 ${
                 sidebarOpen
                   ? "translate-x-0"
                   : "-translate-x-full lg:translate-x-0"
               }`}
             >
+              <div className="flex justify-between items-center mb-4 lg:hidden">
+                <h3 className="text-lg font-semibold text-gray-800">Menu</h3>
+                <X
+                  className="text-gray-600 cursor-pointer"
+                  onClick={() => setSidebarOpen(false)}
+                />
+              </div>
+
               <nav className="space-y-2">
                 <NavItem
                   label="Profile"
                   Icon={User}
                   active={activeTab === "Profile"}
-                  onclick={() => setActiveTab("Profile")}
+                  onclick={() => {
+                    setActiveTab("Profile");
+                    setSidebarOpen(false);
+                  }}
                 />
                 <NavItem
                   label="My Orders"
                   Icon={ShoppingBag}
                   active={activeTab === "My Orders"}
-                  onclick={() => setActiveTab("My Orders")}
+                  onclick={() => {
+                    setActiveTab("My Orders");
+                    setSidebarOpen(false);
+                  }}
                 />
                 <NavItem
                   label="Inbox"
@@ -134,19 +148,28 @@ const ProfilePage = () => {
                   label="Notifications"
                   Icon={Bell}
                   active={activeTab === "Notifications"}
-                  onclick={() => setActiveTab("Notifications")}
+                  onclick={() => {
+                    setActiveTab("Notifications");
+                    setSidebarOpen(false);
+                  }}
                 />
                 <NavItem
                   label="Shipping Address"
                   Icon={MapPin}
                   active={activeTab === "Shipping Address"}
-                  onclick={() => setActiveTab("Shipping Address")}
+                  onclick={() => {
+                    setActiveTab("Shipping Address");
+                    setSidebarOpen(false);
+                  }}
                 />
                 <NavItem
                   label="Change Password"
                   Icon={Lock}
                   active={activeTab === "Change Password"}
-                  onclick={() => setActiveTab("Change Password")}
+                  onclick={() => {
+                    setActiveTab("Change Password");
+                    setSidebarOpen(false);
+                  }}
                 />
                 <NavItem
                   label="Logout"
@@ -158,13 +181,13 @@ const ProfilePage = () => {
             </aside>
 
             {/* Main Content */}
-            <section className="bg-white p-6 rounded-md shadow-sm border border-gray-100 w-full lg:w-[55%]">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            <section className="bg-white p-6 rounded-md shadow-sm border border-gray-100 w-full flex-1">
+              <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-4">
                 {activeTab}
               </h2>
 
               {activeTab === "Profile" && !isLoading && user ? (
-                <div className="space-y-4 text-sm text-gray-700">
+                <div className="space-y-4 text-sm md:text-base text-gray-700">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                     <Image
                       src={
@@ -182,57 +205,60 @@ const ProfilePage = () => {
                     </button>
                   </div>
 
-                  <p>
-                    <span className="font-semibold">Name:</span> {user?.name}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Email:</span> {user?.email}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Joined:</span>{" "}
-                    {new Date(user?.createdAt).toLocaleDateString()}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Earned Points:</span>{" "}
-                    {user?.points || 0}
-                  </p>
+                  <div className="space-y-2">
+                    <p>
+                      <span className="font-semibold">Name:</span> {user?.name}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Email:</span>{" "}
+                      {user?.email}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Joined:</span>{" "}
+                      {new Date(user?.createdAt).toLocaleDateString()}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Earned Points:</span>{" "}
+                      {user?.points || 0}
+                    </p>
+                  </div>
                 </div>
               ) : activeTab === "Shipping Address" ? (
                 <ShippingAddressSection />
               ) : (
-                <></>
+                <p className="text-sm text-gray-500">Coming soon...</p>
               )}
             </section>
-
-            {/* Right Quick Panel */}
-            <aside className="w-full lg:w-1/4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-              <QuickActionCard
-                Icon={Gift}
-                title="Referral Program"
-                description="Invite friends and earn rewards!"
-              />
-              <QuickActionCard
-                Icon={BadgeCheck}
-                title="Your Badges"
-                description="View your earned badges and achievements."
-              />
-              <QuickActionCard
-                Icon={Settings}
-                title="Account Setting"
-                description="Manage your preferences and settings."
-              />
-              <QuickActionCard
-                Icon={Receipt}
-                title="Billing History"
-                description="Check your past invoices and payments."
-              />
-              <QuickActionCard
-                Icon={PhoneCall}
-                title="Support Center"
-                description="Need help? Contact our support team."
-              />
-            </aside>
           </div>
+
+          {/* Quick Actions */}
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+            <QuickActionCard
+              Icon={Gift}
+              title="Referral Program"
+              description="Invite friends and earn rewards!"
+            />
+            <QuickActionCard
+              Icon={BadgeCheck}
+              title="Your Badges"
+              description="View your earned badges and achievements."
+            />
+            <QuickActionCard
+              Icon={Settings}
+              title="Account Setting"
+              description="Manage your preferences and settings."
+            />
+            <QuickActionCard
+              Icon={Receipt}
+              title="Billing History"
+              description="Check your past invoices and payments."
+            />
+            <QuickActionCard
+              Icon={PhoneCall}
+              title="Support Center"
+              description="Need help? Contact our support team."
+            />
+          </section>
         </div>
       </main>
     </div>
@@ -245,7 +271,7 @@ export default ProfilePage;
 const NavItem = ({ label, Icon, active, danger, onclick }: any) => (
   <button
     onClick={onclick}
-    className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition ${
+    className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all ${
       active
         ? "bg-blue-100 text-blue-600"
         : danger

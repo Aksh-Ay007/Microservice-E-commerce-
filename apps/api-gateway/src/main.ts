@@ -3,15 +3,14 @@
  * This is only a minimal backend to get started.
  */
 
-import express from 'express';
-import cors from 'cors';
-import morgan from 'morgan';
-import cookieParser from 'cookie-parser';
-import rateLimit, { ipKeyGenerator } from "express-rate-limit";
-import proxy from 'express-http-proxy';
-import initializeSiteConfig from './libs/initializeSiteConfig';
+import cookieParser from "cookie-parser";
+import cors from "cors";
 import type { Request } from "express";
-
+import express from "express";
+import proxy from "express-http-proxy";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
+import morgan from "morgan";
+import initializeSiteConfig from "./libs/initializeSiteConfig";
 
 const app = express();
 
@@ -23,12 +22,12 @@ app.use(
   })
 );
 
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ limit: "100mb", extended: true }));
 
 app.use(cookieParser());
-app.set('trust proxy', 1); // trust first proxy
+app.set("trust proxy", 1); // trust first proxy
 
 // Apply rate limiting
 const limiter = rateLimit({
@@ -40,36 +39,25 @@ const limiter = rateLimit({
   keyGenerator: (req: Request) => ipKeyGenerator(req.ip ?? "unknown"), // ✅ fallback
 });
 
-
 app.use(limiter);
 
-app.get('/gateway-health', (req, res) => {
-  res.send({ message: 'Welcome to api-gateway!' });
+app.get("/gateway-health", (req, res) => {
+  res.send({ message: "Welcome to api-gateway!" });
 });
 
-
+app.use("/order", proxy("http://localhost:6003"));
 app.use("/product", proxy("http://localhost:6002"));
-app.use('/', proxy("http://localhost:6001"));
-
+app.use("/", proxy("http://localhost:6001"));
 
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {
-
-    console.log(`Listening at http://localhost:${port}/api`);
+  console.log(`Listening at http://localhost:${port}/api`);
 
   try {
-
     initializeSiteConfig();
     console.log("Site configuration initialized successfully");
-
-
   } catch (error) {
-
-    console.log('Fail to initializing site configuration:', error);
-    ;
-
+    console.log("Fail to initializing site configuration:", error);
   }
-
-
 });
-server.on('error', console.error);
+server.on("error", console.error);

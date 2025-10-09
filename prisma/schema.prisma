@@ -27,8 +27,7 @@ model images {
   shopId     String? @db.ObjectId
   productsId String? @db.ObjectId
 
-  users    users?    @relation(fields: [userId], references: [id])
-  shops    shops?    @relation(fields: [shopId], references: [id])
+  users    users[]   @relation
   products products? @relation(fields: [productsId], references: [id])
 }
 
@@ -39,11 +38,11 @@ model users {
   role        String        @default("user")
   password    String?
   following   String[]
-  avatar      String?
+  avatar      images?       @relation(fields: [imagesId], references: [id])
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   shopReviews shopReviews[]
-  images      images[]
+  imagesId    String?       @db.ObjectId
   followings  followers[]
   orders      orders[]
 }
@@ -90,7 +89,9 @@ model shops {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   products      products[]
-  images        images[]
+  isDeleted     Boolean       @default(false)
+  deletedAt     DateTime?
+  imagesId      String?       @db.ObjectId
   orders        orders[]
 }
 
