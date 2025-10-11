@@ -103,7 +103,6 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
         `/product/api/get-filtered-products?${query.toString()}`
       );
 
-      console.log(res.data.products, "recommented products");
 
       setRecommendedProducts(res.data.products);
     } catch (error) {

@@ -7,7 +7,6 @@ import ProductDetails from '../../../../shared/modules/product/product-details';
 async function fetchProductDetails(slug: string) {
   const res = await axiosInstance.get(`/product/api/get-product/${slug}`);
 
-  console.log(res.data.product);
 
 
   return res.data.product;

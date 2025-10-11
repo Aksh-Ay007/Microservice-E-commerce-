@@ -14,7 +14,6 @@ const stripePromise = loadStripe(
 );
 
 
-console.log("[DEBUG] stripePromise:", stripePromise);
 
 const Page = () => {
   const [clientSecret, setClientSecret] = useState("");
@@ -30,7 +29,7 @@ const Page = () => {
 
   useEffect(() => {
     const fetchSessionAndClientSecret = async () => {
-      console.log("[DEBUG] Fetching payment session...");
+
       if (!sessionId) {
         console.error("[ERROR] No sessionId provided in URL");
         setError("No session ID provided");
@@ -43,7 +42,6 @@ const Page = () => {
         const verifyRes = await axiosInstance.get(
           `/order/api/verifying-payment-session?sessionId=${sessionId}`
         );
-        console.log("[DEBUG] verifyRes.data:", verifyRes.data);
 
         const session = verifyRes.data?.session;
         if (!session) {
@@ -51,11 +49,7 @@ const Page = () => {
         }
 
         const { totalAmount, sellers, cart, coupon } = session;
-        console.log("[DEBUG] session details:", {
-          totalAmount,
-          sellers,
-          coupon,
-        });
+
 
         if (
           !sellers ||
@@ -71,20 +65,13 @@ const Page = () => {
 
         // 🟢 STEP 2: Create Payment Intent
         const sellerStripeAccountId = sellers[0]?.stripeAccountId;
-        console.log(
-          "[DEBUG] Using sellerStripeAccountId:",
-          sellerStripeAccountId
-        );
+
 
         const amountToCharge =
           coupon?.discountAmount && coupon?.discountAmount < totalAmount
             ? totalAmount - coupon.discountAmount
             : totalAmount;
 
-        console.log(
-          "[DEBUG] Creating payment intent with amount:",
-          amountToCharge
-        );
 
         const intentRes = await axiosInstance.post(
           "/order/api/create-payment-intent",
@@ -95,14 +82,12 @@ const Page = () => {
           }
         );
 
-        console.log("[DEBUG] intentRes.data:", intentRes.data);
 
         if (!intentRes.data?.clientSecret) {
           throw new Error("Missing clientSecret in response");
         }
 
         setClientSecret(intentRes.data.clientSecret);
-        console.log("[SUCCESS] Client secret set successfully");
       } catch (err: any) {
         console.error("[ERROR] Fetching session or creating intent:", err);
         setError(

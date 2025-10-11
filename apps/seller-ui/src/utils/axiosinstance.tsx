@@ -78,7 +78,7 @@ axiosInstance.interceptors.response.use(
 
       try {
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_SERVER_URI}/api/refresh-token`,
+          `${process.env.NEXT_PUBLIC_SERVER_URI}/seller/api/refresh-token`,
           {},
           { withCredentials: true }
         );

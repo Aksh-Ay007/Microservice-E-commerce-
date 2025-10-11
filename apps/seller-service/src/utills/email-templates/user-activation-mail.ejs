@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>MicroMart Activation Email</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style type="text/css">
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fafafa;
+            margin: 0;
+            padding: 0;
+            min-width: 100%;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #222222;
+        }
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-weight: 700;
+            margin-top: 0;
+            text-align: center;
+        }
+        p {
+            margin-top: 0;
+            margin-bottom: 24px;
+        }
+        a {
+            color: #000;
+            text-decoration: none;
+        }
+        table td{
+            vertical-align: top;
+        }
+        .email-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .email-header {
+            background-color: #0070f3;
+            padding: 24px;
+            color: #fafafa;
+        }
+        .email-body{
+            padding: 24px;
+            background-color: #ffffff;
+        }
+        .email-footer {
+            background-color: #f6f6f6;
+            padding: 24px;
+        }
+        .button {
+            background-color: #0070f3;
+            color: #ffffff;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            display: inline-block;
+            font-weight: 700;
+            font-size: 16px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <div class="email-header">
+            <h1>Welcome to MicroMart!</h1>
+        </div>
+        <div class="email-body">
+            <p>Hi <%= name %>,</p>
+            <p>Thank you for registering with MicroMart! To complete your registration, please use the following activation code.</p>
+            <p>
+                <h2><%= otp %></h2>
+            </p>
+            <p>Please enter this code on the activation page within the next 5 minutes.</p>
+            <p>If you did not register for MicroMart, please ignore this email.</p>
+            <p>Best regards,</p>
+            <p>The MicroMart Team</p>
+        </div>
+        <div class="email-footer">
+            <p>If you have any questions, feel free to contact us at:
+                <a href="mailto:akshayjyothip@gmail.com">akshayjyothip@gmail.com</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

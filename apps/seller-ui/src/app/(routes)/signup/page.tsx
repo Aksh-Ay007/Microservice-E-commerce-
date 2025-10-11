@@ -42,7 +42,7 @@ const SignUp = () => {
   const signupMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/seller-registration`,
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/seller/api/seller-registration`,
         data
       );
       return response.data;
@@ -62,7 +62,7 @@ const SignUp = () => {
         return;
       }
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/verify-seller`,
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/seller/api/verify-seller`,
         { ...sellerData, otp: otp.join("") }
       );
       return response.data;
@@ -108,7 +108,7 @@ const SignUp = () => {
     try {
 
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/create-stripe-link`,
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/seller/api/create-stripe-link`,
         {sellerId}
       );
 

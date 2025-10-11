@@ -1,28 +1,21 @@
-import { isSeller, isUser } from "@packages/middleware/authorizeRoles";
 import isAuthenticated from "@packages/middleware/isAuthenticated";
 import express, { Router } from "express";
 import {
   addUserAddress,
-  createShop,
-  createStripeConnectLink,
   deleteUserAddress,
-  getSeller,
   getUser,
   getUserAddress,
-  loginSeller,
   loginUser,
-  logOutSeller,
   logOutUser,
   refreshToken,
-  registerSeller,
   resetUserPassword,
   updateUserPassword,
   userForgotPassword,
   userRegistration,
   varifyUser,
-  verifySeller,
   verifyUserForgotPassword,
 } from "../controllers/auth.controller";
+import { isUser } from '../../../../packages/middleware/authorizeRoles';
 
 const router: Router = express.Router();
 
@@ -41,15 +34,7 @@ router.get("/shipping-addresses", isAuthenticated, getUserAddress);
 router.post("/add-address", isAuthenticated, addUserAddress);
 router.delete("/delete-address/:addressId", isAuthenticated, deleteUserAddress);
 
-//seller routes
 
-router.post("/seller-registration", registerSeller);
-router.post("/verify-seller", verifySeller);
-router.post("/create-shop", createShop);
-router.post("/create-stripe-link", createStripeConnectLink);
-router.post("/login-seller", loginSeller);
-router.post("/logout-seller", isAuthenticated, isSeller, logOutSeller);
-router.get("/logged-in-seller", isAuthenticated, isSeller, getSeller);
 
 //admin routes
 

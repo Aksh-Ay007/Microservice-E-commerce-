@@ -26,6 +26,9 @@
     },
     {
       "path": "./apps/order-service"
+    },
+    {
+      "path": "./apps/seller-service"
     }
   ]
 }

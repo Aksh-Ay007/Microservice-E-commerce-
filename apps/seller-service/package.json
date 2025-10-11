@@ -1,0 +1,28 @@
+{
+  "name": "@./seller-service",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "targets": {
+      "serve": {
+        "executor": "@nx/js:node",
+        "defaultConfiguration": "development",
+        "dependsOn": [
+          "build"
+        ],
+        "options": {
+          "buildTarget": "@./seller-service:build",
+          "runBuildTargetDependencies": false
+        },
+        "configurations": {
+          "development": {
+            "buildTarget": "@./seller-service:build:development"
+          },
+          "production": {
+            "buildTarget": "@./seller-service:build:production"
+          }
+        }
+      }
+    }
+  }
+}

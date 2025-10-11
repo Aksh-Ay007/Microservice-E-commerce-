@@ -62,7 +62,6 @@ export const createDiscountCodes = async (
       },
     });
 
-    console.log(discount_code, "discount code creation");
 
     res.status(201).json({
       success: true,

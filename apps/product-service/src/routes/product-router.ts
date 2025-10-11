@@ -1,6 +1,6 @@
 import { isSeller } from "@packages/middleware/authorizeRoles";
 import express, { Router } from "express";
-import isAuthenticated from "../../../../packages/middleware/isAuthenticated";
+import { isSellerAuthenticated } from "../../../../packages/middleware/sellerAuth.middleware";
 import {
   createDiscountCodes,
   createProduct,
@@ -26,18 +26,43 @@ import {
 const router: Router = express.Router();
 
 router.get("/get-categories", getCategories);
-router.post("/create-discount-code", isAuthenticated, createDiscountCodes);
-router.get("/get-discount-codes", isAuthenticated, getDiscountCodes);
-router.delete("/delete-discount-code/:id", isAuthenticated, deleteDiscountCode);
+router.post(
+  "/create-discount-code",
+  isSellerAuthenticated,
+  createDiscountCodes
+);
+router.get("/get-discount-codes", isSellerAuthenticated, getDiscountCodes);
+router.delete(
+  "/delete-discount-code/:id",
+  isSellerAuthenticated,
+  deleteDiscountCode
+);
 
-router.post("/upload-product-image", isAuthenticated, uploadProductImage);
-router.delete("/delete-product-image", isAuthenticated, deleteProductImage);
-router.post("/create-product", isAuthenticated, createProduct);
-router.get("/get-shop-products", isAuthenticated, getShopProducts);
-router.delete("/delete-product/:productId", isAuthenticated, deleteProduct);
-router.put("/restore-product/:productId", isAuthenticated, restoreProduct);
+router.post("/upload-product-image", isSellerAuthenticated, uploadProductImage);
+router.delete(
+  "/delete-product-image",
+  isSellerAuthenticated,
+  deleteProductImage
+);
+router.post("/create-product", isSellerAuthenticated, createProduct);
+router.get("/get-shop-products", isSellerAuthenticated, getShopProducts);
+router.delete(
+  "/delete-product/:productId",
+  isSellerAuthenticated,
+  deleteProduct
+);
+router.put(
+  "/restore-product/:productId",
+  isSellerAuthenticated,
+  restoreProduct
+);
 
-router.get("/get-stripe-account", isAuthenticated, isSeller, getStripeAccount);
+router.get(
+  "/get-stripe-account",
+  isSellerAuthenticated,
+  isSeller,
+  getStripeAccount
+);
 
 router.get("/get-all-products", getAllProducts);
 router.get("/get-all-events", getAllEvents);

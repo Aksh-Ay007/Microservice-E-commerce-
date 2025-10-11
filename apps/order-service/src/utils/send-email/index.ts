@@ -41,16 +41,10 @@ export const sendEmail = async (
   data: Record<string, any>
 ) => {
   try {
-    console.log("📧 [Email] Preparing email...");
-    console.log(`   To: ${to}`);
-    console.log(`   Subject: ${subject}`);
-    console.log(`   Template: ${templateName}`);
 
-    console.log("🟡 [Email] Rendering template...");
+
     const html = await renderEmailTemplate(templateName, data);
-    console.log("✅ Template rendered successfully.");
 
-    console.log("🚀 [Email] Sending...");
     await transporter.sendMail({
       from: process.env.SMTP_USER,
       to,
@@ -58,8 +52,7 @@ export const sendEmail = async (
       html,
     });
 
-    console.log(`✅ [Email] Sent successfully to ${to}`);
-    return true;
+   return true;
   } catch (error) {
     console.error(`❌ [Email] Failed to send to ${to}:`, error);
     return false;

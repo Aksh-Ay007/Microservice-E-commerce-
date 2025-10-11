@@ -298,3 +298,6 @@ npx nx g @nx/express:app kafka-service --directory=apps/kafka-service --e2eTestR
  netstat -ano | findstr 9229
 
  taskkill /PID 23068 /F
+
+
+ stripe listen --forward-to localhost:6003/api/create-order

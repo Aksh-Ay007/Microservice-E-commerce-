@@ -5,8 +5,8 @@ import axiosInstance from "../utils/axiosinstance";
 //fetch seller data from API
 const fetchSeller = async () => {
   try {
-    const response = await axiosInstance.get("/api/logged-in-seller");
- 
+    const response = await axiosInstance.get("/seller/api/logged-in-seller");
+
     return response.data.seller;
   } catch (error) {
     console.error("Failed to fetch seller:", error);
