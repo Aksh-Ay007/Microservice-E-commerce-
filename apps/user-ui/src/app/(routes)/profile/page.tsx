@@ -1,6 +1,6 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BadgeCheck,
   Bell,
@@ -25,10 +25,13 @@ import {
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import useUser from "../../../hooks/useUser";
+import { toast } from "sonner";
+import useRequireAuth from "../../../hooks/useRequiredAuth";
 import QuickActionCard from "../../../shared/components/cards/quick-action.card";
 import StatCard from "../../../shared/components/cards/stat.card";
+import ChangePassword from "../../../shared/components/change-password";
 import ShippingAddressSection from "../../../shared/components/shippingAddress";
+import OrderTable from "../../../shared/components/tables/order-table";
 import axiosInstance from "../../../utils/axiosinstance";
 
 const ProfilePage = () => {
@@ -36,7 +39,25 @@ const ProfilePage = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { user, isLoading } = useUser();
+  const { user, isLoading } = useRequireAuth();
+
+  const { data: orders = [] } = useQuery({
+    queryKey: ["user-orders"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/order/api/get-user-orders");
+      return res.data.orders;
+    },
+  });
+
+  const totalOrders = orders.length;
+  const processedOrders = orders.filter(
+    (o: any) =>
+      o?.deliveryStatus !== "Delivered" && o?.deliveryStatus !== "Cancelled"
+  ).length;
+  const completedOrders = orders.filter(
+    (order: any) => order?.deliveryStatus === "Delivered"
+  ).length;
+
   const queryTab = searchParams.get("active") || "Profile";
   const [activeTab, setActiveTab] = useState(queryTab);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -54,6 +75,31 @@ const ProfilePage = () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
       router.push("/login");
     });
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64String = reader.result as string;
+      console.log("Uploading image:", base64String.slice(0, 50));
+
+      try {
+        await axiosInstance.post(
+          "/api/update-avatar",
+          {
+            fileName: base64String,
+          }
+        );
+        toast.success("Profile photo updated!");
+        queryClient.invalidateQueries({ queryKey: ["user"] });
+      } catch (error: any) {
+        toast.error(error?.response?.data?.message || "Upload failed");
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -76,25 +122,21 @@ const ProfilePage = () => {
 
           {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <StatCard
-              title="Total Orders"
-              count={user?.ordersCount || 0}
-              Icon={Clock}
-            />
+            <StatCard title="Total Orders" count={totalOrders} Icon={Clock} />
             <StatCard
               title="Processed Orders"
-              count={user?.processedOrdersCount || 0}
+              count={processedOrders}
               Icon={Truck}
             />
             <StatCard
               title="Completed Orders"
-              count={user?.completedOrdersCount || 0}
+              count={completedOrders}
               Icon={CheckCircle}
             />
           </div>
 
-          {/* Layout */}
-          <div className="flex flex-col lg:flex-row gap-6 relative">
+          {/* 3-Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-[250px_1fr_300px] gap-6 relative">
             {/* Sidebar Toggle (Mobile) */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -106,7 +148,7 @@ const ProfilePage = () => {
 
             {/* Sidebar */}
             <aside
-              className={`bg-white rounded-md shadow-sm border border-gray-100 w-full lg:w-1/4 lg:static z-20 transition-all duration-300 fixed top-0 left-0 h-full lg:h-auto p-5 ${
+              className={`bg-white rounded-md shadow-sm border border-gray-100 w-full lg:w-[250px] lg:static z-20 transition-all duration-300 fixed top-0 left-0 h-full lg:h-auto p-5 ${
                 sidebarOpen
                   ? "translate-x-0"
                   : "-translate-x-full lg:translate-x-0"
@@ -199,7 +241,19 @@ const ProfilePage = () => {
                       height={60}
                       className="w-16 h-16 rounded-full border border-gray-200"
                     />
-                    <button className="flex items-center gap-1 text-blue-500 text-xs font-medium hover:underline">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      id="avatarUpload"
+                      onChange={handleAvatarUpload}
+                    />
+                    <button
+                      onClick={() =>
+                        document.getElementById("avatarUpload")?.click()
+                      }
+                      className="flex items-center gap-1 text-blue-500 text-xs font-medium hover:underline"
+                    >
                       <Pencil className="w-4 h-4" />
                       Change Photo
                     </button>
@@ -225,40 +279,44 @@ const ProfilePage = () => {
                 </div>
               ) : activeTab === "Shipping Address" ? (
                 <ShippingAddressSection />
+              ) : activeTab === "My Orders" ? (
+                <OrderTable />
+              ) : activeTab === "Change Password" ? (
+                <ChangePassword />
               ) : (
                 <p className="text-sm text-gray-500">Coming soon...</p>
               )}
             </section>
-          </div>
 
-          {/* Quick Actions */}
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
-            <QuickActionCard
-              Icon={Gift}
-              title="Referral Program"
-              description="Invite friends and earn rewards!"
-            />
-            <QuickActionCard
-              Icon={BadgeCheck}
-              title="Your Badges"
-              description="View your earned badges and achievements."
-            />
-            <QuickActionCard
-              Icon={Settings}
-              title="Account Setting"
-              description="Manage your preferences and settings."
-            />
-            <QuickActionCard
-              Icon={Receipt}
-              title="Billing History"
-              description="Check your past invoices and payments."
-            />
-            <QuickActionCard
-              Icon={PhoneCall}
-              title="Support Center"
-              description="Need help? Contact our support team."
-            />
-          </section>
+            {/* Quick Actions - RIGHT SIDE */}
+            <section className="hidden lg:grid grid-cols-1 gap-4">
+              <QuickActionCard
+                Icon={Gift}
+                title="Referral Program"
+                description="Invite friends and earn rewards!"
+              />
+              <QuickActionCard
+                Icon={BadgeCheck}
+                title="Your Badges"
+                description="View your earned badges and achievements."
+              />
+              <QuickActionCard
+                Icon={Settings}
+                title="Account Setting"
+                description="Manage your preferences and settings."
+              />
+              <QuickActionCard
+                Icon={Receipt}
+                title="Billing History"
+                description="Check your past invoices and payments."
+              />
+              <QuickActionCard
+                Icon={PhoneCall}
+                title="Support Center"
+                description="Need help? Contact our support team."
+              />
+            </section>
+          </div>
         </div>
       </main>
     </div>

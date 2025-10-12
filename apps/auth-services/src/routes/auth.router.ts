@@ -9,6 +9,7 @@ import {
   logOutUser,
   refreshToken,
   resetUserPassword,
+  updateUserAvatar,
   updateUserPassword,
   userForgotPassword,
   userRegistration,
@@ -33,6 +34,7 @@ router.post("/change-password", isAuthenticated, updateUserPassword);
 router.get("/shipping-addresses", isAuthenticated, getUserAddress);
 router.post("/add-address", isAuthenticated, addUserAddress);
 router.delete("/delete-address/:addressId", isAuthenticated, deleteUserAddress);
+router.post("/update-avatar", updateUserAvatar);
 
 
 

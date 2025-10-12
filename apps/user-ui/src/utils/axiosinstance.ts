@@ -1,4 +1,5 @@
 import axios from "axios";
+import { runRedirectToLogin } from "./redirect";
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_SERVER_URI,
@@ -10,8 +11,10 @@ let isRefreshing = false;
 let refreshSubscribers: (() => void)[] = [];
 
 const handleLogout = () => {
-  if (window.location.pathname !== "/login") {
-    window.location.href = "/login";
+  const publicPaths = ["/login", "/signup", "/forgot-password"];
+  const currentPath = window.location.pathname;
+  if (!publicPaths.includes(currentPath)) {
+    runRedirectToLogin();
   }
 };
 
@@ -40,39 +43,42 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const orginalRequest = error.config;
 
-    //prevent infinite retry loop
+    const is401 = error.response?.status === 401;
+    const isRetry = orginalRequest?._retry;
+    const isAuthRequired = orginalRequest?.requireAuth === true;
 
-    if (error.response?.status === 401 && !orginalRequest._retry) {
+    if (!is401 && !isRetry && !isAuthRequired) {
       if (isRefreshing) {
         return new Promise((resolve) => {
           subscribeTokenRefresh(() => resolve(axiosInstance(orginalRequest)));
         });
       }
-
       orginalRequest._retry = true;
       isRefreshing = true;
 
-      try {
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_SERVER_URI}/api/refresh-token`,
-          {},
-          { withCredentials: true }
-        );
+       try {
+         await axios.post(
+           `${process.env.NEXT_PUBLIC_SERVER_URI}/api/refresh-token`,
+           {},
+           { withCredentials: true }
+         );
 
-        isRefreshing = false;
-        onRefreshSuccess();
+         isRefreshing = false;
+         onRefreshSuccess();
 
-        return axiosInstance(orginalRequest);
-      } catch (error) {
-        isRefreshing = false;
-        refreshSubscribers = [];
-        handleLogout();
-        return Promise.reject(error);
-      }
+         return axiosInstance(orginalRequest);
+       } catch (error) {
+         isRefreshing = false;
+         refreshSubscribers = [];
+         handleLogout();
+         return Promise.reject(error);
+       }
+
+
     }
 
     return Promise.reject(error);
   }
 );
 
-export default axiosInstance
+export default axiosInstance;

@@ -33,7 +33,7 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
 
     req.user = user;
     req.role = "user";
-    next();
+    return next(); // ✅ Added return statement
   } catch (error) {
     return res.status(401).json({
       message: "Unauthorized! Token expired or invalid",

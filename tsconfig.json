@@ -29,6 +29,12 @@
     },
     {
       "path": "./apps/seller-service"
+    },
+    {
+      "path": "./apps/admin-service"
+    },
+    {
+      "path": "./apps/admin-ui"
     }
   ]
 }

@@ -7,6 +7,9 @@ import {
   createPaymentSession,
   getOrderDetails,
   getSellerOrders,
+  getUserOrders,
+  updateDeliveryStatus,
+  verifyCouponCode,
   verifyPaymentSession,
 } from "../controllers/order.controller";
 
@@ -22,10 +25,16 @@ router.get(
   isSeller,
   getSellerOrders
 );
-router.get(
-  "/get-order-details/:id",
+router.get("/get-order-details/:id", isSellerAuthenticated, getOrderDetails);
+
+router.put(
+  "/update-status/:orderId",
   isSellerAuthenticated,
-  getOrderDetails
+  isSeller,
+  updateDeliveryStatus
 );
+
+router.put("/verify-coupon", isAuthenticated, verifyCouponCode);
+router.get("/get-user-orders", isAuthenticated, getUserOrders);
 
 export default router;

@@ -3,6 +3,7 @@ import {
   NotFoundError,
   ValidationError,
 } from "@packages/error-handler";
+import {imagekit} from "@packages/libs/imagekit"; // adjust if path differs
 import prisma from "@packages/libs/prisma";
 import bcrypt from "bcryptjs";
 import { NextFunction, Request, Response } from "express";
@@ -17,8 +18,6 @@ import {
   varifyOtp,
 } from "../utils/auth.helper";
 import { setCookie } from "../utils/cookies/setCookie";
-
-
 
 // user registration
 export const userRegistration = async (
@@ -424,5 +423,104 @@ export const getUserAddress = async (
     res.status(200).json({ suceess: true, addresses });
   } catch (error) {
     next(error);
+  }
+};
+
+export const updateUserAvatar = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user?.id;
+    const { fileName } = req.body;
+
+    console.log("📝 Update avatar request:", { userId, hasFile: !!fileName });
+
+    if (!userId) {
+      throw new ValidationError("User not authenticated");
+    }
+
+    if (!fileName) {
+      throw new ValidationError("File name (Base64 image) is required");
+    }
+
+    // ✅ Upload to ImageKit
+    console.log("📤 Uploading to ImageKit...");
+    const uploadResponse = await imagekit.upload({
+      file: fileName,
+      fileName: `avatar-${userId}-${Date.now()}.jpg`,
+      folder: "/avatars",
+    });
+    console.log("✅ ImageKit upload success:", uploadResponse.fileId);
+
+    // ✅ Find existing user
+    console.log("🔍 Finding user...");
+    const existingUser = await prisma.users.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        imagesId: true,
+      },
+    });
+    console.log("👤 User found:", { userId, imagesId: existingUser?.imagesId });
+
+    // ✅ Delete old avatar if exists
+    if (existingUser?.imagesId) {
+      try {
+        console.log("🗑️ Deleting old avatar...");
+
+        // Get old image details
+        const oldImage = await prisma.images.findUnique({
+          where: { id: existingUser.imagesId },
+        });
+
+        if (oldImage?.file_id) {
+          // Delete from ImageKit
+          await imagekit.deleteFile(oldImage.file_id);
+          console.log("✅ Deleted from ImageKit:", oldImage.file_id);
+        }
+
+        // Delete from database
+        await prisma.images.delete({
+          where: { id: existingUser.imagesId },
+        });
+        console.log("✅ Deleted from database");
+      } catch (err: any) {
+        console.warn("⚠️ Old avatar cleanup failed:", err.message);
+        // Continue even if cleanup fails
+      }
+    }
+
+    // ✅ Create new image record
+    console.log("💾 Creating new image record...");
+    const newImage = await prisma.images.create({
+      data: {
+        file_id: uploadResponse.fileId,
+        url: uploadResponse.url,
+      },
+    });
+    console.log("✅ Image record created:", newImage.id);
+
+    // ✅ Update user's imagesId
+    console.log("🔄 Updating user...");
+    await prisma.users.update({
+      where: { id: userId },
+      data: { imagesId: newImage.id },
+    });
+    console.log("✅ User updated successfully");
+
+    return res.status(200).json({
+      success: true,
+      message: "Avatar updated successfully",
+      avatarUrl: uploadResponse.url,
+    });
+  } catch (error: any) {
+    console.error("❌ updateUserAvatar error:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
+    return next(error);
   }
 };
