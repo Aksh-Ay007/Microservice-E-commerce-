@@ -8,6 +8,45 @@ import {
 } from "../../../../packages/error-handler";
 import { imagekit } from "./../../../../packages/libs/imagekit/index";
 
+
+interface EventRequest extends Request {
+  seller: {
+    id: string;
+    shop: {
+      id: string;
+    };
+  };
+  body: {
+    title: string;
+    short_description: string;
+    detailed_description?: string;
+    warranty?: string;
+    custom_specifications?: any;
+    slug: string;
+    tags: string[] | string;
+    cash_on_delivery?: string;
+    brand?: string;
+    video_url?: string;
+    category: string;
+    colors?: string[];
+    sizes?: string[];
+    discountCodes?: string[];
+    stock: string | number;
+    sale_price: string | number;
+    regular_price: string | number;
+    subCategory: string;
+    customProperties?: any;
+    images?: Array<{ fileId: string; file_url: string }>;
+    starting_date: string; // Crucial for defining an event
+    ending_date: string; // Crucial for defining an event
+  };
+  params: {
+    eventId: string;
+    slug: string;
+  };
+}
+
+
 export const getCategories = async (
   req: Request,
   res: Response,
@@ -892,6 +931,204 @@ export const topShops = async (
   } catch (error) {
     console.log(error, "top shop error");
 
+    return next(error);
+  }
+};
+
+
+
+
+export const createEvent = async (
+  req: EventRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      title, short_description, detailed_description, slug, tags, category,
+      stock, sale_price, regular_price, subCategory, starting_date, ending_date,
+      // Destructure other optional fields with defaults to satisfy the products model
+      warranty, custom_specifications = {}, cash_on_delivery, brand, video_url,
+      colors = [], sizes = [], discountCodes = [], customProperties = {},
+      images = [], // Pass empty array if not used by the frontend
+    } = req.body;
+
+    // 1. Validation: Ensure all event-specific fields and base product fields are present
+    if (
+      !title || !short_description || !slug || !category || !subCategory ||
+      !stock || !sale_price || !tags || !regular_price ||
+      !starting_date || !ending_date // Crucial checks for an Event
+    ) {
+      return next(new ValidationError("Please fill all required fields, including event start and end dates!"));
+    }
+
+    // 2. Authorization & Slug Check
+    if (!req.seller?.shop?.id) {
+      return next(new AuthError("Only a shop owner can create events! Unauthorized access."));
+    }
+    const slugChecking = await prisma.products.findUnique({
+      where: { slug },
+    });
+    if (slugChecking) {
+      return next(new ValidationError("Slug already exists! Please use a different slug."));
+    }
+
+    // 3. Create Event-Product
+    const newEvent = await prisma.products.create({
+      data: {
+        title,
+        short_description,
+        detailed_description,
+        warranty,
+        cashOnDelivery: cash_on_delivery,
+        slug,
+        shopId: req.seller.shop.id,
+        tags: Array.isArray(tags) ? tags : String(tags).split(",").map(t => t.trim()).filter(Boolean),
+        brand,
+        video_url,
+        category,
+        subCategory,
+        colors: colors,
+        discount_codes: discountCodes,
+        sizes: sizes,
+        stock: parseInt(String(stock)),
+        sale_price: parseFloat(String(sale_price)),
+        regular_price: parseFloat(String(regular_price)),
+        custom_properties: customProperties,
+        custom_specifications: custom_specifications,
+        starting_date: new Date(starting_date), // Persist event dates
+        ending_date: new Date(ending_date),     // Persist event dates
+        images: {
+          create: images
+            .filter((img: any) => img && img.fileId && img.file_url)
+            .map((img: any) => ({
+              file_id: img.fileId,
+              url: img.file_url,
+            })),
+        },
+      },
+      include: { images: true },
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Event created successfully",
+      newEvent,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ----------------------------------------------------------------------
+// GET SHOP EVENTS (filters products model)
+// ----------------------------------------------------------------------
+export const getShopEvents = async (
+  req: EventRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.seller?.shop?.id) {
+        return next(new AuthError("Unauthorized access. Shop not found."));
+    }
+
+    // Filters: Get products from the shop that have both dates defined
+    const events = await prisma.products.findMany({
+      where: {
+        shopId: req.seller.shop.id,
+        starting_date: { not: null },
+        ending_date: { not: null },
+      },
+      include: { images: true },
+    });
+
+    res.status(200).json({
+      success: true,
+      events,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ----------------------------------------------------------------------
+// DELETE EVENT (marks product as deleted and verifies it's an event)
+// ----------------------------------------------------------------------
+export const deleteEvent = async (
+  req: EventRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { eventId } = req.params;
+    const shopId = req.seller?.shop?.id;
+
+    const event = await prisma.products.findUnique({
+      where: { id: eventId },
+      select: {
+          id: true,
+          shopId: true,
+          isDeleted: true,
+          starting_date: true,
+          ending_date: true // Used to verify it's an event
+      },
+    });
+
+    // 1. Validation: Check if event exists AND has event dates
+    if (!event || !event.starting_date || !event.ending_date) {
+      return next(new NotFoundError("Event not found or invalid type."));
+    }
+
+    // 2. Authorization: Check shop ownership
+    if (event.shopId !== shopId) {
+      return next(new AuthError("Unauthorized access! Event belongs to a different shop."));
+    }
+
+    // 3. Soft Delete
+    const deletedEvent = await prisma.products.update({
+      where: { id: eventId },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Event is scheduled for deletion in 24 hours.",
+      deletedAt: deletedEvent.deletedAt,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ----------------------------------------------------------------------
+// GET EVENT DETAILS (gets single event by slug and verifies it's an event)
+// ----------------------------------------------------------------------
+export const getEventDetails = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const event = await prisma.products.findUnique({
+      where: {
+          slug: req.params.slug!,
+          // Filter to ensure it is treated as an event
+          starting_date: { not: null },
+          ending_date: { not: null },
+      },
+      include: { images: true, Shop: true },
+    });
+
+    if (!event) {
+        return next(new NotFoundError("Event not found."));
+    }
+
+    return res.status(200).json({ success: true, event });
+  } catch (error) {
     return next(error);
   }
 };

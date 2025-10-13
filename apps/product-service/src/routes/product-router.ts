@@ -3,18 +3,22 @@ import express, { Router } from "express";
 import { isSellerAuthenticated } from "../../../../packages/middleware/sellerAuth.middleware";
 import {
   createDiscountCodes,
+  createEvent,
   createProduct,
   deleteDiscountCode,
+  deleteEvent,
   deleteProduct,
   deleteProductImage,
   getAllEvents,
   getAllProducts,
   getCategories,
   getDiscountCodes,
+  getEventDetails,
   getFilteredEvents,
   getFilteredProducts,
   getFilteredShops,
   getProductDetails,
+  getShopEvents,
   getShopProducts,
   getStripeAccount,
   restoreProduct,
@@ -74,5 +78,14 @@ router.get("/get-filtered-shops", getFilteredShops);
 
 router.get("/search-products", searchProducts);
 router.get("/top-shops", topShops);
+
+
+
+
+router.post("/create-event", isSellerAuthenticated, createEvent);
+router.get("/get-shop-events", isSellerAuthenticated, getShopEvents);
+router.delete("/delete-event/:eventId", isSellerAuthenticated, deleteEvent);
+router.get("/get-event-details/:slug", getEventDetails);
+
 
 export default router;

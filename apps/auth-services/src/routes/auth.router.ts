@@ -1,11 +1,16 @@
 import isAuthenticated from "@packages/middleware/isAuthenticated";
 import express, { Router } from "express";
+import { isAdmin, isUser } from "../../../../packages/middleware/authorizeRoles";
 import {
   addUserAddress,
+  createFirstAdmin,
   deleteUserAddress,
+  getAdmin,
   getUser,
   getUserAddress,
+  loginAdmin,
   loginUser,
+  logOutAdmin,
   logOutUser,
   refreshToken,
   resetUserPassword,
@@ -16,7 +21,6 @@ import {
   varifyUser,
   verifyUserForgotPassword,
 } from "../controllers/auth.controller";
-import { isUser } from '../../../../packages/middleware/authorizeRoles';
 
 const router: Router = express.Router();
 
@@ -36,16 +40,11 @@ router.post("/add-address", isAuthenticated, addUserAddress);
 router.delete("/delete-address/:addressId", isAuthenticated, deleteUserAddress);
 router.post("/update-avatar", updateUserAvatar);
 
-
-
 //admin routes
 
-/*
-
-router.post("/login-admin",loginAdmin);
-router.post("/logout-admin", isAuthenticated,logOutAdmin);
-router.get("/logged-in-admin",isAuthenticated,getAdmin,getAdmin)
-
-*/
+router.post("/login-admin", loginAdmin);
+router.post("/signup-admin", createFirstAdmin);
+router.post("/logout-admin", isAuthenticated, logOutAdmin);
+router.get("/logged-in-admin", isAuthenticated, isAdmin, getAdmin);
 
 export default router;

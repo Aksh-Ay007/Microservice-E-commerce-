@@ -3,7 +3,7 @@ import {
   NotFoundError,
   ValidationError,
 } from "@packages/error-handler";
-import {imagekit} from "@packages/libs/imagekit"; // adjust if path differs
+import { imagekit } from "@packages/libs/imagekit"; // adjust if path differs
 import prisma from "@packages/libs/prisma";
 import bcrypt from "bcryptjs";
 import { NextFunction, Request, Response } from "express";
@@ -522,5 +522,157 @@ export const updateUserAvatar = async (
       name: error.name,
     });
     return next(error);
+  }
+};
+
+
+
+
+// Create first admin (one-time setup)
+export const createFirstAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // Check if any admin exists
+    const existingAdmin = await prisma.users.findFirst({
+      where: { role: "admin" },
+    });
+
+    if (existingAdmin) {
+      return next(new ValidationError("Admin already exists"));
+    }
+
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return next(new ValidationError("All fields are required"));
+    }
+
+    // Check if email is already in use
+    const existingUser = await prisma.users.findUnique({ where: { email } });
+
+    if (existingUser) {
+      return next(new ValidationError("Email already in use"));
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const admin = await prisma.users.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role: "admin",
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "First admin created successfully",
+      admin: {
+        id: admin.id,
+        email: admin.email,
+        name: admin.name,
+        role: admin.role,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Admin login
+export const loginAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return next(new ValidationError("Email and password are required"));
+    }
+
+    const user = await prisma.users.findUnique({ where: { email } });
+
+    if (!user) {
+      return next(new AuthError("User not found"));
+    }
+
+    if (!user.password) {
+      return next(new AuthError("Invalid email or password"));
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return next(new AuthError("Invalid email or password"));
+    }
+
+    if (user.role !== "admin") {
+      return next(new AuthError("Access denied — not an admin user"));
+    }
+
+    // Clear any existing cookies
+    res.clearCookie("access_token");
+    res.clearCookie("refresh_token");
+
+    const accessToken = jwt.sign(
+      { id: user.id, role: "admin" },
+      process.env.ACCESS_TOKEN_SECRET as string,
+      { expiresIn: "45m" }
+    );
+
+    const refreshToken = jwt.sign(
+      { id: user.id, role: "admin" },
+      process.env.REFRESH_TOKEN_SECRET as string,
+      { expiresIn: "7d" }
+    );
+
+    setCookie(res, "access_token", accessToken);
+    setCookie(res, "refresh_token", refreshToken);
+
+    res.status(200).json({
+      success: true,
+      message: "Admin login successful",
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Admin logout
+export const logOutAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  res.clearCookie("access_token");
+  res.clearCookie("refresh_token");
+  res.status(200).json({ message: "Admin logged out successfully" });
+};
+
+
+
+
+// get logged in user
+export const getAdmin = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const user = req.admin;
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    next(error);
   }
 };
