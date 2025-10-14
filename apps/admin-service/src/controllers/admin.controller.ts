@@ -1,6 +1,8 @@
 import prisma from "@packages/libs/prisma";
 import { NextFunction, Request, Response } from "express";
 import { ValidationError } from "../../../../packages/error-handler";
+import { imagekit } from '../../../../packages/libs/imagekit';
+
 
 export const getAllProducts = async (
   req: Request,
@@ -283,5 +285,183 @@ export const getAllCustomizations = async (
     });
   } catch (error) {
     return next(error);
+  }
+};
+
+
+
+
+
+
+
+// ========================================
+// HELPER FUNCTION
+// ========================================
+export const updateSiteConfig = async (data: any) => {
+  try {
+    const siteConfig = await prisma.site_config.findFirst();
+
+    if (!siteConfig) {
+      // create first record if missing
+      return await prisma.site_config.create({
+        data,
+      });
+    }
+
+    return await prisma.site_config.update({
+      where: { id: siteConfig.id },
+      data,
+    });
+  } catch (error) {
+    console.error("❌ updateSiteConfig error:", error);
+    throw error;
+  }
+};
+
+
+// ========================================
+// ADD CATEGORY
+// ========================================
+export const addCategory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { category } = req.body;
+
+    if (!category || !category.trim()) {
+      return next(new ValidationError("Category name is required", 400));
+    }
+
+    const config = await prisma.site_config.findFirst();
+    const existing = config?.categories || [];
+
+    if (existing.includes(category)) {
+      return next(new ValidationError("Category already exists", 400));
+    }
+
+    await updateSiteConfig({
+      categories: [...existing, category],
+      subCategories: {
+        ...(config?.subCategories as Record<string, string[]>),
+        [category]: []
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Category added successfully",
+      category
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ========================================
+// ADD SUBCATEGORY
+// ========================================
+export const addSubCategory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { category, subCategory } = req.body;
+
+    if (!category || !subCategory) {
+      return next(
+        new ValidationError("Category and subcategory are required", 400)
+      );
+    }
+
+    const config = await prisma.site_config.findFirst();
+    const allSubs = (config?.subCategories as Record<string, string[]>) || {};
+    const current = allSubs[category] || [];
+
+    if (current.includes(subCategory)) {
+      return next(new ValidationError("Subcategory already exists", 400));
+    }
+
+    const updatedSubs = {
+      ...allSubs,
+      [category]: [...current, subCategory]
+    };
+
+    await updateSiteConfig({ subCategories: updatedSubs });
+
+    res.status(200).json({
+      success: true,
+      message: "Subcategory added successfully",
+      subCategory
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+export const uploadLogo = async (req: any, res: Response): Promise<void> => {
+  try {
+    console.log("✅ uploadLogo started, body:", req.body);
+
+    const { fileName } = req.body;
+    if (!fileName) {
+      console.log("❌ Missing fileName");
+      res.status(400).json({ error: "Logo image is required" });
+      return; // 👈 add this so all code paths end with return
+    }
+
+    const uploadRes = await imagekit.upload({
+      file: fileName,
+      fileName: `logo_${Date.now()}.png`,
+      folder: "/photo",
+    });
+
+    console.log("✅ imagekit upload success:", uploadRes.url);
+
+    const updateRes = await updateSiteConfig({ logo: uploadRes.url });
+    console.log("✅ updateSiteConfig success:", updateRes);
+
+    res.status(200).json({
+      success: true,
+      message: "Logo uploaded successfully",
+      logo: uploadRes.url,
+    });
+    return; // 👈 also return here
+  } catch (error: any) {
+    console.error("❌ uploadLogo full error:", error);
+    res.status(500).json({
+      error: error.message || "something went wrong please try again later",
+    });
+  }
+};
+
+
+
+// ✅ Upload Banner Controller
+export const uploadBanner = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { fileName } = req.body;
+    if (!fileName) throw new ValidationError("Banner image is required");
+
+    const uploadRes = await imagekit.upload({
+      file: fileName,
+      fileName: `banner_${Date.now()}.png`,
+      folder: "/photo",
+    });
+
+    await updateSiteConfig({ banner: uploadRes.url });
+
+    res.status(200).json({
+      success: true,
+      message: "Banner uploaded successfully",
+      banner: uploadRes.url,
+    });
+  } catch (error) {
+    console.error("❌ uploadBanner error:", error);
+    res.status(500).json({ success: false, message: "Banner upload failed" });
   }
 };

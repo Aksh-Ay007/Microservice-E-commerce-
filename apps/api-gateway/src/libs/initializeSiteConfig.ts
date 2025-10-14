@@ -8,8 +8,8 @@ const initializeSiteConfig = async () => {
 
     if (!existingConfig) {
       const subCategories = {
-        "Electronics": ["Mobiles", "Laptops", "Accessories", "Gaming"],
-        "Fashion": ["Men", "Women", "Kids", "Footwear"],
+        Electronics: ["Mobiles", "Laptops", "Accessories", "Gaming"],
+        Fashion: ["Men", "Women", "Kids", "Footwear"],
         "Home & Kitchen": ["Furniture", "Appliances", "Decor"],
         "Sports & Fitness": ["Gym Equipment", "Outdoor Sports", "Wearables"],
       };
@@ -22,16 +22,22 @@ const initializeSiteConfig = async () => {
             "Home & Kitchen",
             "Sports & Fitness",
           ],
-          subCategories: subCategories,
+          subCategories,
+          logo: "https://ik.imagekit.io/AkshayMicroMart/photo/micromartLogo.png?updatedAt=1759960829231",
+          banner:
+            "https://ik.imagekit.io/AkshayMicroMart/photo/purchasing-shop-buying-selling-teade.jpg?updatedAt=1760433499210",
         },
       });
 
-  
+      console.log("✅ Site configuration initialized successfully!");
+    } else {
+      console.log("ℹ️ Site configuration already exists.");
     }
   } catch (error) {
-    console.error("Error initializing site configuration:", error);
+    console.error("❌ Error initializing site configuration:", error);
+  } finally {
+    await prisma.$disconnect();
   }
 };
 
-// Export the function if needed
 export default initializeSiteConfig;
