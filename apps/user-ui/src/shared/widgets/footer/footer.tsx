@@ -1,18 +1,25 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
 import {
   Facebook,
   Instagram,
+  Mail,
+  MapPin,
+  Phone,
   Twitter,
   Youtube,
-  Mail,
-  Phone,
-  MapPin,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const Footer = () => {
+  const pathname = usePathname();
+
+  if (pathname === "/inbox") {
+    return null;
+  }
+
   return (
     <footer className="bg-[#0e1a2b] text-white mt-10">
       <div className="w-[90%] lg:w-[80%] m-auto py-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">

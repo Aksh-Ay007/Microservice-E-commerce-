@@ -8,6 +8,8 @@ import useDeviceTracking from "../../../hooks/useDeviceTracking";
 import useLocationTracking from "../../../hooks/useLocationTracking";
 import useUser from "../../../hooks/useUser";
 import { useStore } from "../../../store";
+import axiosInstance from "../../../utils/axiosinstance";
+import { isProtected } from "../../../utils/protected";
 import Ratings from "../ratings";
 
 const ProductDetailsCard = ({
@@ -21,6 +23,7 @@ const ProductDetailsCard = ({
   const [isSelected, setIsSelected] = useState(data?.colors?.[0] || "");
   const [isSizeSelected, setIsSizeSelected] = useState(data?.sizes?.[0] || "");
   const [quantity, setQuantity] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
 
   const addToCart = useStore((state: any) => state.addToCart);
   const cart = useStore((state: any) => state.cart);
@@ -37,6 +40,26 @@ const ProductDetailsCard = ({
   const deviceInfo = useDeviceTracking();
 
   const router = useRouter();
+
+  const handleChat = async () => {
+    if (isLoading) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await axiosInstance.post(
+        "/chatting/api/create-user-conversationGroup",
+        { sellerId: data.Shop?.sellerId },
+        isProtected
+      );
+      router.push(`/inbox?conversationId=${res.data.conversation.id}`);
+    } catch (error) {
+      console.error("Error initiating chat:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const estimatedDelivery = new Date();
   estimatedDelivery.setDate(estimatedDelivery.getDate() + 5);
@@ -132,7 +155,7 @@ const ProductDetailsCard = ({
                 {/* Right: Chat Button */}
                 <button
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md"
-                  onClick={() => router.push(`/inbox?shopId=${data?.Shop?.id}`)}
+                  onClick={() => handleChat()}
                 >
                   💬 Chat with Seller
                 </button>

@@ -234,7 +234,7 @@ const ProfilePage = () => {
                     <Image
                       src={
                         user?.avatar ||
-                        "https://ik.imagekit.io/AkshayMicroMart/photo/3d-cartoon-portrait-person-practicing-law-related-profession%20(2).jpg?updatedAt=1759958440356"
+                        "https://ik.imagekit.io/AkshayMicroMart/photo/useravatar.jpg?updatedAt=1760470134415"
                       }
                       alt="profile"
                       width={60}

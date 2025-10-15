@@ -37,44 +37,44 @@ axiosInstance.interceptors.request.use(
 );
 
 //handle expired token and refresh logic
-
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const orginalRequest = error.config;
+    const originalRequest = error.config;
 
     const is401 = error.response?.status === 401;
-    const isRetry = orginalRequest?._retry;
-    const isAuthRequired = orginalRequest?.requireAuth === true;
+    const isRetry = originalRequest?._retry;
+    const isAuthRequired = originalRequest?.requireAuth === true;
 
-    if (!is401 && !isRetry && !isAuthRequired) {
+    // ✅ Trigger refresh if token expired and request required auth
+    if (is401 && !isRetry && isAuthRequired) {
       if (isRefreshing) {
         return new Promise((resolve) => {
-          subscribeTokenRefresh(() => resolve(axiosInstance(orginalRequest)));
+          subscribeTokenRefresh(() => resolve(axiosInstance(originalRequest)));
         });
       }
-      orginalRequest._retry = true;
+
+      originalRequest._retry = true;
       isRefreshing = true;
 
-       try {
-         await axios.post(
-           `${process.env.NEXT_PUBLIC_SERVER_URI}/api/refresh-token`,
-           {},
-           { withCredentials: true }
-         );
+      try {
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_SERVER_URI}/api/refresh-token`,
+          {},
+          { withCredentials: true }
+        );
 
-         isRefreshing = false;
-         onRefreshSuccess();
+        isRefreshing = false;
+        onRefreshSuccess();
 
-         return axiosInstance(orginalRequest);
-       } catch (error) {
-         isRefreshing = false;
-         refreshSubscribers = [];
-         handleLogout();
-         return Promise.reject(error);
-       }
-
-
+        // ✅ Retry the original request with new token
+        return axiosInstance(originalRequest);
+      } catch (err) {
+        isRefreshing = false;
+        refreshSubscribers = [];
+        handleLogout();
+        return Promise.reject(err);
+      }
     }
 
     return Promise.reject(error);

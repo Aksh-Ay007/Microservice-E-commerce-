@@ -432,10 +432,7 @@ export const getSellerOrders = async (
   next: NextFunction
 ) => {
   try {
-    // Check if seller exists
-    if (!req.seller?.id) {
-      console.log("Seller ID not found in request", req.seller);
-    }
+
 
     const shop = await prisma.shops.findUnique({
       where: {
@@ -443,10 +440,7 @@ export const getSellerOrders = async (
       },
     });
 
-    // Check if shop exists
-    if (!shop) {
-      console.log("Shop not found for seller ID:", req.seller.id);
-    }
+
 
     const orders = await prisma.orders.findMany({
       where: { shopId: shop.id },

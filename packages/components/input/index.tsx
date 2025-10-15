@@ -2,7 +2,7 @@ import React, { forwardRef } from "react";
 
 interface BaseProps {
   label?: string;
-  type?: "text" | "number" | "password" | "email" | "textarea";
+  type?: "text" | "number" | "password" | "email" | "textarea"| "file";
   className?: string;
 }
 
@@ -47,4 +47,3 @@ Input.displayName='Input'
 
 
 export default Input;
-

@@ -1,9 +1,9 @@
-import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import proxy from "express-http-proxy";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
+import cookieParser from "cookie-parser";
 import initializeSiteConfig from "./libs/initializeSiteConfig";
 
 const app = express();
@@ -27,15 +27,14 @@ app.use(express.urlencoded({ limit: "100mb", extended: true }));
 app.use(cookieParser());
 app.set("trust proxy", 1); // trust first proxy
 
-// Apply rate limiting
-
+// ✅ Fixed rate limiting configuration
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: (req: any) => (req.user || req.seller ? 1000 : 100),
   message: { error: "Too many requests, please try again later!" },
   standardHeaders: true,
-  legacyHeaders: true,
-  keyGenerator: (req: any) => req.ip,
+  legacyHeaders: false, // Changed from true to false
+  // ✅ Removed custom keyGenerator - using default which handles IPv6 correctly
 });
 
 app.use(limiter);
@@ -43,7 +42,6 @@ app.use(limiter);
 app.get("/gateway-health", (req, res) => {
   res.send({ message: "Welcome to api-gateway!" });
 });
-
 
 app.use("/chatting", proxy("http://localhost:6006"));
 app.use("/admin", proxy("http://localhost:6005"));
