@@ -5,6 +5,7 @@ import {
   createShop,
   createStripeConnectLink,
   getSeller,
+  getSellerDetails,
   loginSeller,
   logOutSeller,
   refreshToken,
@@ -26,5 +27,8 @@ router.get("/refresh-token", refreshToken);
 // ✅ Use your seller-specific authentication middleware
 router.post("/logout-seller", isSellerAuthenticated, isSeller, logOutSeller);
 router.get("/logged-in-seller", isSellerAuthenticated, isSeller, getSeller);
+
+// Public route to fetch seller details by shop id
+router.get("/get-seller/:id", getSellerDetails);
 
 export default router;

@@ -2,7 +2,7 @@ import prisma from "@packages/libs/prisma"; // Adjust the import path as necessa
 import bcrypt from "bcryptjs";
 import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import Stripe from "stripe";
-import { AuthError, ValidationError } from "../../../../packages/error-handler";
+import { AuthError, ValidationError, NotFoundError } from "../../../../packages/error-handler";
 import { setCookie } from "../utills/cookies/setCookie";
 import {
   checkOtpRegistration,
@@ -360,6 +360,51 @@ export const getSeller = async (
       success: true,
       seller,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// get seller details by shop id
+export const getSellerDetails = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params as { id?: string };
+
+    if (!id) {
+      return next(new ValidationError("shop id is required"));
+    }
+
+    const shop = await prisma.shops.findUnique({
+      where: { id },
+      include: {
+        sellers: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone_number: true,
+            country: true,
+            stripeId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+    });
+
+    if (!shop) {
+      return next(new NotFoundError("Shop not found"));
+    }
+
+    const followersCount = await prisma.followers.count({
+      where: { shopsId: id },
+    });
+
+    return res.status(200).json({ shop, followersCount });
   } catch (error) {
     next(error);
   }
