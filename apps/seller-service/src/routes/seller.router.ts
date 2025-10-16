@@ -37,15 +37,13 @@ router.get("/refresh-token", refreshToken);
 router.get("/get-seller/:id", getSellerDetails);
 
 
-// GET endpoints
-router.get("/get-seller-products/:shopId", getSellerProducts);
-router.get("/get-seller-events/:shopId", getSellerEvents);
-router.get("/is-following/:shopId", isAuthenticated, isFollowingShop);
+router.get("/get-seller-products/:id", getSellerProducts);
+router.get("/get-seller-events/:id", getSellerEvents);
 
-// POST endpoints
-router.post("/follow-shop", isAuthenticated, followShop);
-router.post("/unfollow-shop", isAuthenticated, unfollowShop);
-
+// Follow/unfollow endpoints (user auth required)
+router.get("/is-following/:id", isAuthenticated as any, isFollowingShop);
+router.post("/follow-shop", isAuthenticated as any, followShop);
+router.post("/unfollow-shop", isAuthenticated as any, unfollowShop);
 
 
 
