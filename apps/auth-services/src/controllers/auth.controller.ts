@@ -498,6 +498,7 @@ export const updateUserAvatar = async (
       data: {
         file_id: uploadResponse.fileId,
         url: uploadResponse.url,
+        type: "avatar",
       },
     });
     console.log("✅ Image record created:", newImage.id);

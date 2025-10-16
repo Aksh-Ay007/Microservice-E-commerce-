@@ -2,6 +2,7 @@ import prisma from "@packages/libs/prisma"; // Adjust the import path as necessa
 import bcrypt from "bcryptjs";
 import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import Stripe from "stripe";
+import { NextFunction, Request, Response } from "express";
 import { AuthError, NotFoundError, ValidationError } from "../../../../packages/error-handler";
 import { setCookie } from "../utills/cookies/setCookie";
 import {
@@ -11,6 +12,7 @@ import {
   validateRegistrationData,
   varifyOtp,
 } from "./../utills/sellerAuth.helper";
+import { imagekit } from "@packages/libs/imagekit";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-08-27.basil",
@@ -628,5 +630,195 @@ export const unfollowShop = async (
     return res.status(200).json({ success: true });
   } catch (error) {
     next(error);
+  }
+};
+
+// Update seller avatar
+export const updateSellerAvatar = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const sellerId = req.seller?.id;
+    const { fileName } = req.body;
+
+    console.log("📝 Update seller avatar request:", { sellerId, hasFile: !!fileName });
+
+    if (!sellerId) {
+      throw new ValidationError("Seller not authenticated");
+    }
+
+    if (!fileName) {
+      throw new ValidationError("File name (Base64 image) is required");
+    }
+
+    // Find seller's shop
+    const seller = await prisma.sellers.findUnique({
+      where: { id: sellerId },
+      include: { shop: true },
+    });
+
+    if (!seller?.shop) {
+      throw new NotFoundError("Shop not found for this seller");
+    }
+
+    // Upload to ImageKit
+    console.log("📤 Uploading to ImageKit...");
+    const uploadResponse = await imagekit.upload({
+      file: fileName,
+      fileName: `seller-avatar-${sellerId}-${Date.now()}.jpg`,
+      folder: "/seller-avatars",
+    });
+    console.log("✅ ImageKit upload success:", uploadResponse.fileId);
+
+    // Delete old avatar if exists
+    if (seller.shop.avatarId) {
+      try {
+        console.log("🗑️ Deleting old avatar...");
+        const oldImage = await prisma.images.findUnique({
+          where: { id: seller.shop.avatarId },
+        });
+
+        if (oldImage?.file_id) {
+          await imagekit.deleteFile(oldImage.file_id);
+          console.log("✅ Deleted from ImageKit:", oldImage.file_id);
+        }
+
+        await prisma.images.delete({
+          where: { id: seller.shop.avatarId },
+        });
+        console.log("✅ Deleted from database");
+      } catch (err: any) {
+        console.warn("⚠️ Old avatar cleanup failed:", err.message);
+      }
+    }
+
+    // Create new image record
+    console.log("💾 Creating new image record...");
+    const newImage = await prisma.images.create({
+      data: {
+        file_id: uploadResponse.fileId,
+        url: uploadResponse.url,
+        type: "avatar",
+      },
+    });
+    console.log("✅ Image record created:", newImage.id);
+
+    // Update shop's avatarId
+    console.log("🔄 Updating shop...");
+    await prisma.shops.update({
+      where: { id: seller.shop.id },
+      data: { avatarId: newImage.id },
+    });
+    console.log("✅ Shop updated successfully");
+
+    return res.status(200).json({
+      success: true,
+      message: "Avatar updated successfully",
+      avatarUrl: uploadResponse.url,
+    });
+  } catch (error: any) {
+    console.error("❌ updateSellerAvatar error:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
+    return next(error);
+  }
+};
+
+// Update seller banner
+export const updateSellerBanner = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const sellerId = req.seller?.id;
+    const { fileName } = req.body;
+
+    console.log("📝 Update seller banner request:", { sellerId, hasFile: !!fileName });
+
+    if (!sellerId) {
+      throw new ValidationError("Seller not authenticated");
+    }
+
+    if (!fileName) {
+      throw new ValidationError("File name (Base64 image) is required");
+    }
+
+    // Find seller's shop
+    const seller = await prisma.sellers.findUnique({
+      where: { id: sellerId },
+      include: { shop: true },
+    });
+
+    if (!seller?.shop) {
+      throw new NotFoundError("Shop not found for this seller");
+    }
+
+    // Upload to ImageKit
+    console.log("📤 Uploading to ImageKit...");
+    const uploadResponse = await imagekit.upload({
+      file: fileName,
+      fileName: `seller-banner-${sellerId}-${Date.now()}.jpg`,
+      folder: "/seller-banners",
+    });
+    console.log("✅ ImageKit upload success:", uploadResponse.fileId);
+
+    // Delete old banner if exists
+    if (seller.shop.bannerId) {
+      try {
+        console.log("🗑️ Deleting old banner...");
+        const oldImage = await prisma.images.findUnique({
+          where: { id: seller.shop.bannerId },
+        });
+
+        if (oldImage?.file_id) {
+          await imagekit.deleteFile(oldImage.file_id);
+          console.log("✅ Deleted from ImageKit:", oldImage.file_id);
+        }
+
+        await prisma.images.delete({
+          where: { id: seller.shop.bannerId },
+        });
+        console.log("✅ Deleted from database");
+      } catch (err: any) {
+        console.warn("⚠️ Old banner cleanup failed:", err.message);
+      }
+    }
+
+    // Create new image record
+    console.log("💾 Creating new image record...");
+    const newImage = await prisma.images.create({
+      data: {
+        file_id: uploadResponse.fileId,
+        url: uploadResponse.url,
+        type: "banner",
+      },
+    });
+    console.log("✅ Image record created:", newImage.id);
+
+    // Update shop's bannerId
+    console.log("🔄 Updating shop...");
+    await prisma.shops.update({
+      where: { id: seller.shop.id },
+      data: { bannerId: newImage.id },
+    });
+    console.log("✅ Shop updated successfully");
+
+    return res.status(200).json({
+      success: true,
+      message: "Banner updated successfully",
+      bannerUrl: uploadResponse.url,
+    });
+  } catch (error: any) {
+    console.error("❌ updateSellerBanner error:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
+    return next(error);
   }
 };

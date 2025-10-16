@@ -26,9 +26,12 @@ model images {
   userId     String? @db.ObjectId
   shopId     String? @db.ObjectId
   productsId String? @db.ObjectId
+  type       String? @default("general") // "avatar", "banner", "product", "general"
 
   users    users[]   @relation
-  products products? @relation(fields: [productsId], references: [id])
+  products products? @relation(fields: [productsId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  shopAvatars shops[] @relation("ShopAvatar")
+  shopBanners shops[] @relation("ShopBanner")
 }
 
 model users {
@@ -75,8 +78,8 @@ model shops {
   name          String
   bio           String?
   category      String
-  avatar        String?
-  coverBanner   String?
+  avatar        images?       @relation("ShopAvatar", fields: [avatarId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  coverBanner   images?       @relation("ShopBanner", fields: [bannerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   address       String
   opening_hours String?
   website       String?
@@ -92,6 +95,8 @@ model shops {
   isDeleted     Boolean       @default(false)
   deletedAt     DateTime?
   imagesId      String?       @db.ObjectId
+  avatarId      String?       @db.ObjectId
+  bannerId      String?       @db.ObjectId
   orders        orders[]
 }
 
