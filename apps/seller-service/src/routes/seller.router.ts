@@ -4,13 +4,20 @@ import { isSellerAuthenticated } from "../../../../packages/middleware/sellerAut
 import {
   createShop,
   createStripeConnectLink,
+  followShop,
   getSeller,
+  getSellerDetails,
+  getSellerEvents,
+  getSellerProducts,
+  isFollowingShop,
   loginSeller,
   logOutSeller,
   refreshToken,
   registerSeller,
+  unfollowShop,
   verifySeller,
 } from "../controller/seller.controller";
+import isAuthenticated from '../../../../packages/middleware/isAuthenticated';
 
 const router: Router = express.Router();
 
@@ -22,6 +29,25 @@ router.post("/create-shop", createShop);
 router.post("/create-stripe-link", createStripeConnectLink);
 router.post("/login-seller", loginSeller);
 router.get("/refresh-token", refreshToken);
+
+
+
+
+// ✅ Add missing route for seller details
+router.get("/get-seller/:id", getSellerDetails);
+
+
+// GET endpoints
+router.get("/get-seller-products/:shopId", getSellerProducts);
+router.get("/get-seller-events/:shopId", getSellerEvents);
+router.get("/is-following/:shopId", isAuthenticated, isFollowingShop);
+
+// POST endpoints
+router.post("/follow-shop", isAuthenticated, followShop);
+router.post("/unfollow-shop", isAuthenticated, unfollowShop);
+
+
+
 
 // ✅ Use your seller-specific authentication middleware
 router.post("/logout-seller", isSellerAuthenticated, isSeller, logOutSeller);

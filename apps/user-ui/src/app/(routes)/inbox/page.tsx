@@ -12,24 +12,22 @@ import { isProtected } from "../../../utils/protected";
 
 const Page = () => {
   const searchParams = useSearchParams();
-  const { user, isLoading: userLoading } = useRequireAuth();
   const router = useRouter();
-  const wsRef = useRef<WebSocket | null>(null);
-  const messageContainerRef = useRef<HTMLDivElement | null>(null);
-  const scrollAnchorRef = useRef<HTMLDivElement | null>(null);
   const queryClient = useQueryClient();
+  const { user } = useRequireAuth();
+  const { ws } = useWebSocket();
 
+  const messageContainerRef = useRef<HTMLDivElement | null>(null);
+  const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
   const [chats, setChats] = useState<any[]>([]);
   const [selectedChat, setSelectedChat] = useState<any | null>(null);
   const [message, setMessage] = useState("");
-  const [hasMore, setHasMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
-  const conversationId = searchParams.get("conversationId");
-  const { ws, unreadCounts } = useWebSocket();
 
+  const conversationId = searchParams.get("conversationId");
+
+  // ✅ Fetch Conversations
   const { data: conversations, isLoading } = useQuery({
-    queryKey: ["conversations"],
+    queryKey: ["user-conversations"],
     queryFn: async () => {
       const res = await axiosInstance.get(
         `/chatting/api/get-user-conversations`,
@@ -39,16 +37,15 @@ const Page = () => {
     },
   });
 
+  // ✅ Fetch Messages
   const { data: messages = [] } = useQuery({
-    queryKey: ["messages", conversationId],
+    queryKey: ["user-messages", conversationId],
     queryFn: async () => {
       if (!conversationId || hasFetchedOnce) return [];
       const res = await axiosInstance.get(
         `/chatting/api/get-messages/${conversationId}?page=1`,
         isProtected
       );
-      setPage(1);
-      setHasMore(res.data.hasMore);
       setHasFetchedOnce(true);
       return res.data.messages.reverse();
     },
@@ -56,23 +53,23 @@ const Page = () => {
     staleTime: 2 * 60 * 1000,
   });
 
-  const loadMoreMessages = async () => {
-    const nextPage = page + 1;
-
-    const res = await axiosInstance.get(
-      `/chatting/api/get-messages/${conversationId}?page=${nextPage}`,
-      isProtected
-    );
-
-    queryClient.setQueryData(["messages", conversationId], (oldData: any) => [
-      ...res.data.messages.reverse(),
-      ...oldData,
-    ]);
-
-    setPage(nextPage);
-    setHasMore(res.data.hasMore);
+  // ✅ Auto-scroll to bottom
+  const scrollToBottom = () => {
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        if (messageContainerRef.current) {
+          messageContainerRef.current.scrollTop =
+            messageContainerRef.current.scrollHeight;
+        }
+      }, 50);
+    });
   };
 
+  useEffect(() => {
+    if (messages.length > 0) scrollToBottom();
+  }, [messages.length, conversationId]);
+
+  // ✅ Sync conversations
   useEffect(() => {
     if (conversations) setChats(conversations);
   }, [conversations]);
@@ -82,15 +79,88 @@ const Page = () => {
       const chat = chats.find((c) => c.conversationId === conversationId);
       setSelectedChat(chat || null);
     }
-
-    console.log("conversationId:", conversationId);
-    console.log("chats:", chats);
   }, [conversationId, chats]);
 
-  useEffect(() => {
-    if (messages?.length > 0) scrollToBottom();
-  }, [messages]);
+  // ✅ WebSocket Events
+  // Replace your useEffect for WebSocket Events with this:
 
+useEffect(() => {
+  if (!ws) return;
+
+  const handleMessage = (event: MessageEvent) => {
+    const data = JSON.parse(event.data);
+
+    if (data.type === "NEW_MESSAGE") {
+      const newMsg = data.payload;
+
+      // ✅ FIX: Only add message if it's NOT from the current user
+      if (newMsg.conversationId === conversationId && newMsg.senderType !== "user") {
+        queryClient.setQueryData(
+          ["user-messages", conversationId],
+          (old: any = []) => [
+            ...old,
+            {
+              content: newMsg.messageBody || newMsg.content || "",
+              senderType: newMsg.senderType,
+              createdAt: new Date().toISOString(),
+            },
+          ]
+        );
+        scrollToBottom();
+      }
+
+      // Sidebar updates (keep this as is)
+      setChats((prevChats) =>
+        prevChats.map((chat) =>
+          chat.conversationId === newMsg.conversationId
+            ? {
+                ...chat,
+                lastMessage: newMsg.content || newMsg.messageBody,
+                unseenCount:
+                  newMsg.conversationId === conversationId
+                    ? 0
+                    : (chat.unseenCount || 0) + 1,
+                seller: {
+                  ...chat.seller,
+                  isOnline:
+                    newMsg.senderType === "seller"
+                      ? true
+                      : chat.seller?.isOnline,
+                },
+              }
+            : chat
+        )
+      );
+    }
+
+    if (data.type === "UNSEEN_COUNT_UPDATE") {
+      const { conversationId, count } = data.payload;
+      setChats((prevChats) =>
+        prevChats.map((chat) =>
+          chat.conversationId === conversationId
+            ? { ...chat, unseenCount: count }
+            : chat
+        )
+      );
+    }
+
+    if (data.type === "ONLINE_STATUS_UPDATE") {
+      const { sellerId, isOnline } = data.payload;
+      setChats((prevChats) =>
+        prevChats.map((chat) =>
+          chat.seller?.id === sellerId
+            ? { ...chat, seller: { ...chat.seller, isOnline } }
+            : chat
+        )
+      );
+    }
+  };
+
+  ws.addEventListener("message", handleMessage);
+  return () => ws.removeEventListener("message", handleMessage);
+}, [ws, conversationId, queryClient]);
+
+  // ✅ Select Chat
   const handleChatSelect = (chat: any) => {
     setHasFetchedOnce(false);
     setChats((prev) =>
@@ -98,28 +168,29 @@ const Page = () => {
         c.conversationId === chat.conversationId ? { ...c, unseenCount: 0 } : c
       )
     );
+
     router.push(`?conversationId=${chat.conversationId}`);
 
-    ws?.send(
-      JSON.stringify({
-        type: "MARK_AS_SEEN",
-        conversationId: chat.conversationId,
-      })
-    );
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(
+        JSON.stringify({
+          type: "MARK_AS_SEEN",
+          conversationId: chat.conversationId,
+        })
+      );
+    }
   };
 
-  const scrollToBottom = () => {
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        scrollAnchorRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 0);
-    });
-  };
-
+  // ✅ Send Message (single send fix)
   const handleSend = async (e: any) => {
     e.preventDefault();
-
-    if (!message.trim() || !selectedChat) return;
+    if (
+      !message.trim() ||
+      !selectedChat ||
+      !ws ||
+      ws.readyState !== WebSocket.OPEN
+    )
+      return;
 
     const payload = {
       fromUserId: user?.id,
@@ -129,16 +200,16 @@ const Page = () => {
       senderType: "user",
     };
 
-    ws?.send(JSON.stringify(payload));
+    ws.send(JSON.stringify(payload));
 
+    // Optimistic update
     queryClient.setQueryData(
-      ["messages", selectedChat?.conversationId],
+      ["user-messages", selectedChat.conversationId],
       (old: any = []) => [
         ...old,
         {
-          content: payload.messageBody,
+          content: message,
           senderType: "user",
-          seen: false,
           createdAt: new Date().toISOString(),
         },
       ]
@@ -146,11 +217,12 @@ const Page = () => {
 
     setChats((prevChats) =>
       prevChats.map((chat) =>
-        chat.conversationId
-          ? { ...chat, lastMessage: payload.messageBody }
+        chat.conversationId === selectedChat.conversationId
+          ? { ...chat, lastMessage: message }
           : chat
       )
     );
+
     setMessage("");
     scrollToBottom();
   };
@@ -182,21 +254,6 @@ const Page = () => {
                 </div>
               ) : chats.length === 0 ? (
                 <div className="p-8 text-center">
-                  <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-slate-100 flex items-center justify-center">
-                    <svg
-                      className="w-8 h-8 text-slate-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                      />
-                    </svg>
-                  </div>
                   <p className="text-sm text-slate-600 font-medium">
                     No conversations yet
                   </p>
@@ -224,12 +281,12 @@ const Page = () => {
                           <Image
                             src={
                               chat.seller?.avatar ||
-                              "https://ik.imagekit.io/AkshayMicroMart/photo/selleravatar.jpg?updatedAt=1760470207009"
+                              "https://ik.imagekit.io/AkshayMicroMart/photo/selleravatar.jpg"
                             }
                             alt={chat.seller?.name}
                             width={44}
                             height={44}
-                            className="rounded-full w-[44px] h-[44px] object-cover ring-2 ring-white shadow-sm"
+                            className="rounded-full w-[44px] h-[44px] object-cover"
                           />
                           {chat.seller?.isOnline && (
                             <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white" />
@@ -268,30 +325,22 @@ const Page = () => {
                     <Image
                       src={
                         selectedChat.seller?.avatar ||
-                        "https://ik.imagekit.io/AkshayMicroMart/photo/selleravatar.jpg?updatedAt=1760470207009"
+                        "https://ik.imagekit.io/AkshayMicroMart/photo/selleravatar.jpg"
                       }
                       alt={selectedChat.seller?.name}
                       width={48}
                       height={48}
-                      className="rounded-full w-[48px] h-[48px] object-cover ring-2 ring-slate-100 shadow-sm"
+                      className="rounded-full w-[48px] h-[48px] object-cover"
                     />
                     {selectedChat.seller?.isOnline && (
                       <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white" />
                     )}
                   </div>
-
                   <div>
                     <h2 className="text-slate-800 font-bold text-base">
                       {selectedChat.seller?.name}
                     </h2>
-                    <p className="text-xs text-slate-500 flex items-center gap-1.5">
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          selectedChat.seller?.isOnline
-                            ? "bg-emerald-500"
-                            : "bg-slate-400"
-                        }`}
-                      ></span>
+                    <p className="text-xs text-slate-500">
                       {selectedChat.seller?.isOnline ? "Active now" : "Offline"}
                     </p>
                   </div>
@@ -301,25 +350,10 @@ const Page = () => {
                 <div
                   ref={messageContainerRef}
                   className="flex-1 overflow-y-auto p-6 space-y-4"
-                  style={{
-                    backgroundImage: `radial-gradient(circle at 1px 1px, rgb(203 213 225 / 0.1) 1px, transparent 0)`,
-                    backgroundSize: "24px 24px",
-                  }}
                 >
-                  {hasMore && (
-                    <div className="flex justify-center mb-4">
-                      <button
-                        onClick={loadMoreMessages}
-                        className="text-xs px-5 py-2 bg-white text-indigo-600 font-medium rounded-full hover:bg-indigo-50 transition-all shadow-sm border border-indigo-100"
-                      >
-                        Load previous messages
-                      </button>
-                    </div>
-                  )}
-
-                  {messages?.map((msg: any, index: number) => (
+                  {messages.map((msg: any, i: number) => (
                     <div
-                      key={index}
+                      key={i}
                       className={`flex flex-col ${
                         msg.senderType === "user" ? "items-end" : "items-start"
                       }`}
@@ -327,8 +361,8 @@ const Page = () => {
                       <div
                         className={`max-w-[75%] ${
                           msg.senderType === "user"
-                            ? "bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-200/50"
-                            : "bg-white text-slate-800 shadow-md border border-slate-100"
+                            ? "bg-indigo-600 text-white"
+                            : "bg-white text-slate-800 border border-slate-100"
                         } px-4 py-3 rounded-2xl ${
                           msg.senderType === "user"
                             ? "rounded-br-md"
@@ -339,24 +373,16 @@ const Page = () => {
                           {msg.text || msg.content}
                         </p>
                       </div>
-
-                      <div
-                        className={`text-[10px] text-slate-400 mt-1.5 font-medium ${
-                          msg.senderType === "user" ? "mr-2" : "ml-2"
-                        }`}
-                      >
-                        {msg.time ||
-                          new Date(msg.createdAt).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                      </div>
+                      <span className="text-[10px] text-slate-400 mt-1 font-medium">
+                        {new Date(msg.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
                     </div>
                   ))}
-                  <div ref={scrollAnchorRef} />
                 </div>
 
-                {/* Chat Input */}
                 <ChatInput
                   message={message}
                   setMessage={setMessage}
@@ -364,28 +390,8 @@ const Page = () => {
                 />
               </>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
-                <div className="w-24 h-24 mb-6 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                  <svg
-                    className="w-12 h-12 text-indigo-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-slate-600 font-semibold text-lg mb-2">
-                  Select a conversation
-                </h3>
-                <p className="text-sm text-slate-400">
-                  Choose a chat from the sidebar to start messaging
-                </p>
+              <div className="flex-1 flex items-center justify-center text-slate-400">
+                <p>Select a conversation to start chatting</p>
               </div>
             )}
           </div>

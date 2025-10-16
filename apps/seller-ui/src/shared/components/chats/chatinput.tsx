@@ -38,11 +38,11 @@ const ChatInput = ({
   return (
     <form
       onSubmit={onSendMessage}
-      className="border-t border-slate-200 bg-white px-5 py-4 flex items-center gap-3 relative shadow-lg"
+      className="border-t border-gray-800 bg-gray-900 px-5 py-4 flex items-center gap-3 relative"
     >
       {/* Image Upload */}
-      <label className="cursor-pointer p-2.5 hover:bg-indigo-50 rounded-xl transition-all group">
-        <ImageIcon className="w-5 h-5 text-slate-500 group-hover:text-indigo-600 transition-colors" />
+      <label className="cursor-pointer p-2.5 hover:bg-gray-800 rounded-lg transition-all group">
+        <ImageIcon className="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors" />
         <Input
           type="file"
           accept="image/*"
@@ -56,12 +56,12 @@ const ChatInput = ({
         <button
           type="button"
           onClick={() => setShowEmoji((prev) => !prev)}
-          className="p-2.5 hover:bg-indigo-50 rounded-xl transition-all group"
+          className="p-2.5 hover:bg-gray-800 rounded-lg transition-all group"
         >
-          <Smile className="w-5 h-5 text-slate-500 group-hover:text-indigo-600 transition-colors" />
+          <Smile className="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors" />
         </button>
         {showEmoji && (
-          <div className="absolute bottom-14 left-0 z-50 shadow-2xl rounded-xl overflow-hidden">
+          <div className="absolute bottom-14 left-0 z-50 shadow-2xl rounded-lg overflow-hidden">
             <EmojiPicker onEmojiClick={handleEmojiClick} />
           </div>
         )}
@@ -73,15 +73,15 @@ const ChatInput = ({
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Type your message..."
-        className="flex-1 border-2 border-slate-200 rounded-2xl text-sm px-5 py-3
-             focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
-             transition-all placeholder:text-slate-400 text-slate-900 bg-white"
+        className="flex-1 border border-gray-700 rounded-lg text-sm px-5 py-3
+             focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent
+             transition-all placeholder:text-gray-500 text-white bg-gray-800"
       />
 
       {/* Send Button */}
       <button
         type="submit"
-        className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-200/50 hover:shadow-xl hover:shadow-indigo-300/50 disabled:opacity-50 disabled:cursor-not-allowed group"
+        className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
         disabled={!message.trim()}
       >
         <Send className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />

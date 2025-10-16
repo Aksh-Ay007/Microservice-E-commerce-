@@ -27,6 +27,7 @@ router.get(
   getSellerOrders
 );
 router.get("/get-order-details/:id", isSellerAuthenticated, getOrderDetails);
+router.get("/get-userOrder-details/:id", isAuthenticated, getOrderDetails);
 
 router.put(
   "/update-status/:orderId",

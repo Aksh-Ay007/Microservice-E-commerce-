@@ -157,7 +157,8 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
         {/* Shop Name */}
         {product?.Shop?.name && (
           <Link
-            href={`/shop/${product?.shop?.id}`}
+              href={`/shop/${product?.Shop?.id}`}
+
             className="inline-block text-blue-600 hover:text-blue-700 text-xs font-medium transition-colors"
           >
             {product.Shop.name}
