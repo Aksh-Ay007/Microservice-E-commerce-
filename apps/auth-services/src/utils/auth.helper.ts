@@ -47,7 +47,7 @@ export const checkOtpRegistration = async (
   if (await redis.get(`otp_cooldown:${email}`)) {
     throw new ValidationError("Please wait for 1 minute before requesting OTP");
   }
-}; // <-- MISSING THIS
+};
 
 export const trackOtpRequests = async (email: string, next: NextFunction) => {
   const otpRequestKey = `otp_request_count:${email}`;

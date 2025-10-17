@@ -161,7 +161,7 @@ export const deleteDiscountCode = async (
     }
 
     if (discountCode.sellerId !== sellerId) {
-      return next(new NotFoundError("Unauthorized access!"));
+      return next(new AuthError("Unauthorized access!"));
     }
 
     await prisma.discount_codes.delete({
