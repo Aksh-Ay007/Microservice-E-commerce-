@@ -1,7 +1,7 @@
 import { Eye, Heart, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import useDeviceTracking from "../../../hooks/useDeviceTracking";
 import useLocationTracking from "../../../hooks/useLocationTracking";
 import useUser from "../../../hooks/useUser";
@@ -21,6 +21,10 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
 
   const [timeLeft, setTimeLeft] = useState("");
   const [open, setOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const { user } = useUser();
   const location = useLocationTracking();
   const deviceInfo = useDeviceTracking();
@@ -33,8 +37,28 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
   const cart = useStore((state: any) => state.cart);
   const isInCart = cart?.some((item: any) => item.id === product.id);
 
+  // Intersection Observer to track visibility
   useEffect(() => {
-    if (isEvent && product?.ending_date) {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      if (cardRef.current) {
+        observer.unobserve(cardRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isEvent && product?.ending_date && isVisible) {
       const interval = setInterval(() => {
         const endTime = new Date(product.ending_date).getTime();
         const now = Date.now();
@@ -53,10 +77,10 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
       return () => clearInterval(interval);
     }
     return;
-  }, [isEvent, product?.ending_date]);
+  }, [isEvent, product?.ending_date, isVisible]);
 
   return (
-    <div className="w-full bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden group border border-gray-100 relative">
+    <div ref={cardRef} className="w-full bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden group border border-gray-100 relative">
       {/* Image Container */}
       <Link href={`/product/${product?.slug}`} className="block relative">
         <div className="relative w-full h-[200px] bg-gray-100">
@@ -76,8 +100,8 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
           {/* Action Buttons - Heart and Eye */}
           <div className="absolute top-3 right-3 z-20 flex flex-col gap-2">
             {/* Heart Icon */}
-            <div
-              className="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all cursor-pointer"
+            <button
+              className="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -90,6 +114,8 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
                       deviceInfo
                     );
               }}
+              aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+              title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
             >
               <Heart
                 className="hover:scale-110 transition-transform"
@@ -98,16 +124,18 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
                 stroke={isWishlisted ? "red" : "#4B5563"}
                 strokeWidth={2}
               />
-            </div>
+            </button>
 
             {/* Eye Icon */}
-            <div
-              className="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all cursor-pointer"
+            <button
+              className="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 setOpen(!open);
               }}
+              aria-label="Quick view product"
+              title="Quick view product"
             >
               <Eye
                 className="hover:scale-110 transition-transform"
@@ -115,11 +143,11 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
                 stroke="#6B7280"
                 strokeWidth={2}
               />
-            </div>
+            </button>
 
             {/* Cart Icon */}
-            <div
-              className="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all cursor-pointer"
+            <button
+              className="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -131,24 +159,48 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
                     deviceInfo
                   );
               }}
+              disabled={isInCart}
+              aria-label={isInCart ? "Product already in cart" : "Add to cart"}
+              title={isInCart ? "Product already in cart" : "Add to cart"}
             >
               <ShoppingBag
                 className="hover:scale-110 transition-transform"
                 size={22}
-                stroke="#6B7280"
+                stroke={isInCart ? "#10B981" : "#6B7280"}
                 strokeWidth={2}
               />
-            </div>
+            </button>
           </div>
 
           {/* Product Image */}
-          <Image
-            src={imageUrl}
-            alt={product?.title || "Product image"}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 20vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+          {imageLoading && (
+            <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
+              <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+            </div>
+          )}
+          {imageError ? (
+            <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <div className="w-12 h-12 mx-auto mb-2 bg-gray-200 rounded flex items-center justify-center">
+                  <span className="text-xs">No Image</span>
+                </div>
+                <p className="text-xs">Image unavailable</p>
+              </div>
+            </div>
+          ) : (
+            <Image
+              src={imageUrl}
+              alt={product?.title || "Product image"}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 20vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              onLoad={() => setImageLoading(false)}
+              onError={() => {
+                setImageLoading(false);
+                setImageError(true);
+              }}
+            />
+          )}
         </div>
       </Link>
 

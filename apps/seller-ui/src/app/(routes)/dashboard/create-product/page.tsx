@@ -185,7 +185,7 @@ const Page = () => {
 
   return (
     <form
-      className="w-full mx-auto p-8 shadow-md rounded-lg text-white"
+      className="w-full mx-auto p-8 shadow-md rounded-lg text-white bg-gray-800"
       onSubmit={handleSubmit(onSubmit)}
     >
       {/* Heading and breadcrumbs */}
@@ -272,7 +272,7 @@ const Page = () => {
                       const wordCount = value.trim().split(/\s+/).length;
                       return (
                         wordCount <= 150 ||
-                        `Description cannont be more than 150 words (Current:${wordCount})`
+                        `Description cannot be more than 150 words (Current:${wordCount})`
                       );
                     },
                   })}
