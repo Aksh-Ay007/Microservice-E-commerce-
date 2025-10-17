@@ -24,7 +24,7 @@ const Page = () => {
     staleTime: 1000 * 60 * 2,
   });
 
-  const { data: latestProducts,isLoading:LatestProductsLoading } = useQuery({
+  const { data: latestProducts, isLoading: LatestProductsLoading, isError: latestProductsError } = useQuery({
     queryKey: ["latest-products"],
     queryFn: async () => {
       const res = await axiosInstance.get(
@@ -32,19 +32,19 @@ const Page = () => {
       );
       return res.data.products;
     },
-    staleTime: 1000 * 60 * 2,
+    staleTime: 1000 * 60 * 5,
   });
 
-  const { data: shops, isLoading: shopLoading } = useQuery({
+  const { data: shops, isLoading: shopLoading, isError: shopsError } = useQuery({
     queryKey: ["shops"],
     queryFn: async () => {
       const res = await axiosInstance.get("/product/api/top-shops");
       return res.data.shops;
     },
-    staleTime: 1000 * 60 * 2,
+    staleTime: 1000 * 60 * 5,
   });
 
-  const { data: offers, isLoading: offersLoading } = useQuery({
+  const { data: offers, isLoading: offersLoading, isError: offersError } = useQuery({
     queryKey: ["offers"],
     queryFn: async () => {
       const res = await axiosInstance.get(
@@ -52,7 +52,7 @@ const Page = () => {
       );
       return res.data.events;
     },
-    staleTime: 1000 * 60 * 2,
+    staleTime: 1000 * 60 * 5,
   });
 
   return (
@@ -68,54 +68,64 @@ const Page = () => {
             {Array.from({ length: 10 }).map((_, index) => (
               <div
                 key={index}
-                className="h-[250px] bg-gray-300 animate-pulse "
+                className="h-[250px] bg-gray-300 animate-pulse rounded-xl"
               />
             ))}
           </div>
         )}
         {!isLoading && !isError && (
-          <div className=" m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
+          <div className="m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
             {products?.map((product: any) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         )}
-
-        {products?.length === 0 && (
-          <p className="text-center">No products available yet!</p>
+        {isError && (
+          <p className="text-center text-red-500">Failed to load products. Please try again later.</p>
         )}
-
-        {isLoading && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
-            {Array.from({ length: 10 }).map((_, index) => (
-              <div
-                key={index}
-                className="h-[250px] bg-gray-300 animate-pulse rounded-xl "
-              />
-            ))}
-          </div>
+        {!isLoading && !isError && products?.length === 0 && (
+          <p className="text-center">No products available yet!</p>
         )}
 
         <div className="my-8 block">
           <SectionTitle title="Latest Products" />
         </div>
 
-        {!LatestProductsLoading &&  (
-          <div className=" m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
+        {LatestProductsLoading && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
+            {Array.from({ length: 10 }).map((_, index) => (
+              <div
+                key={index}
+                className="h-[250px] bg-gray-300 animate-pulse rounded-xl"
+              />
+            ))}
+          </div>
+        )}
+        {!LatestProductsLoading && (
+          <div className="m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
             {latestProducts?.map((product: any) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         )}
-
-        {latestProducts?.length === 0 && (
+        {!LatestProductsLoading && latestProducts?.length === 0 && (
           <p className="text-center">No products available yet!</p>
         )}
 
-        <div className="mt-8 blcok">
+        <div className="mt-8 block">
           <SectionTitle title="Top Shops" />
         </div>
 
+        {shopLoading && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
+            {Array.from({ length: 10 }).map((_, index) => (
+              <div
+                key={index}
+                className="h-[250px] bg-gray-300 animate-pulse rounded-xl"
+              />
+            ))}
+          </div>
+        )}
         {!shopLoading && (
           <div className="m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
             {shops?.map((shop: any) => (
@@ -123,11 +133,11 @@ const Page = () => {
             ))}
           </div>
         )}
-        {shops?.length === 0 && (
+        {!shopLoading && shops?.length === 0 && (
           <p className="text-center">No Shops available yet!</p>
         )}
 
-        <div className="mt-8 blcok">
+        <div className="mt-8 block">
           <SectionTitle title="Top Offers" />
         </div>
 

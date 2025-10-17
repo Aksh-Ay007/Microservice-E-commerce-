@@ -35,24 +35,37 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
 
   useEffect(() => {
     if (isEvent && product?.ending_date) {
-      const interval = setInterval(() => {
+      // Calculate immediately on mount
+      const calculateTimeLeft = () => {
         const endTime = new Date(product.ending_date).getTime();
         const now = Date.now();
         const diff = endTime - now;
 
         if (diff <= 0) {
           setTimeLeft("Event ended");
-          clearInterval(interval);
-          return;
+          return true; // Event ended
         }
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
         const minutes = Math.floor((diff / (1000 * 60)) % 60);
         setTimeLeft(`${days}d ${hours}h ${minutes}m left with this offer`);
-      }, 60000);
-      return () => clearInterval(interval);
+        return false; // Event still active
+      };
+
+      // Calculate immediately
+      const ended = calculateTimeLeft();
+      
+      // Only set interval if event hasn't ended
+      if (!ended) {
+        const interval = setInterval(() => {
+          const ended = calculateTimeLeft();
+          if (ended) {
+            clearInterval(interval);
+          }
+        }, 60000);
+        return () => clearInterval(interval);
+      }
     }
-    return;
   }, [isEvent, product?.ending_date]);
 
   return (
@@ -76,7 +89,7 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
           {/* Action Buttons - Heart and Eye */}
           <div className="absolute top-3 right-3 z-20 flex flex-col gap-2">
             {/* Heart Icon */}
-            <div
+            <button
               className="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all cursor-pointer"
               onClick={(e) => {
                 e.preventDefault();
@@ -90,6 +103,8 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
                       deviceInfo
                     );
               }}
+              aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+              type="button"
             >
               <Heart
                 className="hover:scale-110 transition-transform"
@@ -97,29 +112,33 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
                 fill={isWishlisted ? "red" : "transparent"}
                 stroke={isWishlisted ? "red" : "#4B5563"}
                 strokeWidth={2}
+                aria-hidden="true"
               />
-            </div>
+            </button>
 
             {/* Eye Icon */}
-            <div
+            <button
               className="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all cursor-pointer"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 setOpen(!open);
               }}
+              aria-label="Quick view product details"
+              type="button"
             >
               <Eye
                 className="hover:scale-110 transition-transform"
                 size={20}
                 stroke="#6B7280"
                 strokeWidth={2}
+                aria-hidden="true"
               />
-            </div>
+            </button>
 
             {/* Cart Icon */}
-            <div
-              className="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all cursor-pointer"
+            <button
+              className="bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -131,14 +150,18 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
                     deviceInfo
                   );
               }}
+              aria-label={isInCart ? "Already in cart" : "Add to cart"}
+              disabled={isInCart}
+              type="button"
             >
               <ShoppingBag
                 className="hover:scale-110 transition-transform"
                 size={22}
                 stroke="#6B7280"
                 strokeWidth={2}
+                aria-hidden="true"
               />
-            </div>
+            </button>
           </div>
 
           {/* Product Image */}
@@ -148,6 +171,13 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 20vw"
             className="object-cover group-hover:scale-105 transition-transform duration-300"
+            loading="lazy"
+            placeholder="blur"
+            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "https://www.freemockupworld.com/wp-content/uploads/2022/11/Free-Packaging-Product-Box-Mockup-01.jpg";
+            }}
           />
         </div>
       </Link>
