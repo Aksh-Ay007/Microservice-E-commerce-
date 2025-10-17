@@ -17,26 +17,67 @@ import ProductCard from "../../components/cards/product-card";
 import useLocationTracking from "apps/user-ui/src/hooks/useLocationTracking";
 import useDeviceInfo from "apps/user-ui/src/hooks/useDeviceTracking";
 import useUser from "apps/user-ui/src/hooks/useUser";
- import { sendkafkaEvent } from "apps/user-ui/src/actions/track-user";
+import { sendkafkaEvent } from "apps/user-ui/src/actions/track-user";
 
 const TABS = ["Products", "Offers", "Reviews"];
-import axiosInstance from '../../../utils/axiosinstance';
-import YoutubeIcon from '../../../assets/svgs/youtube-icon';
-import XICon from '../../../assets/svgs/x-icon';
-import { shops } from '@prisma/client';
+import axiosInstance from "../../../utils/axiosinstance";
+import YoutubeIcon from "../../../assets/svgs/youtube-icon";
+import XICon from "../../../assets/svgs/x-icon";
+
+// ✅ Fix: Define proper interface for shop with relations
+interface ShopWithRelations {
+  id: string;
+  name: string;
+  bio: string | null;
+  category: string;
+  address: string;
+  opening_hours: string | null;
+  website: string | null;
+  socialLinks: any[];
+  ratings: number;
+  createdAt: Date;
+  updatedAt: Date;
+  sellerId: string;
+  avatarId: string | null;
+  bannerId: string | null;
+  avatar?: {
+    id: string;
+    url: string;
+    file_id: string;
+  } | null;
+  coverBanner?: {
+    id: string;
+    url: string;
+    file_id: string;
+  } | null;
+  sellers?: {
+    id: string;
+    name: string;
+    email: string;
+    phone_number: string;
+    country: string;
+    stripeId: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+}
 
 const SellerProfile = ({
   shop,
   followersCount,
+  avatarUrl,
+  bannerUrl,
 }: {
-  shop: shops;
+  shop: ShopWithRelations;
   followersCount: number;
+  avatarUrl?: string | null;
+  bannerUrl?: string | null;
 }) => {
   const [activeTab, setActiveTab] = useState("Products");
   const [followers, setFollowers] = useState(followersCount);
-  const [isFollowing, setIsFollowing]  = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
 
-  const user = useUser();
+  const { user, isLoading: userLoading } = useUser(); // ✅ Fix: Destructure properly
   const location = useLocationTracking();
   const deviceInfo = useDeviceInfo();
   const queryClient = useQueryClient();
@@ -109,7 +150,8 @@ const SellerProfile = ({
   });
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && !userLoading) {
+      // ✅ Fix: Check both loading states
       if (!location || !deviceInfo || !user?.id) return;
       sendkafkaEvent({
         userId: user?.id,
@@ -120,16 +162,30 @@ const SellerProfile = ({
         device: deviceInfo || "Unknown Device",
       });
     }
-  }, [location, deviceInfo, isLoading]);
+  }, [location, deviceInfo, user?.id, isLoading, userLoading]); // ✅ Fix: Add user.id to dependencies
+
+  // ✅ Fix: Get avatar and banner URLs with proper fallbacks
+  const getAvatarUrl = () => {
+    return (
+      avatarUrl ||
+      shop?.avatar?.url ||
+      "https://ik.imagekit.io/fz0xzwtey/avatar/amazon.jpeg"
+    );
+  };
+
+  const getBannerUrl = () => {
+    return (
+      bannerUrl ||
+      shop?.coverBanner?.url ||
+      "https://ik.imagekit.io/fz0xzwtey/cover/1200%20x%20300.svg?updatedAt=17420"
+    );
+  };
 
   return (
     <div>
       <div className="relative w-full flex justify-center">
         <Image
-          src={
-            shop?.coverBanner ||
-            "https://ik.imagekit.io/fz0xzwtey/cover/1200%20x%20300.svg?updatedAt=17420"
-          }
+          src={getBannerUrl()}
           alt="Seller Cover"
           className="w-full h-[400px] object-cover"
           width={1200}
@@ -142,10 +198,7 @@ const SellerProfile = ({
           <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
             <div className="relative w-[100px] h-[100px] rounded-full border-4 border-slate-300 overflow-hidden">
               <Image
-                src={
-                  shop?.avatar ||
-                  "https://ik.imagekit.io/fz0xzwtey/avatar/amazon.jpeg"
-                }
+                src={getAvatarUrl()}
                 alt="Seller Avatar"
                 layout="fill"
                 objectFit="cover"

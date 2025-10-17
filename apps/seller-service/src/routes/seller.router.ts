@@ -15,6 +15,9 @@ import {
   refreshToken,
   registerSeller,
   unfollowShop,
+  updateSellerAvatar,
+  updateSellerBanner,
+  updateSellerProfile,
   verifySeller,
 } from "../controller/seller.controller";
 import isAuthenticated from '../../../../packages/middleware/isAuthenticated';
@@ -50,5 +53,20 @@ router.post("/unfollow-shop", isAuthenticated as any, unfollowShop);
 // ✅ Use your seller-specific authentication middleware
 router.post("/logout-seller", isSellerAuthenticated, isSeller, logOutSeller);
 router.get("/logged-in-seller", isSellerAuthenticated, isSeller, getSeller);
+
+
+
+
+
+
+// Add these routes
+router.post("/update-avatar", isSellerAuthenticated, isSeller, updateSellerAvatar);
+router.post("/update-banner", isSellerAuthenticated, isSeller, updateSellerBanner);
+router.put(
+  "/update-profile",
+  isSellerAuthenticated,
+  isSeller,
+  updateSellerProfile
+);
 
 export default router;

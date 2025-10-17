@@ -1,6 +1,6 @@
 "use client";
 
-import { HeartIcon, Search, ShoppingCartIcon } from "lucide-react";
+import { HeartIcon, Search, ShoppingCartIcon, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -104,9 +104,25 @@ const Header = () => {
           <div className="flex items-center gap-3">
             <Link
               href={user ? "/profile" : "/login"}
-              className="border-2 border-[#e5e7eb] w-[50px] h-[50px] flex items-center justify-center rounded-full hover:border-[#3489FF] transition-all duration-200"
+              className="block"
             >
-              <ProfileIcon />
+              {user?.avatar?.url ? (
+                <div className="w-[50px] h-[50px] rounded-full overflow-hidden border-2 border-[#e5e7eb] hover:border-[#3489FF] transition-all duration-200">
+                  <img
+                    src={user.avatar.url}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : user ? (
+                <div className="w-[50px] h-[50px] rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-lg border-2 border-[#e5e7eb] hover:border-[#3489FF] transition-all duration-200">
+                  {user.name?.charAt(0)?.toUpperCase() || "U"}
+                </div>
+              ) : (
+                <div className="border-2 border-[#e5e7eb] w-[50px] h-[50px] flex items-center justify-center rounded-full hover:border-[#3489FF] transition-all duration-200">
+                  <ProfileIcon />
+                </div>
+              )}
             </Link>
             <Link href={user ? "/profile" : "/login"} className="leading-tight">
               <span className="block text-gray-600 text-sm">Hello,</span>
@@ -170,9 +186,25 @@ const Header = () => {
           <div className="flex items-center gap-4">
             <Link
               href={user ? "/profile" : "/login"}
-              className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300 hover:border-[#3489FF] transition"
+              className="block"
             >
-              <ProfileIcon />
+              {user?.avatar?.url ? (
+                <div className="w-9 h-9 rounded-full overflow-hidden border border-gray-300 hover:border-[#3489FF] transition-all duration-200">
+                  <img
+                    src={user.avatar.url}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : user ? (
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-sm border border-gray-300 hover:border-[#3489FF] transition-all duration-200">
+                  {user.name?.charAt(0)?.toUpperCase() || "U"}
+                </div>
+              ) : (
+                <div className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300 hover:border-[#3489FF] transition-all duration-200">
+                  <ProfileIcon />
+                </div>
+              )}
             </Link>
 
             <Link href="/wishlist" className="relative">

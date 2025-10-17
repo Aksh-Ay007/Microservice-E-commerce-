@@ -8,25 +8,43 @@ interface ShopCardProps {
     id: string;
     name: string;
     description?: string;
-    avatar: string;
-    coverBanner?: string;
     address?: string;
     followers?: [];
     rating?: number;
     category?: string;
+    // ✅ Fix: Update interface to match actual data structure
+    avatar?: {
+      id: string;
+      url: string;
+      file_id: string;
+    } | null;
+    coverBanner?: {
+      id: string;
+      url: string;
+      file_id: string;
+    } | null;
+    // ✅ Add direct URL access for convenience
+    avatarUrl?: string | null;
+    bannerUrl?: string | null;
   };
 }
 
 const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
+  // ✅ Fix: Get avatar and banner URLs with proper fallbacks
+  const getAvatarUrl = () => {
+    return shop?.avatarUrl || shop?.avatar?.url || "https://ik.imagekit.io/AkshayMicroMart/photo/3d-cartoon-portrait-person-practicing-law-related-profession%20(1).jpg?updatedAt=1759855179824";
+  };
+
+  const getBannerUrl = () => {
+    return shop?.bannerUrl || shop?.coverBanner?.url || "https://ik.imagekit.io/AkshayMicroMart/photo/ChatGPT%20Image%20Oct%207,%202025,%2008_19_51%20PM.png?updatedAt=1759854033660";
+  };
+
   return (
     <div className="group w-full rounded-xl cursor-pointer bg-white border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 hover:-translate-y-1">
       {/* Cover photo */}
       <div className="h-[100px] sm:h-[120px] w-full relative">
         <Image
-          src={
-            shop?.coverBanner ||
-            "https://ik.imagekit.io/AkshayMicroMart/photo/ChatGPT%20Image%20Oct%207,%202025,%2008_19_51%20PM.png?updatedAt=1759854033660"
-          }
+          src={getBannerUrl()}
           alt="Cover"
           fill
           className="object-cover w-full h-full"
@@ -38,10 +56,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
       <div className="relative flex justify-center -mt-8 sm:-mt-9">
         <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-4 border-white overflow-hidden shadow-md group-hover:scale-105 transition-transform duration-300">
           <Image
-            src={
-              shop?.avatar ||
-              "https://ik.imagekit.io/AkshayMicroMart/photo/3d-cartoon-portrait-person-practicing-law-related-profession%20(1).jpg?updatedAt=1759855179824"
-            }
+            src={getAvatarUrl()}
             alt={shop?.name || "Avatar"}
             width={64}
             height={64}

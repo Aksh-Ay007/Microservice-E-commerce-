@@ -276,7 +276,7 @@ const Page = () => {
                         <div className="relative">
                           <Image
                             src={
-                              chat.user?.avatar ||
+                              chat.user?.avatar.url ||
                               "https://ik.imagekit.io/AkshayMicroMart/photo/useravatar.jpg?updatedAt=1760470134415"
                             }
                             alt={chat.user?.name}
@@ -320,7 +320,7 @@ const Page = () => {
                   <div className="relative">
                     <Image
                       src={
-                        selectedChat.user?.avatar ||
+                        selectedChat. user?.avatar.url ||
                         "https://ik.imagekit.io/AkshayMicroMart/photo/useravatar.jpg?updatedAt=1760470134415"
                       }
                       alt={selectedChat.user?.name}

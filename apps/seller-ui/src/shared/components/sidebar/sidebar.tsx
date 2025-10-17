@@ -11,6 +11,7 @@ import {
   Settings,
   SquarePlus,
   TicketPercent,
+  UserCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -79,6 +80,17 @@ const SideBarWrapper = () => {
 
           <div className="mt-2 block">
             <SidebarMenu title="Main Menu">
+              <SidebarItem
+                title="Profile"
+                icon={
+                  <UserCircle
+                    size={26}
+                    color={getIconColor("/dashboard/profile")}
+                  />
+                }
+                isActive={activeSideBar === "/dashboard/profile"}
+                href="/dashboard/profile"
+              />
               <SidebarItem
                 title="Orders"
                 icon={

@@ -18,6 +18,7 @@ import {
   varifyOtp,
 } from "../utils/auth.helper";
 import { setCookie } from "../utils/cookies/setCookie";
+import { sendLog } from '../../../../packages/utils/logs/send-logs';
 
 // user registration
 export const userRegistration = async (
@@ -211,15 +212,30 @@ export const refreshToken = async (
 export const getUser = async (req: any, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
+    await sendLog({
+      type:"success",
+      message:`User data retrived ${user?.email} `,
+      source:"auth-service"
+    })
+
+    const userWithAvatar = await prisma.users.findUnique({
+      where: { id: user.id },
+      include: {
+        avatar: true,
+      },
+    });
 
     res.status(200).json({
       success: true,
-      user,
+      user: userWithAvatar,
     });
   } catch (error) {
     next(error);
   }
 };
+
+
+
 
 // forgot password
 export const userForgotPassword = async (
@@ -426,106 +442,6 @@ export const getUserAddress = async (
   }
 };
 
-export const updateUserAvatar = async (
-  req: any,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = req.user?.id;
-    const { fileName } = req.body;
-
-    console.log("📝 Update avatar request:", { userId, hasFile: !!fileName });
-
-    if (!userId) {
-      throw new ValidationError("User not authenticated");
-    }
-
-    if (!fileName) {
-      throw new ValidationError("File name (Base64 image) is required");
-    }
-
-    // ✅ Upload to ImageKit
-    console.log("📤 Uploading to ImageKit...");
-    const uploadResponse = await imagekit.upload({
-      file: fileName,
-      fileName: `avatar-${userId}-${Date.now()}.jpg`,
-      folder: "/avatars",
-    });
-    console.log("✅ ImageKit upload success:", uploadResponse.fileId);
-
-    // ✅ Find existing user
-    console.log("🔍 Finding user...");
-    const existingUser = await prisma.users.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        imagesId: true,
-      },
-    });
-    console.log("👤 User found:", { userId, imagesId: existingUser?.imagesId });
-
-    // ✅ Delete old avatar if exists
-    if (existingUser?.imagesId) {
-      try {
-        console.log("🗑️ Deleting old avatar...");
-
-        // Get old image details
-        const oldImage = await prisma.images.findUnique({
-          where: { id: existingUser.imagesId },
-        });
-
-        if (oldImage?.file_id) {
-          // Delete from ImageKit
-          await imagekit.deleteFile(oldImage.file_id);
-          console.log("✅ Deleted from ImageKit:", oldImage.file_id);
-        }
-
-        // Delete from database
-        await prisma.images.delete({
-          where: { id: existingUser.imagesId },
-        });
-        console.log("✅ Deleted from database");
-      } catch (err: any) {
-        console.warn("⚠️ Old avatar cleanup failed:", err.message);
-        // Continue even if cleanup fails
-      }
-    }
-
-    // ✅ Create new image record
-    console.log("💾 Creating new image record...");
-    const newImage = await prisma.images.create({
-      data: {
-        file_id: uploadResponse.fileId,
-        url: uploadResponse.url,
-      },
-    });
-    console.log("✅ Image record created:", newImage.id);
-
-    // ✅ Update user's imagesId
-    console.log("🔄 Updating user...");
-    await prisma.users.update({
-      where: { id: userId },
-      data: { imagesId: newImage.id },
-    });
-    console.log("✅ User updated successfully");
-
-    return res.status(200).json({
-      success: true,
-      message: "Avatar updated successfully",
-      avatarUrl: uploadResponse.url,
-    });
-  } catch (error: any) {
-    console.error("❌ updateUserAvatar error:", {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
-    });
-    return next(error);
-  }
-};
-
-
 
 
 // Create first admin (one-time setup)
@@ -674,5 +590,133 @@ export const getAdmin = async (req: any, res: Response, next: NextFunction) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+
+
+
+
+export const updateUserAvatar = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    console.log("🚀 Starting avatar upload...");
+    console.log("Request body:", req.body);
+    console.log("User from request:", req.user);
+
+    const userId = req.user?.id;
+    const { fileName } = req.body;
+
+    if (!userId) {
+      console.log("❌ No user ID found");
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    if (!fileName) {
+      console.log("❌ No fileName provided");
+      return res
+        .status(400)
+        .json({ error: "File name (Base64 image) is required" });
+    }
+
+    console.log("✅ User authenticated, proceeding with upload...");
+
+    // Upload to ImageKit
+    console.log("📤 Uploading to ImageKit...");
+    const uploadResponse = await imagekit.upload({
+      file: fileName,
+      fileName: `avatar-${userId}-${Date.now()}.jpg`,
+      folder: "/avatars",
+    });
+    console.log("✅ ImageKit upload successful:", uploadResponse);
+
+    // Find existing user
+    console.log("🔍 Finding existing user...");
+    const existingUser = await prisma.users.findUnique({
+      where: { id: userId },
+      select: { id: true, imagesId: true },
+    });
+    console.log("✅ User found:", existingUser);
+
+    // Delete old avatar if exists
+    if (existingUser?.imagesId) {
+      console.log("🗑️ Deleting old avatar...");
+      try {
+        const oldImage = await prisma.images.findUnique({
+          where: { id: existingUser.imagesId },
+        });
+
+        if (oldImage?.file_id) {
+          await imagekit.deleteFile(oldImage.file_id);
+          console.log("✅ Old image deleted from ImageKit");
+        }
+
+        await prisma.images.delete({
+          where: { id: existingUser.imagesId },
+        });
+        console.log("✅ Old image deleted from database");
+      } catch (err) {
+        console.warn("⚠️ Old avatar cleanup failed:", err);
+      }
+    }
+
+    // Create new image record
+    console.log("💾 Creating new image record...");
+    const newImage = await prisma.images.create({
+      data: {
+        file_id: uploadResponse.fileId,
+        url: uploadResponse.url,
+        type: "avatar",
+      },
+    });
+    console.log("✅ New image created:", newImage);
+
+    // Update user's imagesId
+    console.log("🔄 Updating user's imagesId...");
+    await prisma.users.update({
+      where: { id: userId },
+      data: { imagesId: newImage.id },
+    });
+    console.log("✅ User updated successfully");
+
+    return res.status(200).json({
+      success: true,
+      message: "Avatar updated successfully",
+      avatarUrl: uploadResponse.url,
+    });
+  } catch (error: any) {
+    console.error("❌ updateUserAvatar error:", error);
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+    return res.status(500).json({
+      error: "Avatar upload failed",
+      message: error.message,
+      details: error.toString(),
+    });
+  }
+};
+
+
+export const testImageKit = async (req: any, res: Response) => {
+  try {
+    console.log("🧪 Testing ImageKit connection...");
+
+    const testUpload = await imagekit.upload({
+      file: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+      fileName: "test.jpg",
+      folder: "/test",
+    });
+
+    console.log("✅ ImageKit test successful:", testUpload);
+    res.json({
+      success: true,
+      message: "ImageKit working",
+      upload: testUpload,
+    });
+  } catch (error) {
+    console.error("❌ ImageKit test failed:", error);
+    res.status(500).json({ success: false, error: error.message });
   }
 };
