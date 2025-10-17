@@ -5,10 +5,12 @@ import {
   createDiscountCodes,
   createEvent,
   createProduct,
+  createRating,
   deleteDiscountCode,
   deleteEvent,
   deleteProduct,
   deleteProductImage,
+  deleteRating,
   getAllEvents,
   getAllProducts,
   getCategories,
@@ -18,12 +20,15 @@ import {
   getFilteredProducts,
   getFilteredShops,
   getProductDetails,
+  getProductRatings,
+  getRatingStats,
   getShopEvents,
   getShopProducts,
   getStripeAccount,
   restoreProduct,
   searchProducts,
   topShops,
+  updateRating,
   uploadProductImage,
 } from "../controllers/product.controller";
 
@@ -87,5 +92,11 @@ router.get("/get-shop-events", isSellerAuthenticated, getShopEvents);
 router.delete("/delete-event/:eventId", isSellerAuthenticated, deleteEvent);
 router.get("/get-event-details/:slug", getEventDetails);
 
+// Rating routes
+router.post("/ratings", createRating);
+router.get("/ratings/product/:productId", getProductRatings);
+router.get("/ratings/stats/:productId", getRatingStats);
+router.put("/ratings/:id", updateRating);
+router.delete("/ratings/:id", deleteRating);
 
 export default router;

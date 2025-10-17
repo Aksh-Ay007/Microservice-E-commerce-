@@ -505,14 +505,12 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
       </div>
 
       <div className="w-[90%] lg:w-[80%] mx-auto mt-6">
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-xl font-bold text-gray-800 mb-4 pb-3 border-b border-gray-200">
-            Ratings & Reviews
-          </h3>
-          <p className="text-center text-gray-500 py-12">
-            No reviews available yet
-          </p>
-        </div>
+        <ReviewsSection
+          productId={productDetails.id}
+          productTitle={productDetails.title}
+          averageRating={productDetails.averageRating || 0}
+          totalRatings={productDetails.totalRatings || 0}
+        />
       </div>
 
       <div className="w-[90%] lg:w-[80%] mx-auto mt-6">

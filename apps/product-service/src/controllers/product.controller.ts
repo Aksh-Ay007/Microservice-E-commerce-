@@ -1132,3 +1132,292 @@ export const getEventDetails = async (
     return next(error);
   }
 };
+
+// ==================== RATING FUNCTIONS ====================
+
+// Create Rating
+export const createRating = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { productId, rating, review, title, images, orderId } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return next(new AuthError("User authentication required"));
+    }
+
+    if (!productId || !rating || rating < 1 || rating > 5) {
+      return next(new ValidationError("Product ID and valid rating (1-5) are required"));
+    }
+
+    // Check if product exists
+    const product = await prisma.products.findUnique({
+      where: { id: productId }
+    });
+
+    if (!product) {
+      return next(new NotFoundError("Product not found"));
+    }
+
+    // Check if user already rated this product
+    const existingRating = await prisma.ratings.findFirst({
+      where: { productId, userId }
+    });
+
+    if (existingRating) {
+      return next(new ValidationError("You have already rated this product"));
+    }
+
+    // Create new rating
+    const newRating = await prisma.ratings.create({
+      data: {
+        productId,
+        userId,
+        rating: parseInt(rating),
+        review: review || "",
+        title: title || "",
+        images: images || [],
+        orderId: orderId || null,
+        isVerified: !!orderId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          }
+        }
+      }
+    });
+
+    // Update product rating stats
+    await updateProductRatingStats(productId);
+
+    res.status(201).json({
+      success: true,
+      message: "Rating submitted successfully",
+      rating: newRating
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get Product Ratings
+export const getProductRatings = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { productId } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const rating = req.query.rating ? parseInt(req.query.rating as string) : undefined;
+    const sortBy = (req.query.sortBy as string) || 'createdAt';
+    const sortOrder = (req.query.sortOrder as string) || 'desc';
+
+    const skip = (page - 1) * limit;
+
+    const whereClause: any = { productId };
+    if (rating) {
+      whereClause.rating = rating;
+    }
+
+    const [ratings, total] = await Promise.all([
+      prisma.ratings.findMany({
+        where: whereClause,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            }
+          }
+        },
+        orderBy: { [sortBy]: sortOrder },
+        skip,
+        take: limit,
+      }),
+      prisma.ratings.count({ where: whereClause })
+    ]);
+
+    res.status(200).json({
+      success: true,
+      ratings,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get Rating Statistics
+export const getRatingStats = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { productId } = req.params;
+
+    const stats = await prisma.ratings.groupBy({
+      by: ['rating'],
+      where: { productId },
+      _count: { rating: true }
+    });
+
+    const totalRatings = await prisma.ratings.count({
+      where: { productId }
+    });
+
+    const averageResult = await prisma.ratings.aggregate({
+      where: { productId },
+      _avg: { rating: true }
+    });
+
+    const ratingDistribution = {
+      5: 0,
+      4: 0,
+      3: 0,
+      2: 0,
+      1: 0,
+    };
+
+    stats.forEach(stat => {
+      ratingDistribution[stat.rating as keyof typeof ratingDistribution] = stat._count.rating;
+    });
+
+    res.status(200).json({
+      success: true,
+      totalRatings,
+      averageRating: averageResult._avg.rating || 0,
+      ratingDistribution,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update Rating
+export const updateRating = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const { rating, review, title, images } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return next(new AuthError("User authentication required"));
+    }
+
+    const existingRating = await prisma.ratings.findFirst({
+      where: { id, userId }
+    });
+
+    if (!existingRating) {
+      return next(new NotFoundError("Rating not found or you are not authorized to update it"));
+    }
+
+    const updatedRating = await prisma.ratings.update({
+      where: { id },
+      data: {
+        rating: rating ? parseInt(rating) : undefined,
+        review: review !== undefined ? review : undefined,
+        title: title !== undefined ? title : undefined,
+        images: images !== undefined ? images : undefined,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          }
+        }
+      }
+    });
+
+    // Update product rating stats
+    await updateProductRatingStats(existingRating.productId);
+
+    res.status(200).json({
+      success: true,
+      message: "Rating updated successfully",
+      rating: updatedRating
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete Rating
+export const deleteRating = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return next(new AuthError("User authentication required"));
+    }
+
+    const existingRating = await prisma.ratings.findFirst({
+      where: { id, userId }
+    });
+
+    if (!existingRating) {
+      return next(new NotFoundError("Rating not found or you are not authorized to delete it"));
+    }
+
+    const productId = existingRating.productId;
+    await prisma.ratings.delete({ where: { id } });
+
+    // Update product rating stats
+    await updateProductRatingStats(productId);
+
+    res.status(200).json({
+      success: true,
+      message: "Rating deleted successfully"
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Helper function to update product rating stats
+const updateProductRatingStats = async (productId: string) => {
+  try {
+    const stats = await prisma.ratings.aggregate({
+      where: { productId },
+      _avg: { rating: true },
+      _count: { rating: true }
+    });
+
+    await prisma.products.update({
+      where: { id: productId },
+      data: {
+        averageRating: stats._avg.rating || 0,
+        totalRatings: stats._count.rating || 0,
+      }
+    });
+  } catch (error) {
+    console.error("Error updating product rating stats:", error);
+  }
+};

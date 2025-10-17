@@ -1,8 +1,9 @@
-import { Heart, MapPin, X } from "lucide-react";
+import { Heart, MapPin, X, Star, Upload } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import CartIcon from "../../../assets/svgs/cart-icon";
 import useDeviceTracking from "../../../hooks/useDeviceTracking";
 import useLocationTracking from "../../../hooks/useLocationTracking";
@@ -11,6 +12,7 @@ import { useStore } from "../../../store";
 import axiosInstance from "../../../utils/axiosinstance";
 import { isProtected } from "../../../utils/protected";
 import Ratings from "../ratings";
+import { toast } from "sonner";
 
 const ProductDetailsCard = ({
   data,
@@ -24,6 +26,11 @@ const ProductDetailsCard = ({
   const [isSizeSelected, setIsSizeSelected] = useState(data?.sizes?.[0] || "");
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [hoveredStar, setHoveredStar] = useState(0);
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
+  const [previewImages, setPreviewImages] = useState<string[]>([]);
 
   const addToCart = useStore((state: any) => state.addToCart);
   const cart = useStore((state: any) => state.cart);
@@ -40,6 +47,15 @@ const ProductDetailsCard = ({
   const deviceInfo = useDeviceTracking();
 
   const router = useRouter();
+
+  const { register, handleSubmit, setValue, watch, reset } = useForm({
+    defaultValues: {
+      rating: 0,
+      title: "",
+      review: "",
+      images: [] as File[],
+    }
+  });
 
   const handleChat = async () => {
     if (isLoading) {
@@ -63,6 +79,76 @@ const ProductDetailsCard = ({
 
   const estimatedDelivery = new Date();
   estimatedDelivery.setDate(estimatedDelivery.getDate() + 5);
+
+  // Rating functions
+  const handleStarClick = (rating: number) => {
+    setSelectedRating(rating);
+    setValue("rating", rating);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const newPreviewImages: string[] = [];
+    
+    files.forEach(file => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          newPreviewImages.push(e.target?.result as string);
+          setPreviewImages([...previewImages, ...newPreviewImages]);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    setValue("images", [...watch("images") || [], ...files]);
+  };
+
+  const removeImage = (index: number) => {
+    const newImages = previewImages.filter((_, i) => i !== index);
+    setPreviewImages(newImages);
+    const currentFiles = watch("images") || [];
+    const newFiles = currentFiles.filter((_, i) => i !== index);
+    setValue("images", newFiles);
+  };
+
+  const onSubmitRating = async (formData: any) => {
+    if (selectedRating === 0) {
+      toast.error("Please select a rating");
+      return;
+    }
+
+    setIsSubmittingRating(true);
+    try {
+      const submitData = new FormData();
+      submitData.append("productId", data.id);
+      submitData.append("rating", formData.rating.toString());
+      submitData.append("title", formData.title || "");
+      submitData.append("review", formData.review || "");
+      
+      if (formData.images && formData.images.length > 0) {
+        formData.images.forEach((file: File) => {
+          submitData.append("images", file);
+        });
+      }
+
+      await axiosInstance.post("/product/api/ratings", submitData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      toast.success("Rating submitted successfully!");
+      reset();
+      setSelectedRating(0);
+      setPreviewImages([]);
+      setShowRatingModal(false);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to submit rating");
+    } finally {
+      setIsSubmittingRating(false);
+    }
+  };
 
   return (
     <div
@@ -315,9 +401,173 @@ const ProductDetailsCard = ({
               Estimated Delivery{" "}
               <strong>{estimatedDelivery.toDateString()}</strong>
             </div>
+
+            {/* Rating Button */}
+            <div className="mt-4">
+              <button
+                onClick={() => setShowRatingModal(true)}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Rate & Review This Product
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Rating Modal */}
+      {showRatingModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Rate & Review</h2>
+                <button
+                  onClick={() => setShowRatingModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">{data?.title}</h3>
+              </div>
+
+              <form onSubmit={handleSubmit(onSubmitRating)} className="space-y-6">
+                {/* Star Rating */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Your Rating *
+                  </label>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => handleStarClick(star)}
+                        onMouseEnter={() => setHoveredStar(star)}
+                        onMouseLeave={() => setHoveredStar(0)}
+                        className="p-1 transition-colors"
+                      >
+                        <Star
+                          size={32}
+                          className={`${
+                            star <= (hoveredStar || selectedRating)
+                              ? "text-yellow-400 fill-current"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  {selectedRating > 0 && (
+                    <p className="text-sm text-gray-600 mt-2">
+                      {selectedRating === 1 && "Poor"}
+                      {selectedRating === 2 && "Fair"}
+                      {selectedRating === 3 && "Good"}
+                      {selectedRating === 4 && "Very Good"}
+                      {selectedRating === 5 && "Excellent"}
+                    </p>
+                  )}
+                </div>
+
+                {/* Review Title */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Review Title
+                  </label>
+                  <input
+                    {...register("title")}
+                    type="text"
+                    placeholder="Summarize your review"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Review Text */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Your Review
+                  </label>
+                  <textarea
+                    {...register("review")}
+                    rows={4}
+                    placeholder="Tell others about your experience with this product"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Image Upload */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Add Photos (Optional)
+                  </label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <label
+                      htmlFor="image-upload"
+                      className="cursor-pointer flex flex-col items-center"
+                    >
+                      <Upload size={24} className="text-gray-400 mb-2" />
+                      <span className="text-sm text-gray-600">
+                        Click to upload images or drag and drop
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* Preview Images */}
+                  {previewImages.length > 0 && (
+                    <div className="mt-4 grid grid-cols-4 gap-2">
+                      {previewImages.map((image, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={image}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-20 object-cover rounded-md"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Submit Buttons */}
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowRatingModal(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingRating || selectedRating === 0}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isSubmittingRating ? "Submitting..." : "Submit Review"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

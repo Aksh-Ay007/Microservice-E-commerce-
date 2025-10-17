@@ -225,8 +225,13 @@ const ProductCard = ({ product, isEvent }: ProductCardProps) => {
         </Link>
 
         {/* Ratings */}
-        <div className="mt-2">
-          <Ratings rating={product?.ratings || 0} />
+        <div className="mt-2 flex items-center gap-2">
+          <Ratings rating={product?.averageRating || 0} />
+          {product?.totalRatings > 0 && (
+            <span className="text-xs text-gray-500">
+              ({product.totalRatings})
+            </span>
+          )}
         </div>
 
         {/* Price Section */}

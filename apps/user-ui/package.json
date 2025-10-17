@@ -5,6 +5,8 @@
   "dependencies": {
     "next": "~15.1.4",
     "react": "19.0.0",
-    "react-dom": "19.0.0"
+    "react-dom": "19.0.0",
+    "react-hook-form": "^7.65.0",
+    "react-hot-toast": "^2.6.0"
   }
 }
