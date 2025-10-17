@@ -23,7 +23,7 @@ const Page = () => {
       return res.data.products;
     },
     staleTime: 1000 * 60 * 5, // Increased stale time for better caching
-    cacheTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
+    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes (replaced cacheTime)
     refetchOnWindowFocus: false, // Prevent unnecessary refetches
   });
 
@@ -36,7 +36,7 @@ const Page = () => {
       return res.data.products;
     },
     staleTime: 1000 * 60 * 5,
-    cacheTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 10,
     refetchOnWindowFocus: false,
   });
 
@@ -47,7 +47,7 @@ const Page = () => {
       return res.data.shops;
     },
     staleTime: 1000 * 60 * 10, // Shops change less frequently
-    cacheTime: 1000 * 60 * 15,
+    gcTime: 1000 * 60 * 15,
     refetchOnWindowFocus: false,
   });
 
@@ -60,7 +60,7 @@ const Page = () => {
       return res.data.events;
     },
     staleTime: 1000 * 60 * 5,
-    cacheTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 10,
     refetchOnWindowFocus: false,
   });
 
@@ -85,13 +85,13 @@ const Page = () => {
           )}
           {!isLoading && !isError && (
             <div className=" m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
-              {products?.map((product: any) => (
+              {Array.isArray(products) && products.map((product: any) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
           )}
 
-          {products?.length === 0 && (
+          {Array.isArray(products) && products.length === 0 && (
             <p className="text-center">No products available yet!</p>
           )}
         </ErrorBoundary>
@@ -104,13 +104,13 @@ const Page = () => {
         <ErrorBoundary>
           {!LatestProductsLoading && !latestProductsError && (
             <div className=" m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
-              {latestProducts?.map((product: any) => (
+              {Array.isArray(latestProducts) && latestProducts.map((product: any) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
           )}
 
-          {latestProducts?.length === 0 && (
+          {Array.isArray(latestProducts) && latestProducts.length === 0 && (
             <p className="text-center">No products available yet!</p>
           )}
         </ErrorBoundary>
@@ -122,12 +122,12 @@ const Page = () => {
         <ErrorBoundary>
           {!shopLoading && !shopsError && (
             <div className="m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
-              {shops?.map((shop: any) => (
+              {Array.isArray(shops) && shops.map((shop: any) => (
                 <ShopCard key={shop.id} shop={shop} />
               ))}
             </div>
           )}
-          {shops?.length === 0 && (
+          {Array.isArray(shops) && shops.length === 0 && (
             <p className="text-center">No Shops available yet!</p>
           )}
         </ErrorBoundary>
@@ -139,12 +139,12 @@ const Page = () => {
         <ErrorBoundary>
           {!offersLoading && !offersError && (
             <div className="m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
-              {offers?.map((product: any) => (
+              {Array.isArray(offers) && offers.map((product: any) => (
                 <ProductCard key={product.id} product={product} isEvent={true} />
               ))}
             </div>
           )}
-          {offers?.length === 0 && (
+          {Array.isArray(offers) && offers.length === 0 && (
             <p className="text-center">No offers available yet!</p>
           )}
         </ErrorBoundary>
