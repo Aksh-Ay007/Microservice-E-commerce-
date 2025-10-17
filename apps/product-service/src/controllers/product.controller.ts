@@ -384,7 +384,7 @@ export const deleteProduct = async (
       where: { id: productId },
       data: {
         isDeleted: true,
-        deletedAt: new Date(Date.now() + 24 * 60 * 1000),
+        deletedAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours = 24 * 60 * 60 * 1000 ms
       },
     });
     res.status(200).json({
@@ -1090,7 +1090,7 @@ export const deleteEvent = async (
       where: { id: eventId },
       data: {
         isDeleted: true,
-        deletedAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        deletedAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
       },
     });
 

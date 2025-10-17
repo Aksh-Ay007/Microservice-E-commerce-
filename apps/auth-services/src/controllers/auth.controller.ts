@@ -123,7 +123,7 @@ export const loginUser = async (
     );
 
     const refreshToken = jwt.sign(
-      { id: user.id, role: "user" },
+      { id: user.id.toString(), role: "user" },
       process.env.REFRESH_TOKEN_SECRET as string,
       { expiresIn: "7d" }
     );
