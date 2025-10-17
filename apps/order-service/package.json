@@ -12,7 +12,8 @@
         ],
         "options": {
           "buildTarget": "@./order-service:build",
-          "runBuildTargetDependencies": false
+          "runBuildTargetDependencies": false,
+          "inspect": 9232
         },
         "configurations": {
           "development": {

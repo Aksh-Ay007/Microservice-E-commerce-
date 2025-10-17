@@ -12,7 +12,8 @@
         ],
         "options": {
           "buildTarget": "@./admin-service:build",
-          "runBuildTargetDependencies": false
+          "runBuildTargetDependencies": false,
+          "inspect": 9230
         },
         "configurations": {
           "development": {

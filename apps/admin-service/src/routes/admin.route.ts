@@ -1,6 +1,6 @@
 import express, { Router } from "express";
-import { isAdmin } from "../../../../packages/middleware/authorizeRoles";
-import isAuthenticated from "../../../../packages/middleware/isAuthenticated";
+import { isAdmin } from "@packages/middleware/authorizeRoles";
+import isAuthenticated from "@packages/middleware/isAuthenticated";
 
 import {
    addCategory,

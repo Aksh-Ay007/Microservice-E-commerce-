@@ -1,7 +1,7 @@
 import prisma from "@packages/libs/prisma";
 import { NextFunction, Request, Response } from "express";
-import { ValidationError } from "../../../../packages/error-handler";
-import { imagekit } from '../../../../packages/libs/imagekit';
+import { ValidationError } from "@packages/error-handler";
+import { imagekit } from "@packages/libs/imagekit";
 
 
 export const getAllProducts = async (

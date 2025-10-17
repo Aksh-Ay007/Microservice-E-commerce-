@@ -12,7 +12,8 @@
         ],
         "options": {
           "buildTarget": "@./seller-service:build",
-          "runBuildTargetDependencies": false
+          "runBuildTargetDependencies": false,
+          "inspect": 9233
         },
         "configurations": {
           "development": {

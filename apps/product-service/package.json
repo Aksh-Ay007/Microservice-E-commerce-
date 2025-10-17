@@ -12,7 +12,8 @@
         ],
         "options": {
           "buildTarget": "@./product-service:build",
-          "runBuildTargetDependencies": false
+          "runBuildTargetDependencies": false,
+          "inspect": 9231
         },
         "configurations": {
           "development": {

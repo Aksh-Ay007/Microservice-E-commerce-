@@ -18,7 +18,8 @@
         ], 
         "options": {
           "buildTarget": "auth-services:build",
-          "runBuildTargetDependencies": false
+          "runBuildTargetDependencies": false,
+          "inspect": 9229
         },
         "configurations": {
           "development": {

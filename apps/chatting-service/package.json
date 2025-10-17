@@ -12,7 +12,8 @@
         ],
         "options": {
           "buildTarget": "@./chatting-service:build",
-          "runBuildTargetDependencies": false
+          "runBuildTargetDependencies": false,
+          "inspect": 9234
         },
         "configurations": {
           "development": {

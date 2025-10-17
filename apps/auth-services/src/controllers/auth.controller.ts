@@ -18,7 +18,7 @@ import {
   varifyOtp,
 } from "../utils/auth.helper";
 import { setCookie } from "../utils/cookies/setCookie";
-import { sendLog } from '../../../../packages/utils/logs/send-logs';
+import { sendLog } from "@packages/utils/logs/send-logs";
 
 // user registration
 export const userRegistration = async (

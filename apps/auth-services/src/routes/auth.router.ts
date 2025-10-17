@@ -1,6 +1,6 @@
 import isAuthenticated from "@packages/middleware/isAuthenticated";
 import express, { Router } from "express";
-import { isAdmin, isUser } from "../../../../packages/middleware/authorizeRoles";
+import { isAdmin, isUser } from "@packages/middleware/authorizeRoles";
 import {
   addUserAddress,
   createFirstAdmin,

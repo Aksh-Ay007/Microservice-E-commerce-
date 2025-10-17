@@ -12,7 +12,8 @@
         ],
         "options": {
           "buildTarget": "@./logger-service:build",
-          "runBuildTargetDependencies": false
+          "runBuildTargetDependencies": false,
+          "inspect": 9236
         },
         "configurations": {
           "development": {
