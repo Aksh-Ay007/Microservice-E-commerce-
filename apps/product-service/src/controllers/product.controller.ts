@@ -835,6 +835,13 @@ export const searchProducts = async (
       return res.status(400).json({ message: "Search query is required" });
     }
 
+    // Sanitize and validate search query
+    const sanitizedQuery = query.trim().replace(/[<>'"]/g, '').substring(0, 100);
+    
+    if (sanitizedQuery.length === 0) {
+      return res.status(400).json({ message: "Invalid search query" });
+    }
+
     const products = await prisma.products.findMany({
       where: {
         isDeleted: false,
@@ -842,13 +849,13 @@ export const searchProducts = async (
         OR: [
           {
             title: {
-              contains: query,
+              contains: sanitizedQuery,
               mode: "insensitive",
             },
           },
           {
             short_description: {
-              contains: query,
+              contains: sanitizedQuery,
               mode: "insensitive",
             },
           },
