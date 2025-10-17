@@ -68,7 +68,7 @@ const Page = () => {
             {Array.from({ length: 10 }).map((_, index) => (
               <div
                 key={index}
-                className="h-[250px] bg-gray-300 animate-pulse "
+                className="h-[250px] bg-gray-300 animate-pulse rounded-xl"
               />
             ))}
           </div>
@@ -85,16 +85,7 @@ const Page = () => {
           <p className="text-center">No products available yet!</p>
         )}
 
-        {isLoading && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
-            {Array.from({ length: 10 }).map((_, index) => (
-              <div
-                key={index}
-                className="h-[250px] bg-gray-300 animate-pulse rounded-xl "
-              />
-            ))}
-          </div>
-        )}
+        {/* removed duplicate loading skeleton for Suggested Products */}
 
         <div className="my-8 block">
           <SectionTitle title="Latest Products" />
@@ -112,7 +103,7 @@ const Page = () => {
           <p className="text-center">No products available yet!</p>
         )}
 
-        <div className="mt-8 blcok">
+        <div className="mt-8 block">
           <SectionTitle title="Top Shops" />
         </div>
 
@@ -127,11 +118,11 @@ const Page = () => {
           <p className="text-center">No Shops available yet!</p>
         )}
 
-        <div className="mt-8 blcok">
+        <div className="mt-8 block">
           <SectionTitle title="Top Offers" />
         </div>
 
-        {!offersLoading && !isError && (
+        {!offersLoading && (
           <div className="m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
             {offers?.map((product: any) => (
               <ProductCard key={product.id} product={product} isEvent={true} />
