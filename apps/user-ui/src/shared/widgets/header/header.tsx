@@ -17,16 +17,20 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [searchError, setSearchError] = useState(false);
 
   const handleSearchClick = async () => {
     if (!searchQuery.trim()) return;
     setLoadingSuggestions(true);
+    setSearchError(false);
     try {
       const res = await axiosInstance.get(
         `/product/api/search-products?q=${encodeURIComponent(searchQuery)}`
       );
       setSuggestions(res.data.products.slice(0, 10));
     } catch (error) {
+      setSearchError(true);
+      setSuggestions([]);
     } finally {
       setLoadingSuggestions(false);
     }
@@ -35,6 +39,7 @@ const Header = () => {
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSuggestions([]);
+      setSearchError(false);
       return;
     }
     const delay = setTimeout(handleSearchClick, 500);
@@ -44,7 +49,7 @@ const Header = () => {
   return (
     <div className="w-full bg-white shadow-sm sticky top-0 z-50">
       {/* ---------- Desktop Header ---------- */}
-      <div className="hidden md:flex w-[80%] py-5 m-auto items-center justify-between">
+      <div className="hidden md:flex max-w-7xl w-full px-4 py-5 mx-auto items-center justify-between">
         {/* Logo */}
         <div>
           <Link href={"/"}>
@@ -79,21 +84,33 @@ const Header = () => {
           </div>
 
           {/* Suggestion dropdown */}
-          {suggestions.length > 0 && (
+          {(suggestions.length > 0 || searchError) && searchQuery.trim() && (
             <div className="absolute top-[60px] left-0 w-full bg-white border border-t-0 border-gray-200 shadow-lg z-50 rounded-b-xl max-h-[300px] overflow-y-auto">
-              {suggestions.map((item) => (
-                <Link
-                  href={`/product/${item.slug}`}
-                  key={item.id}
-                  onClick={() => {
-                    setSuggestions([]);
-                    setSearchQuery("");
-                  }}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#3489FF] transition-all border-b border-gray-100"
-                >
-                  {item.title}
-                </Link>
-              ))}
+              {searchError ? (
+                <div className="px-4 py-3 text-sm text-red-600 text-center">
+                  <span className="block">❌ Search failed</span>
+                  <span className="text-xs text-gray-500">Please try again</span>
+                </div>
+              ) : suggestions.length === 0 && !loadingSuggestions ? (
+                <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                  No products found for "{searchQuery}"
+                </div>
+              ) : (
+                suggestions.map((item) => (
+                  <Link
+                    href={`/product/${item.slug}`}
+                    key={item.id}
+                    onClick={() => {
+                      setSuggestions([]);
+                      setSearchQuery("");
+                      setSearchError(false);
+                    }}
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#3489FF] transition-all border-b border-gray-100"
+                  >
+                    {item.title}
+                  </Link>
+                ))
+              )}
             </div>
           )}
         </div>
@@ -170,7 +187,7 @@ const Header = () => {
       </div>
 
       {/* ---------- Mobile Header ---------- */}
-      <div className="md:hidden w-[90%] m-auto py-3 flex flex-col gap-3">
+      <div className="md:hidden max-w-sm w-full px-4 mx-auto py-3 flex flex-col gap-3">
         {/* Top row: Logo + icons */}
         <div className="flex items-center justify-between">
           <Link href={"/"}>
