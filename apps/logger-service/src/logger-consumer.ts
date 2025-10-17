@@ -6,7 +6,7 @@ const consumer = kafka.consumer({ groupId: "log-events-group" });
 const logQueue: string[] = [];
 
 const proccessLogs = () => {
-  if (logQueue.length > 0) return;
+  if (logQueue.length === 0) return;
 
   console.log(`Processing ${logQueue.length} log in batch`);
 

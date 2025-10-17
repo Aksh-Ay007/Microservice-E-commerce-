@@ -1,7 +1,7 @@
-import crypto from "crypto";
 import { ValidationError } from "@packages/error-handler";
 import prisma from "@packages/libs/prisma";
 import redis from "@packages/libs/redis";
+import crypto from "crypto";
 import { NextFunction, Request, Response } from "express";
 import { sendEmail } from "./sendMail";
 
@@ -47,7 +47,7 @@ export const checkOtpRegistration = async (
   if (await redis.get(`otp_cooldown:${email}`)) {
     throw new ValidationError("Please wait for 1 minute before requesting OTP");
   }
-}; // <-- MISSING THIS
+};
 
 export const trackOtpRequests = async (email: string, next: NextFunction) => {
   const otpRequestKey = `otp_request_count:${email}`;

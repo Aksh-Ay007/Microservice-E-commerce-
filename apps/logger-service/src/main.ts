@@ -2,6 +2,7 @@ import { WebSocket } from "ws";
 
 import express from "express";
 import http from "http";
+import { consumeKafkaMessages } from './logger-consumer';
 
 const app = express();
 
@@ -32,4 +33,4 @@ server.listen(process.env.PORT || 6008, () => {
 
 //start kafka consumer
 
-
+consumeKafkaMessages();

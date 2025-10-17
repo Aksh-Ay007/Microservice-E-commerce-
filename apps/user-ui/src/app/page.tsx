@@ -24,7 +24,7 @@ const Page = () => {
     staleTime: 1000 * 60 * 2,
   });
 
-  const { data: latestProducts,isLoading:LatestProductsLoading } = useQuery({
+  const { data: latestProducts, isLoading: LatestProductsLoading } = useQuery({
     queryKey: ["latest-products"],
     queryFn: async () => {
       const res = await axiosInstance.get(
@@ -100,7 +100,7 @@ const Page = () => {
           <SectionTitle title="Latest Products" />
         </div>
 
-        {!LatestProductsLoading &&  (
+        {!LatestProductsLoading && (
           <div className=" m-auto grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
             {latestProducts?.map((product: any) => (
               <ProductCard key={product.id} product={product} />
@@ -112,7 +112,7 @@ const Page = () => {
           <p className="text-center">No products available yet!</p>
         )}
 
-        <div className="mt-8 blcok">
+        <div className="mt-8 block">
           <SectionTitle title="Top Shops" />
         </div>
 

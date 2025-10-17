@@ -8,6 +8,7 @@ import prisma from "@packages/libs/prisma";
 import bcrypt from "bcryptjs";
 import { NextFunction, Request, Response } from "express";
 import jwt, { JsonWebTokenError } from "jsonwebtoken";
+import { sendLog } from "../../../../packages/utils/logs/send-logs";
 import {
   checkOtpRegistration,
   handleForgotPassword,
@@ -18,7 +19,6 @@ import {
   varifyOtp,
 } from "../utils/auth.helper";
 import { setCookie } from "../utils/cookies/setCookie";
-import { sendLog } from '../../../../packages/utils/logs/send-logs';
 
 // user registration
 export const userRegistration = async (
@@ -213,10 +213,10 @@ export const getUser = async (req: any, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
     await sendLog({
-      type:"success",
-      message:`User data retrived ${user?.email} `,
-      source:"auth-service"
-    })
+      type: "success",
+      message: `User data retrived ${user?.email} `,
+      source: "auth-service",
+    });
 
     const userWithAvatar = await prisma.users.findUnique({
       where: { id: user.id },
@@ -233,9 +233,6 @@ export const getUser = async (req: any, res: Response, next: NextFunction) => {
     next(error);
   }
 };
-
-
-
 
 // forgot password
 export const userForgotPassword = async (
@@ -356,6 +353,8 @@ export const addUserAddress = async (
 ) => {
   try {
     const userId = req.user?.id;
+    const userEmail = req.user?.email;
+
     const { label, name, street, city, zip, country, isDefault } = req.body;
 
     if (!label || !name || !street || !city || !zip || !country) {
@@ -380,6 +379,12 @@ export const addUserAddress = async (
         country,
         isDefault,
       },
+    });
+
+    await sendLog({
+      type: "success",
+      message: `User ${userEmail} added new address: ${label} in ${city}, ${country}`,
+      source: "auth-service",
     });
 
     res
@@ -441,8 +446,6 @@ export const getUserAddress = async (
     next(error);
   }
 };
-
-
 
 // Create first admin (one-time setup)
 export const createFirstAdmin = async (
@@ -576,9 +579,6 @@ export const logOutAdmin = async (
   res.status(200).json({ message: "Admin logged out successfully" });
 };
 
-
-
-
 // get logged in user
 export const getAdmin = async (req: any, res: Response, next: NextFunction) => {
   try {
@@ -592,9 +592,6 @@ export const getAdmin = async (req: any, res: Response, next: NextFunction) => {
     next(error);
   }
 };
-
-
-
 
 export const updateUserAvatar = async (
   req: any,
@@ -697,7 +694,6 @@ export const updateUserAvatar = async (
     });
   }
 };
-
 
 export const testImageKit = async (req: any, res: Response) => {
   try {
