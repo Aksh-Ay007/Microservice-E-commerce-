@@ -272,7 +272,7 @@ const Page = () => {
                       const wordCount = value.trim().split(/\s+/).length;
                       return (
                         wordCount <= 150 ||
-                        `Description cannont be more than 150 words (Current:${wordCount})`
+                        `Description cannot be more than 150 words (Current:${wordCount})`
                       );
                     },
                   })}
