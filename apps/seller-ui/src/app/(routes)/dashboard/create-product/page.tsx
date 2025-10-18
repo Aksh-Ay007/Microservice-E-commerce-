@@ -16,8 +16,7 @@ import ImagePlaceHolder from "../../../../shared/components/image-placeholder";
 import { enhancements } from "../../../../utils/AI.enhancements";
 import axiosInstance from "../../../../utils/axiosinstance";
 import { useRouter } from "next/navigation";
-;
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 
 interface UploadedImage {
   fileId: string;
@@ -43,7 +42,6 @@ const Page = () => {
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const router = useRouter();
-
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["categories"],
@@ -147,22 +145,16 @@ const Page = () => {
     }
   };
 
-  const onSubmit = async(data: any) => {
-
+  const onSubmit = async (data: any) => {
     try {
       setLoading(true);
-          await axiosInstance.post("/product/api/create-product", data);
-          router.push("/dashboard/all-products")
-
-
-
-    } catch (error:any) {
+      await axiosInstance.post("/product/api/create-product", data);
+      router.push("/dashboard/all-products");
+    } catch (error: any) {
       toast.error(error?.data?.message || "Failed to create product");
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
-
   };
 
   const applyTransformation = async (transformation: string) => {
@@ -185,7 +177,7 @@ const Page = () => {
 
   return (
     <form
-      className="w-full mx-auto p-8 shadow-md rounded-lg text-white"
+      className="w-full mx-auto p-8 shadow-md rounded-lg text-white bg-gray-800"
       onSubmit={handleSubmit(onSubmit)}
     >
       {/* Heading and breadcrumbs */}
@@ -272,7 +264,7 @@ const Page = () => {
                       const wordCount = value.trim().split(/\s+/).length;
                       return (
                         wordCount <= 150 ||
-                        `Description cannont be more than 150 words (Current:${wordCount})`
+                        `Description cannot be more than 150 words (Current:${wordCount})`
                       );
                     },
                   })}

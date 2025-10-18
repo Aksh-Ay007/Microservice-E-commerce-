@@ -48,6 +48,7 @@ model users {
   imagesId    String?       @db.ObjectId
   followings  followers[]
   orders      orders[]
+  ratings     ratings[]     @relation // Add this relation
 }
 
 model shopReviews {
@@ -155,7 +156,9 @@ model products {
   stock                 Int
   sale_price            Float
   regular_price         Float
-  ratings               Float         @default(5)
+
+  averageRating         Float         @default(0)  
+  totalRatings          Int           @default(0)
   warranty              String?
   custom_specifications Json?
   custom_properties     Json
@@ -169,7 +172,9 @@ model products {
   updatedAt             DateTime      @updatedAt
   shopId                String        @db.ObjectId
   Shop                  shops         @relation(fields: [shopId], references: [id])
+  ratings               ratings[]     @relation // Keep this relation
 }
+
 
 model userAnalytics {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -304,4 +309,26 @@ model message {
   createdAt      DateTime @default(now())
 
   @@unique([conversationId, senderId, content, createdAt])
+}
+
+
+
+model ratings {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId String   @db.ObjectId
+  userId    String   @db.ObjectId
+  rating    Int      // 1-5 stars
+  title     String?  // Review title
+  review    String?  // Review text
+  images    String[] // Array of image URLs
+  isVerified Boolean @default(false)
+  orderId   String?  @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  product products @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId]) // One rating per user per product
 }

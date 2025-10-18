@@ -17,16 +17,20 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [searchError, setSearchError] = useState(false);
 
   const handleSearchClick = async () => {
     if (!searchQuery.trim()) return;
     setLoadingSuggestions(true);
+    setSearchError(false);
     try {
       const res = await axiosInstance.get(
         `/product/api/search-products?q=${encodeURIComponent(searchQuery)}`
       );
       setSuggestions(res.data.products.slice(0, 10));
     } catch (error) {
+      setSearchError(true);
+      setSuggestions([]);
     } finally {
       setLoadingSuggestions(false);
     }
@@ -35,6 +39,7 @@ const Header = () => {
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSuggestions([]);
+      setSearchError(false);
       return;
     }
     const delay = setTimeout(handleSearchClick, 500);
@@ -44,7 +49,7 @@ const Header = () => {
   return (
     <div className="w-full bg-white shadow-sm sticky top-0 z-50">
       {/* ---------- Desktop Header ---------- */}
-      <div className="hidden md:flex w-[80%] py-5 m-auto items-center justify-between">
+      <div className="hidden md:flex max-w-7xl mx-auto px-4 py-5 items-center justify-between">
         {/* Logo */}
         <div>
           <Link href={"/"}>
@@ -96,16 +101,22 @@ const Header = () => {
               ))}
             </div>
           )}
+
+          {/* Error state */}
+          {searchError && searchQuery.trim() && !loadingSuggestions && (
+            <div className="absolute top-[60px] left-0 w-full bg-white border border-t-0 border-red-200 shadow-lg z-50 rounded-b-xl">
+              <div className="px-4 py-3 text-sm text-red-600 bg-red-50">
+                Failed to load search results. Please try again.
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Section */}
         <div className="flex items-center gap-10">
           {/* Profile */}
           <div className="flex items-center gap-3">
-            <Link
-              href={user ? "/profile" : "/login"}
-              className="block"
-            >
+            <Link href={user ? "/profile" : "/login"} className="block">
               {user?.avatar?.url ? (
                 <div className="w-[50px] h-[50px] rounded-full overflow-hidden border-2 border-[#e5e7eb] hover:border-[#3489FF] transition-all duration-200">
                   <img
@@ -170,7 +181,7 @@ const Header = () => {
       </div>
 
       {/* ---------- Mobile Header ---------- */}
-      <div className="md:hidden w-[90%] m-auto py-3 flex flex-col gap-3">
+      <div className="md:hidden max-w-7xl mx-auto px-4 py-3 flex flex-col gap-3">
         {/* Top row: Logo + icons */}
         <div className="flex items-center justify-between">
           <Link href={"/"}>
@@ -184,10 +195,7 @@ const Header = () => {
           </Link>
 
           <div className="flex items-center gap-4">
-            <Link
-              href={user ? "/profile" : "/login"}
-              className="block"
-            >
+            <Link href={user ? "/profile" : "/login"} className="block">
               {user?.avatar?.url ? (
                 <div className="w-9 h-9 rounded-full overflow-hidden border border-gray-300 hover:border-[#3489FF] transition-all duration-200">
                   <img

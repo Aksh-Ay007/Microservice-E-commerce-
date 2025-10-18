@@ -5,10 +5,12 @@ import {
   createDiscountCodes,
   createEvent,
   createProduct,
+  createRating,
   deleteDiscountCode,
   deleteEvent,
   deleteProduct,
   deleteProductImage,
+  deleteRating,
   getAllEvents,
   getAllProducts,
   getCategories,
@@ -18,14 +20,18 @@ import {
   getFilteredProducts,
   getFilteredShops,
   getProductDetails,
+  getProductRatings,
+  getRatingStats,
   getShopEvents,
   getShopProducts,
   getStripeAccount,
   restoreProduct,
   searchProducts,
   topShops,
+  updateRating,
   uploadProductImage,
 } from "../controllers/product.controller";
+import isAuthenticated from '../../../../packages/middleware/isAuthenticated';
 
 const router: Router = express.Router();
 
@@ -86,6 +92,13 @@ router.post("/create-event", isSellerAuthenticated, createEvent);
 router.get("/get-shop-events", isSellerAuthenticated, getShopEvents);
 router.delete("/delete-event/:eventId", isSellerAuthenticated, deleteEvent);
 router.get("/get-event-details/:slug", getEventDetails);
+
+
+router.post("/ratings", isAuthenticated, createRating);
+router.get("/ratings/product/:productId", getProductRatings);
+router.get("/ratings/stats/:productId", getRatingStats);
+router.put("/ratings/:id", isAuthenticated, updateRating);
+router.delete("/ratings/:id", isAuthenticated, deleteRating);
 
 
 export default router;
