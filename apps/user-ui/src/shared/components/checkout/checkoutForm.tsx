@@ -83,9 +83,14 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
           <div className="flex justify-between font-semibold pt-2 border-t border-t-slate-200">
             {!!coupon?.discountAmount  && (
               <>
-                <span>Discount</span>
+                <div className="flex flex-col">
+                  <span>Discount</span>
+                  <span className="text-xs text-gray-500 font-normal">
+                    Coupon: {coupon?.code || 'Applied'}
+                  </span>
+                </div>
                 <span className="text-green-600">
-                  ${coupon?.discountAmount?.toFixed(2)}
+                  -${coupon?.discountAmount?.toFixed(2)}
                 </span>
               </>
             )}
