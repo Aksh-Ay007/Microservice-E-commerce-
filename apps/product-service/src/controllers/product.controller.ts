@@ -382,7 +382,7 @@ export const deleteProduct = async (
       where: { id: productId },
       data: {
         isDeleted: true,
-        deletedAt: new Date(Date.now() + 24 * 60 * 1000),
+        deletedAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       },
     });
     res.status(200).json({
@@ -1150,10 +1150,9 @@ export const getEventDetails = async (
   next: NextFunction
 ) => {
   try {
-    const event = await prisma.products.findUnique({
+    const event = await prisma.products.findFirst({
       where: {
         slug: req.params.slug!,
-        // Filter to ensure it is treated as an event
         starting_date: { not: null },
         ending_date: { not: null },
       },

@@ -69,8 +69,8 @@ router.put(
   updateSellerProfile
 );
 
-//notification route can be added here in future
-router.use(
+// Seller notifications
+router.get(
   "/seller-notifications",
   isSellerAuthenticated,
   isSeller,
