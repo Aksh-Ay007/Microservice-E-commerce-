@@ -35,6 +35,7 @@ const CartPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [storedCouponCode, setStoredCouponCode] = useState("");
+  const [couponInfo, setCouponInfo] = useState<any>(null);
 
   const couponCodeApplyHandler = async () => {
     setError("");
@@ -55,17 +56,27 @@ const CartPage = () => {
         setDiscountPercent(res.data.discount);
         setDiscountedProductId(res.data.discountedProductId);
         setCouponCode("");
+        // Store additional coupon info for checkout
+        setCouponInfo({
+          code: couponCode.trim(),
+          public_name: res.data.public_name,
+          discountAmount: parseFloat(res.data.discountAmount),
+          discountPercent: res.data.discount,
+          discountedProductId: res.data.discountedProductId
+        });
       } else {
         setDiscountAmount(0);
         setDiscountPercent(0);
         setDiscountedProductId("");
+        setCouponInfo(null);
         setError(res.data.message || "Invalid or inapplicable coupon code");
       }
     } catch (error: any) {
-      setDiscountAmount(0);
-      setDiscountPercent(0);
-      setDiscountedProductId("");
-      setError(error?.response?.data?.message);
+        setDiscountAmount(0);
+        setDiscountPercent(0);
+        setDiscountedProductId("");
+        setCouponInfo(null);
+        setError(error?.response?.data?.message);
     }
   };
 
@@ -99,7 +110,7 @@ const CartPage = () => {
         {
           cart,
           selectedAddressId,
-          coupon: {
+          coupon: couponInfo || {
             code: storedCouponCode,
             discountPercent,
             discountAmount,
