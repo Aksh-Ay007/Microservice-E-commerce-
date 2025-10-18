@@ -86,6 +86,27 @@ const EventCreatePage = () => {
   // --- (Form Submission) ---
 
   const onSubmit = async (data: EventFormData) => {
+    // Validate dates
+    const startDate = new Date(data.starting_date);
+    const endDate = new Date(data.ending_date);
+    const now = new Date();
+
+    if (startDate <= now) {
+      toast.error("Event start date must be in the future");
+      return;
+    }
+
+    if (endDate <= startDate) {
+      toast.error("Event end date must be after start date");
+      return;
+    }
+
+    // Validate price
+    if (data.sale_price >= data.regular_price) {
+      toast.error("Sale price must be less than regular price");
+      return;
+    }
+
     const eventData = {
       ...data,
       stock: parseInt(String(data.stock), 10),
@@ -112,7 +133,7 @@ const EventCreatePage = () => {
       );
 
       toast.success(res.data.message || "Event created successfully!");
-      router.push("/seller/events");
+      router.push("/dashboard/all-events");
     } catch (error: any) {
       console.error("Event creation error:", error);
       toast.error(error?.response?.data?.message || "Failed to create event.");
@@ -174,16 +195,26 @@ const EventCreatePage = () => {
             <Controller
               name="starting_date"
               control={control}
-              rules={{ required: "Starting date is required" }}
+              rules={{ 
+                required: "Starting date is required",
+                validate: (value) => {
+                  const startDate = new Date(value);
+                  const now = new Date();
+                  if (startDate <= now) {
+                    return "Event start date must be in the future";
+                  }
+                  return true;
+                }
+              }}
               render={({ field, fieldState }) => (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Event Starting Date
+                    Event Starting Date *
                   </label>
-                  {/* ✅ FIX APPLIED: Using standard HTML input for 'datetime-local' */}
                   <input
                     type="datetime-local"
-                    className="w-full border border-gray-300 rounded-lg p-2.5"
+                    min={new Date().toISOString().slice(0, 16)}
+                    className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     {...field}
                   />
                   {fieldState.error && (
@@ -197,16 +228,26 @@ const EventCreatePage = () => {
             <Controller
               name="ending_date"
               control={control}
-              rules={{ required: "Ending date is required" }}
+              rules={{ 
+                required: "Ending date is required",
+                validate: (value) => {
+                  const endDate = new Date(value);
+                  const startDate = new Date(watch("starting_date"));
+                  if (endDate <= startDate) {
+                    return "Event end date must be after start date";
+                  }
+                  return true;
+                }
+              }}
               render={({ field, fieldState }) => (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Event Ending Date
+                    Event Ending Date *
                   </label>
-                  {/* ✅ FIX APPLIED: Using standard HTML input for 'datetime-local' */}
                   <input
                     type="datetime-local"
-                    className="w-full border border-gray-300 rounded-lg p-2.5"
+                    min={watch("starting_date") ? new Date(watch("starting_date")).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)}
+                    className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     {...field}
                   />
                   {fieldState.error && (
@@ -379,6 +420,7 @@ const EventCreatePage = () => {
               {...register("sale_price", {
                 required: "Sale Price is required",
                 valueAsNumber: true,
+                min: { value: 0.01, message: "Sale price must be greater than 0" },
                 validate: (value) =>
                   Number(value) < Number(regularPrice) ||
                   "Sale price must be less than regular price",

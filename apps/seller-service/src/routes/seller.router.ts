@@ -69,12 +69,44 @@ router.put(
   updateSellerProfile
 );
 
-//notification route can be added here in future
-router.use(
+//notification route
+router.get(
   "/seller-notifications",
   isSellerAuthenticated,
   isSeller,
   sellerNotification
+);
+
+// Event management routes
+router.get(
+  "/events",
+  isSellerAuthenticated,
+  isSeller,
+  async (req, res) => {
+    try {
+      const events = await prisma.products.findMany({
+        where: {
+          shopId: req.seller.shop.id,
+          starting_date: { not: null },
+          ending_date: { not: null },
+          isDeleted: false,
+        },
+        include: { images: true },
+        orderBy: { createdAt: "desc" },
+      });
+
+      res.status(200).json({
+        success: true,
+        events,
+      });
+    } catch (error) {
+      console.error("Error fetching seller events:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch events",
+      });
+    }
+  }
 );
 
 export default router;

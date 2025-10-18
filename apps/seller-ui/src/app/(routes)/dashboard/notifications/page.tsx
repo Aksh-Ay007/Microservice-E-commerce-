@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Bell, Search, Filter, Trash2, Eye, EyeOff, AlertCircle, Info, CheckCircle, XCircle, Wifi, WifiOff } from 'lucide-react';
+import { Bell, Search, Filter, Trash2, Eye, EyeOff, AlertCircle, Info, CheckCircle, XCircle } from 'lucide-react';
+import axiosInstance from '../../../../utils/axiosinstance';
 
 interface Notification {
   id: string;
@@ -27,41 +28,25 @@ interface NotificationStats {
   byPriority: Record<string, number>;
 }
 
-export default function NotificationsPage() {
+export default function SellerNotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [stats, setStats] = useState<NotificationStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isConnected, setIsConnected] = useState(false);
-  const [ws, setWs] = useState<WebSocket | null>(null);
   const [filters, setFilters] = useState({
     status: '',
     type: '',
     priority: '',
     search: ''
   });
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
-    pages: 0
-  });
 
   // Fetch notifications
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
-        ...filters
-      });
-
-      const response = await fetch(`/admin/api/notifications?${params}`);
-      const data = await response.json();
-
-      if (data.success) {
-        setNotifications(data.data.notifications);
-        setPagination(data.data.pagination);
+      const response = await axiosInstance.get('/seller/seller-notifications');
+      
+      if (response.data.success) {
+        setNotifications(response.data.notifications);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -73,87 +58,48 @@ export default function NotificationsPage() {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch('/admin/api/notifications/stats');
-      const data = await response.json();
+      // Calculate stats from notifications
+      const total = notifications.length;
+      const unread = notifications.filter(n => n.status === 'Unread').length;
+      
+      const byType = notifications.reduce((acc, notif) => {
+        acc[notif.type] = (acc[notif.type] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      const byPriority = notifications.reduce((acc, notif) => {
+        acc[notif.priority] = (acc[notif.priority] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
 
-      if (data.success) {
-        setStats(data.data);
-      }
+      setStats({ total, unread, byType, byPriority });
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      console.error('Error calculating stats:', error);
     }
   };
 
   useEffect(() => {
     fetchNotifications();
-    fetchStats();
-  }, [pagination.page, filters]);
-
-  // WebSocket connection for real-time notifications
-  useEffect(() => {
-    const connectWebSocket = () => {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws/notifications/admin`;
-      
-      const websocket = new WebSocket(wsUrl);
-      
-      websocket.onopen = () => {
-        console.log('Connected to admin notification WebSocket');
-        setIsConnected(true);
-        setWs(websocket);
-      };
-
-      websocket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'notification') {
-            setNotifications(prev => [data.data, ...prev]);
-            fetchStats(); // Refresh stats
-          }
-        } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
-        }
-      };
-
-      websocket.onclose = () => {
-        console.log('Disconnected from admin notification WebSocket');
-        setIsConnected(false);
-        setWs(null);
-        
-        // Reconnect after 5 seconds
-        setTimeout(connectWebSocket, 5000);
-      };
-
-      websocket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        setIsConnected(false);
-      };
-    };
-
-    connectWebSocket();
-
-    return () => {
-      if (ws) {
-        ws.close();
-      }
-    };
   }, []);
+
+  useEffect(() => {
+    if (notifications.length > 0) {
+      fetchStats();
+    }
+  }, [notifications]);
 
   // Mark as read
   const markAsRead = async (id: string) => {
     try {
-      const response = await fetch(`/admin/api/notifications/${id}/read`, {
-        method: 'PUT'
-      });
-
-      if (response.ok) {
-        setNotifications(prev =>
-          prev.map(notif =>
-            notif.id === id ? { ...notif, status: 'Read' } : notif
-          )
-        );
-        fetchStats(); // Refresh stats
-      }
+      // Update local state immediately for better UX
+      setNotifications(prev =>
+        prev.map(notif =>
+          notif.id === id ? { ...notif, status: 'Read' } : notif
+        )
+      );
+      
+      // Here you would typically call an API to mark as read
+      // await axiosInstance.put(`/seller/notifications/${id}/read`);
     } catch (error) {
       console.error('Error marking as read:', error);
     }
@@ -162,36 +108,11 @@ export default function NotificationsPage() {
   // Delete notification
   const deleteNotification = async (id: string) => {
     try {
-      const response = await fetch(`/admin/api/notifications/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        setNotifications(prev => prev.filter(notif => notif.id !== id));
-        fetchStats(); // Refresh stats
-      }
+      setNotifications(prev => prev.filter(notif => notif.id !== id));
+      // Here you would typically call an API to delete
+      // await axiosInstance.delete(`/seller/notifications/${id}`);
     } catch (error) {
       console.error('Error deleting notification:', error);
-    }
-  };
-
-  // Mark all as read
-  const markAllAsRead = async () => {
-    try {
-      const response = await fetch('/admin/api/notifications/mark-all-read', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ receiverId: 'all' })
-      });
-
-      if (response.ok) {
-        setNotifications(prev =>
-          prev.map(notif => ({ ...notif, status: 'Read' }))
-        );
-        fetchStats(); // Refresh stats
-      }
-    } catch (error) {
-      console.error('Error marking all as read:', error);
     }
   };
 
@@ -216,28 +137,24 @@ export default function NotificationsPage() {
     }
   };
 
+  // Filter notifications
+  const filteredNotifications = notifications.filter(notification => {
+    if (filters.status && notification.status !== filters.status) return false;
+    if (filters.type && notification.type !== filters.type) return false;
+    if (filters.priority && notification.priority !== filters.priority) return false;
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
+      return notification.title.toLowerCase().includes(searchTerm) ||
+             notification.message.toLowerCase().includes(searchTerm);
+    }
+    return true;
+  });
+
   return (
     <div className="p-6">
       <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-            <p className="text-gray-600">Manage and monitor system notifications</p>
-          </div>
-          <div className="flex items-center gap-2">
-            {isConnected ? (
-              <div className="flex items-center gap-1 text-green-600">
-                <Wifi className="w-4 h-4" />
-                <span className="text-sm">Connected</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 text-red-600">
-                <WifiOff className="w-4 h-4" />
-                <span className="text-sm">Disconnected</span>
-              </div>
-            )}
-          </div>
-        </div>
+        <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+        <p className="text-gray-600">Stay updated with your shop activities</p>
       </div>
 
       {/* Stats Cards */}
@@ -341,19 +258,6 @@ export default function NotificationsPage() {
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex justify-between items-center mb-4">
-        <button
-          onClick={markAllAsRead}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-        >
-          Mark All as Read
-        </button>
-        <div className="text-sm text-gray-600">
-          Showing {notifications.length} of {pagination.total} notifications
-        </div>
-      </div>
-
       {/* Notifications List */}
       <div className="bg-white rounded-lg shadow">
         {loading ? (
@@ -361,14 +265,14 @@ export default function NotificationsPage() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
             <p className="mt-2 text-gray-600">Loading notifications...</p>
           </div>
-        ) : notifications.length === 0 ? (
+        ) : filteredNotifications.length === 0 ? (
           <div className="p-8 text-center">
             <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600">No notifications found</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {notifications.map((notification) => (
+            {filteredNotifications.map((notification) => (
               <div
                 key={notification.id}
                 className={`p-4 hover:bg-gray-50 transition-colors ${
@@ -418,27 +322,6 @@ export default function NotificationsPage() {
           </div>
         )}
       </div>
-
-      {/* Pagination */}
-      {pagination.pages > 1 && (
-        <div className="mt-6 flex justify-center">
-          <div className="flex gap-2">
-            {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => setPagination(prev => ({ ...prev, page }))}
-                className={`px-3 py-2 rounded-md text-sm ${
-                  page === pagination.page
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
