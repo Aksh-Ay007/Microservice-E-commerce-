@@ -7,6 +7,7 @@ import {
   ValidationError,
 } from "../../../../packages/error-handler";
 import { imagekit } from "./../../../../packages/libs/imagekit/index";
+import notificationService from "../services/notification.service";
 
 interface EventRequest extends Request {
   seller: {
@@ -318,6 +319,45 @@ export const createProduct = async (
       },
       include: { images: true },
     });
+
+    // Create notification for admin about new product
+    try {
+      // Get all admin users
+      const admins = await prisma.users.findMany({
+        where: { role: 'admin' },
+        select: { id: true, name: true, email: true }
+      });
+
+      // Create notifications for all admins
+      const notificationPromises = admins.map(admin => 
+        prisma.notifications.create({
+          data: {
+            creatorId: req.seller.id, // Seller who created the product
+            receiverId: admin.id,
+            title: "New Product Created",
+            message: `A new product "${title}" has been created by ${req.seller.name || 'a seller'}. Please review and approve if necessary.`,
+            type: "product",
+            priority: "normal",
+            redirect_link: `/admin/products/${newProduct.id}`
+          }
+        })
+      );
+
+      await Promise.all(notificationPromises);
+      console.log(`✅ Created notifications for ${admins.length} admins about new product`);
+
+      // Send real-time notification
+      await notificationService.sendNotificationToAdmins({
+        title: "New Product Created",
+        message: `A new product "${title}" has been created by ${req.seller.name || 'a seller'}.`,
+        type: "product",
+        priority: "normal",
+        redirect_link: `/admin/products/${newProduct.id}`
+      });
+    } catch (notificationError) {
+      console.error('❌ Error creating notifications for product:', notificationError);
+      // Don't fail the product creation if notification fails
+    }
 
     res.status(201).json({
       success: true,
@@ -1044,6 +1084,45 @@ export const createEvent = async (
       },
       include: { images: true },
     });
+
+    // 4. Create notification for admin about new event
+    try {
+      // Get all admin users
+      const admins = await prisma.users.findMany({
+        where: { role: 'admin' },
+        select: { id: true, name: true, email: true }
+      });
+
+      // Create notifications for all admins
+      const notificationPromises = admins.map(admin => 
+        prisma.notifications.create({
+          data: {
+            creatorId: req.seller.id, // Seller who created the event
+            receiverId: admin.id,
+            title: "New Event Created",
+            message: `A new event "${title}" has been created by ${req.seller.name || 'a seller'}. Please review and approve if necessary.`,
+            type: "product",
+            priority: "normal",
+            redirect_link: `/admin/events/${newEvent.id}`
+          }
+        })
+      );
+
+      await Promise.all(notificationPromises);
+      console.log(`✅ Created notifications for ${admins.length} admins about new event`);
+
+      // Send real-time notification
+      await notificationService.sendNotificationToAdmins({
+        title: "New Event Created",
+        message: `A new event "${title}" has been created by ${req.seller.name || 'a seller'}.`,
+        type: "product",
+        priority: "normal",
+        redirect_link: `/admin/events/${newEvent.id}`
+      });
+    } catch (notificationError) {
+      console.error('❌ Error creating notifications for event:', notificationError);
+      // Don't fail the event creation if notification fails
+    }
 
     res.status(201).json({
       success: true,

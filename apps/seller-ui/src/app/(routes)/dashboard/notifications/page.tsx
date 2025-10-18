@@ -39,46 +39,16 @@ export default function NotificationsPage() {
     priority: '',
     search: ''
   });
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
-    pages: 0
-  });
 
   // Use real-time notifications from context
   useEffect(() => {
     setNotifications(realTimeNotifications);
   }, [realTimeNotifications]);
 
-  // Fetch notifications (fallback)
-  const fetchNotifications = async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
-        ...filters
-      });
-
-      const response = await fetch(`/api/admin/notifications?${params}`);
-      const data = await response.json();
-
-      if (data.success) {
-        setNotifications(data.data.notifications);
-        setPagination(data.data.pagination);
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/admin/notifications/stats');
+      const response = await fetch('/api/seller/notifications/stats');
       const data = await response.json();
 
       if (data.success) {
@@ -111,6 +81,18 @@ export default function NotificationsPage() {
     fetchStats(); // Refresh stats
   };
 
+  // Filter notifications based on current filters
+  const filteredNotifications = notifications.filter(notification => {
+    const matchesStatus = !filters.status || notification.status === filters.status;
+    const matchesType = !filters.type || notification.type === filters.type;
+    const matchesPriority = !filters.priority || notification.priority === filters.priority;
+    const matchesSearch = !filters.search || 
+      notification.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+      notification.message.toLowerCase().includes(filters.search.toLowerCase());
+    
+    return matchesStatus && matchesType && matchesPriority && matchesSearch;
+  });
+
   // Get priority color
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -135,46 +117,46 @@ export default function NotificationsPage() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-        <p className="text-gray-600">Manage and monitor system notifications</p>
+        <h1 className="text-2xl font-bold text-white">Notifications</h1>
+        <p className="text-gray-400">Manage and monitor your notifications</p>
       </div>
 
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-[#1C1F29] p-4 rounded-lg border border-gray-700">
             <div className="flex items-center">
-              <Bell className="w-8 h-8 text-blue-600" />
+              <Bell className="w-8 h-8 text-blue-400" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-sm font-medium text-gray-400">Total</p>
+                <p className="text-2xl font-bold text-white">{stats.total}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-[#1C1F29] p-4 rounded-lg border border-gray-700">
             <div className="flex items-center">
-              <EyeOff className="w-8 h-8 text-orange-600" />
+              <EyeOff className="w-8 h-8 text-orange-400" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Unread</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.unread}</p>
+                <p className="text-sm font-medium text-gray-400">Unread</p>
+                <p className="text-2xl font-bold text-white">{stats.unread}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-[#1C1F29] p-4 rounded-lg border border-gray-700">
             <div className="flex items-center">
-              <Eye className="w-8 h-8 text-green-600" />
+              <Eye className="w-8 h-8 text-green-400" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Read</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total - stats.unread}</p>
+                <p className="text-sm font-medium text-gray-400">Read</p>
+                <p className="text-2xl font-bold text-white">{stats.total - stats.unread}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-[#1C1F29] p-4 rounded-lg border border-gray-700">
             <div className="flex items-center">
-              <AlertCircle className="w-8 h-8 text-red-600" />
+              <AlertCircle className="w-8 h-8 text-red-400" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Urgent</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.byPriority.urgent || 0}</p>
+                <p className="text-sm font-medium text-gray-400">Urgent</p>
+                <p className="text-2xl font-bold text-white">{stats.byPriority.urgent || 0}</p>
               </div>
             </div>
           </div>
@@ -182,10 +164,10 @@ export default function NotificationsPage() {
       )}
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow mb-6">
+      <div className="bg-[#1C1F29] p-4 rounded-lg border border-gray-700 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Search</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
@@ -193,16 +175,16 @@ export default function NotificationsPage() {
                 placeholder="Search notifications..."
                 value={filters.search}
                 onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-3 py-2 bg-[#0F1117] border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Status</label>
             <select
               value={filters.status}
               onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-[#0F1117] border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
             >
               <option value="">All Status</option>
               <option value="Unread">Unread</option>
@@ -210,11 +192,11 @@ export default function NotificationsPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Type</label>
             <select
               value={filters.type}
               onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-[#0F1117] border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
             >
               <option value="">All Types</option>
               <option value="order">Order</option>
@@ -224,11 +206,11 @@ export default function NotificationsPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Priority</label>
             <select
               value={filters.priority}
               onChange={(e) => setFilters(prev => ({ ...prev, priority: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-[#0F1117] border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
             >
               <option value="">All Priorities</option>
               <option value="low">Low</option>
@@ -248,45 +230,45 @@ export default function NotificationsPage() {
         >
           Mark All as Read
         </button>
-        <div className="text-sm text-gray-600">
-          Showing {notifications.length} notifications
+        <div className="text-sm text-gray-400">
+          Showing {filteredNotifications.length} notifications
         </div>
       </div>
 
       {/* Notifications List */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-[#1C1F29] rounded-lg border border-gray-700">
         {loading ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Loading notifications...</p>
+            <p className="mt-2 text-gray-400">Loading notifications...</p>
           </div>
-        ) : notifications.length === 0 ? (
+        ) : filteredNotifications.length === 0 ? (
           <div className="p-8 text-center">
-            <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No notifications found</p>
+            <Bell className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+            <p className="text-gray-400">No notifications found</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
-            {notifications.map((notification) => (
+          <div className="divide-y divide-gray-700">
+            {filteredNotifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`p-4 hover:bg-gray-50 transition-colors ${
-                  notification.status === 'Unread' ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                className={`p-4 hover:bg-[#222633] transition-colors ${
+                  notification.status === 'Unread' ? 'bg-blue-900/20 border-l-4 border-blue-500' : ''
                 }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       {getTypeIcon(notification.type)}
-                      <h3 className="font-medium text-gray-900">{notification.title}</h3>
+                      <h3 className="font-medium text-white">{notification.title}</h3>
                       <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(notification.priority)}`}>
                         {notification.priority}
                       </span>
                       {notification.status === 'Unread' && (
-                        <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                       )}
                     </div>
-                    <p className="text-gray-600 text-sm mb-2">{notification.message}</p>
+                    <p className="text-gray-300 text-sm mb-2">{notification.message}</p>
                     <div className="flex items-center gap-4 text-xs text-gray-500">
                       <span>By: {notification.creator.name} ({notification.creator.role})</span>
                       <span>•</span>
@@ -297,7 +279,7 @@ export default function NotificationsPage() {
                     {notification.status === 'Unread' && (
                       <button
                         onClick={() => handleMarkAsRead(notification.id)}
-                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                        className="p-1 text-gray-400 hover:text-blue-400 transition-colors"
                         title="Mark as read"
                       >
                         <Eye className="w-4 h-4" />
@@ -305,7 +287,7 @@ export default function NotificationsPage() {
                     )}
                     <button
                       onClick={() => handleDeleteNotification(notification.id)}
-                      className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                      className="p-1 text-gray-400 hover:text-red-400 transition-colors"
                       title="Delete notification"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -317,27 +299,6 @@ export default function NotificationsPage() {
           </div>
         )}
       </div>
-
-      {/* Pagination */}
-      {pagination.pages > 1 && (
-        <div className="mt-6 flex justify-center">
-          <div className="flex gap-2">
-            {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => setPagination(prev => ({ ...prev, page }))}
-                className={`px-3 py-2 rounded-md text-sm ${
-                  page === pagination.page
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

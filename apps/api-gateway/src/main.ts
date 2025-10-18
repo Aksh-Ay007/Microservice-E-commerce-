@@ -49,6 +49,7 @@ app.use("/admin", proxy("http://localhost:6005"));
 app.use("/seller", proxy("http://localhost:6004"));
 app.use("/order", proxy("http://localhost:6003"));
 app.use("/product", proxy("http://localhost:6002"));
+app.use("/notification", proxy("http://localhost:6009"));
 app.use("/", proxy("http://localhost:6001"));
 
 const port = process.env.PORT || 8080;
