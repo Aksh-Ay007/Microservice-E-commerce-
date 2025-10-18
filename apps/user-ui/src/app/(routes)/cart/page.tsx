@@ -31,6 +31,7 @@ const CartPage = () => {
   const [discountPercent, setDiscountPercent] = useState(0);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [couponCode, setCouponCode] = useState("");
+  const [appliedCouponName, setAppliedCouponName] = useState("");
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -54,6 +55,11 @@ const CartPage = () => {
         setDiscountAmount(parseFloat(res.data.discountAmount));
         setDiscountPercent(res.data.discount);
         setDiscountedProductId(res.data.discountedProductId);
+        // try to attach human-friendly coupon name from available coupons list
+        const matched = (availableCoupons || []).find(
+          (c: any) => String(c.code).toLowerCase() === couponCode.trim().toLowerCase()
+        );
+        if (matched) setAppliedCouponName(matched.publicName);
         setCouponCode("");
       } else {
         setDiscountAmount(0);
@@ -74,6 +80,16 @@ const CartPage = () => {
     queryFn: async () => {
       const res = await axiosInstance.get("/api/shipping-addresses");
       return res.data.addresses;
+    },
+  });
+
+  // Fetch available coupons for current cart
+  const { data: availableCoupons = [], isLoading: isCouponsLoading } = useQuery<any[], Error>({
+    queryKey: ["available-coupons", cart?.map((i: any) => i.id).join(",")],
+    queryFn: async () => {
+      if (!cart || cart.length === 0) return [];
+      const res = await axiosInstance.post("/product/api/available-coupons", { cart });
+      return res.data.coupons || [];
     },
   });
 
@@ -104,6 +120,7 @@ const CartPage = () => {
             discountPercent,
             discountAmount,
             discountedProductId,
+            publicName: appliedCouponName,
           },
         }
       );
@@ -304,6 +321,56 @@ const CartPage = () => {
                   </button>
                 </div>
                 {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+                {/* Available Coupons List */}
+                <div className="mt-3 border-t border-gray-200 pt-3">
+                  <p className="text-xs font-medium text-gray-600 mb-2">
+                    Available Coupons {isCouponsLoading && 
+                      <span className="text-gray-400">(loading...)</span>}
+                  </p>
+                  {(!isCouponsLoading && availableCoupons.length === 0) ? (
+                    <p className="text-xs text-gray-500">No coupons available for your items.</p>
+                  ) : (
+                    <div className="flex flex-col gap-2 max-h-40 overflow-auto">
+                      {(availableCoupons as any[]).map((c) => (
+                        <div key={c.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-md p-2">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-gray-800 truncate">{c.publicName}</p>
+                            <p className="text-xs text-gray-500 truncate">Valid for: {c.applicableProducts?.slice(0,3).join(", ")}{c.applicableProducts?.length > 3 ? '…' : ''}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded border border-gray-200">
+                              {c.code}
+                            </span>
+                            <button
+                              className="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-50"
+                              onClick={() => {
+                                navigator.clipboard.writeText(c.code);
+                                toast.success("Coupon code copied");
+                              }}
+                            >
+                              Copy
+                            </button>
+                            <button
+                              className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                              onClick={async () => {
+                                setCouponCode(c.code);
+                                setAppliedCouponName(c.publicName);
+                                await couponCodeApplyHandler();
+                              }}
+                            >
+                              Apply
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {storedCouponCode && (
+                    <p className="mt-2 text-xs text-green-700">
+                      Applied: <span className="font-semibold">{appliedCouponName || storedCouponCode}</span>
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* Shipping Address */}

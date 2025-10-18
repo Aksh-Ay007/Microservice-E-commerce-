@@ -249,12 +249,12 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
               </div>
 
               <div className="flex items-center gap-2 mt-3">
-                <Ratings rating={productDetails?.ratings || 0} />
+                <Ratings rating={productDetails?.averageRating || 0} />
                 <Link
                   href={"#reviews"}
                   className="text-blue-600 hover:underline text-sm"
                 >
-                  (0 reviews)
+                  ({productDetails?.totalRatings || 0} reviews)
                 </Link>
               </div>
 

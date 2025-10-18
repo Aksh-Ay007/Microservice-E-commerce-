@@ -1115,12 +1115,12 @@ export const getEventDetails = async (
   next: NextFunction
 ) => {
   try {
-    const event = await prisma.products.findUnique({
+    // Use findFirst since we're filtering by non-unique fields as well
+    const event = await prisma.products.findFirst({
       where: {
-          slug: req.params.slug!,
-          // Filter to ensure it is treated as an event
-          starting_date: { not: null },
-          ending_date: { not: null },
+        slug: req.params.slug!,
+        starting_date: { not: null },
+        ending_date: { not: null },
       },
       include: { images: true, Shop: true },
     });
@@ -1208,6 +1208,89 @@ export const createRating = async (
       message: "Rating submitted successfully",
       rating: newRating,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ==================== COUPON HELPERS ====================
+
+// Get available coupons for the given cart products
+export const getAvailableCouponsForCart = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { cart } = req.body as { cart: Array<any> };
+
+    if (!cart || !Array.isArray(cart) || cart.length === 0) {
+      return res.status(200).json({ coupons: [] });
+    }
+
+    const productIds = Array.from(
+      new Set(
+        cart
+          .map((item: any) => item?.id)
+          .filter((id: unknown) => typeof id === 'string' && !!id)
+      )
+    );
+
+    if (productIds.length === 0) {
+      return res.status(200).json({ coupons: [] });
+    }
+
+    const products = await prisma.products.findMany({
+      where: { id: { in: productIds } },
+      select: { id: true, title: true, discount_codes: true },
+    });
+
+    // Collect all discount code IDs referenced by products in cart
+    const discountCodeIds = Array.from(
+      new Set(
+        products.flatMap((p) => (Array.isArray(p.discount_codes) ? p.discount_codes : []))
+      )
+    );
+
+    if (discountCodeIds.length === 0) {
+      return res.status(200).json({ coupons: [] });
+    }
+
+    const discounts = await prisma.discount_codes.findMany({
+      where: { id: { in: discountCodeIds } },
+      select: {
+        id: true,
+        public_name: true,
+        discountType: true,
+        discountValue: true,
+        discountCode: true,
+      },
+    });
+
+    // Map each discount to applicable products in the cart
+    const productIdToTitle = new Map(products.map((p) => [p.id, p.title]));
+    const codeIdToProductTitles = new Map<string, string[]>(
+      discounts.map((d) => [d.id, []])
+    );
+
+    for (const product of products) {
+      for (const codeId of product.discount_codes as string[]) {
+        if (!codeIdToProductTitles.has(codeId)) continue;
+        const list = codeIdToProductTitles.get(codeId)!;
+        list.push(productIdToTitle.get(product.id) || product.id);
+      }
+    }
+
+    const coupons = discounts.map((d) => ({
+      id: d.id,
+      publicName: d.public_name,
+      discountType: d.discountType,
+      discountValue: d.discountValue,
+      code: d.discountCode,
+      applicableProducts: codeIdToProductTitles.get(d.id) || [],
+    }));
+
+    res.status(200).json({ coupons });
   } catch (error) {
     next(error);
   }
@@ -1419,8 +1502,8 @@ const updateProductRatingStats = async (productId: string) => {
     await prisma.products.update({
       where: { id: productId },
       data: {
-        averageRating: stats._avg.rating || 0,
-        totalRatings: stats._count.rating || 0,
+        averageRating: stats._avg.rating ? Number(stats._avg.rating) : 0,
+        totalRatings: stats._count.rating ? Number(stats._count.rating) : 0,
       }
     });
   } catch (error) {
