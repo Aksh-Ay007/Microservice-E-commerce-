@@ -28,27 +28,28 @@ model images {
   productsId String? @db.ObjectId
   type       String? @default("general") // "avatar", "banner", "product", "general"
 
-  users    users[]   @relation
-  products products? @relation(fields: [productsId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  shopAvatars shops[] @relation("ShopAvatar")
-  shopBanners shops[] @relation("ShopBanner")
+  users       users[]   @relation
+  products    products? @relation(fields: [productsId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  shopAvatars shops[]   @relation("ShopAvatar")
+  shopBanners shops[]   @relation("ShopBanner")
 }
 
 model users {
-  id          String        @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  email       String        @unique
-  role        String        @default("user")
-  password    String?
-  following   String[]
-  avatar      images?       @relation(fields: [imagesId], references: [id])
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  shopReviews shopReviews[]
-  imagesId    String?       @db.ObjectId
-  followings  followers[]
-  orders      orders[]
-  ratings     ratings[]     @relation // Add this relation
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  email         String          @unique
+  role          String          @default("user")
+  password      String?
+  following     String[]
+  avatar        images?         @relation(fields: [imagesId], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  shopReviews   shopReviews[]
+  imagesId      String?         @db.ObjectId
+  followings    followers[]
+  orders        orders[]
+  ratings       ratings[]       @relation // Add this relation
+  notifications notifications[] @relation("NotificationCreator")
 }
 
 model shopReviews {
@@ -73,7 +74,6 @@ model followers {
 
   @@unique([userId, shopsId]) //one user can follow the same shop only once
 }
-
 
 // Update the shops model
 model shops {
@@ -138,26 +138,26 @@ model discount_codes {
 }
 
 model products {
-  id                    String        @id @default(auto()) @map("_id") @db.ObjectId
-  title                 String
-  slug                  String        @unique
-  category              String
-  subCategory           String
-  short_description     String
-  detailed_description  String
-  images                images[]
-  video_url             String?
-  tags                  String[]
-  brand                 String?
-  colors                String[]
-  sizes                 String[]
-  starting_date         DateTime?
-  ending_date           DateTime?
-  stock                 Int
-  sale_price            Float
-  regular_price         Float
+  id                   String    @id @default(auto()) @map("_id") @db.ObjectId
+  title                String
+  slug                 String    @unique
+  category             String
+  subCategory          String
+  short_description    String
+  detailed_description String
+  images               images[]
+  video_url            String?
+  tags                 String[]
+  brand                String?
+  colors               String[]
+  sizes                String[]
+  starting_date        DateTime?
+  ending_date          DateTime?
+  stock                Int
+  sale_price           Float
+  regular_price        Float
 
-  averageRating         Float         @default(0)  
+  averageRating         Float         @default(0)
   totalRatings          Int           @default(0)
   warranty              String?
   custom_specifications Json?
@@ -174,7 +174,6 @@ model products {
   Shop                  shops         @relation(fields: [shopId], references: [id])
   ratings               ratings[]     @relation // Keep this relation
 }
-
 
 model userAnalytics {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -264,18 +263,6 @@ model address {
   createdAt DateTime    @default(now())
 }
 
-model notifications {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  creatorId     String   @db.ObjectId
-  receiverId    String
-  redirect_link String?
-  title         String
-  message       String
-  status        String   @default("Unread")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-}
-
 model conversationGroup {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   isGroup        Boolean  @default(false)
@@ -311,24 +298,64 @@ model message {
   @@unique([conversationId, senderId, content, createdAt])
 }
 
-
-
 model ratings {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  productId String   @db.ObjectId
-  userId    String   @db.ObjectId
-  rating    Int      // 1-5 stars
-  title     String?  // Review title
-  review    String?  // Review text
-  images    String[] // Array of image URLs
-  isVerified Boolean @default(false)
-  orderId   String?  @db.ObjectId
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId  String   @db.ObjectId
+  userId     String   @db.ObjectId
+  rating     Int // 1-5 stars
+  title      String? // Review title
+  review     String? // Review text
+  images     String[] // Array of image URLs
+  isVerified Boolean  @default(false)
+  orderId    String?  @db.ObjectId
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   // Relations
   product products @relation(fields: [productId], references: [id], onDelete: Cascade)
   user    users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId]) // One rating per user per product
+}
+
+enum notificationType {
+  order
+  product
+  system
+  general
+}
+
+enum notificationPriority {
+  low
+  normal
+  high
+  urgent
+}
+
+enum notificationStatus {
+  Read
+  Unread
+}
+
+model notifications {
+  id            String               @id @default(auto()) @map("_id") @db.ObjectId
+  creatorId     String               @db.ObjectId
+  receiverId    String
+  redirect_link String?
+  title         String
+  message       String
+  status        notificationStatus   @default(Unread)
+  type          notificationType     @default(general)
+  priority      notificationPriority @default(normal)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  // Relations
+  creator users @relation("NotificationCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  // Indexes for better performance
+  @@index([receiverId, status])
+  @@index([createdAt])
+  @@index([type])
+  @@index([priority])
 }

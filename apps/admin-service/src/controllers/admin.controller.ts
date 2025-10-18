@@ -458,22 +458,245 @@ export const uploadBanner = async (
   }
 };
 
-export const getAllNotifications = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const notifications = await prisma.notifications.findMany({
-      where: { receiverId: "admin" },
-      orderBy: { createdAt: "desc" },
-    });
+// ========================================
+// NOTIFICATIONS CONTROLLERS
+// ========================================
 
-    res.status(200).json({
+export const getAllNotifications = async (req: Request, res: Response) => {
+  try {
+    const { page = 1, limit = 10, status, type, priority, search } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const where: any = {};
+    if (status) where.status = status;
+    if (type) where.type = type;
+    if (priority) where.priority = priority;
+    if (search) {
+      where.OR = [
+        { title: { contains: search as string, mode: "insensitive" } },
+        { message: { contains: search as string, mode: "insensitive" } },
+      ];
+    }
+
+    const [notifications, total] = await Promise.all([
+      prisma.notifications.findMany({
+        where,
+        skip,
+        take: Number(limit),
+        orderBy: { createdAt: "desc" },
+        include: {
+          creator: {
+            select: { id: true, name: true, email: true, role: true },
+          },
+        },
+      }),
+      prisma.notifications.count({ where }),
+    ]);
+
+    res.json({
       success: true,
-      data: notifications,
+      data: {
+        notifications,
+        pagination: {
+          page: Number(page),
+          limit: Number(limit),
+          total,
+          pages: Math.ceil(total / Number(limit)),
+        },
+      },
     });
   } catch (error) {
-    next(error);
+    console.error("Error fetching notifications:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch notifications" });
+  }
+};
+
+// Get notification statistics
+export const getNotificationStats = async (req: Request, res: Response) => {
+  try {
+    const [total, unread, byType, byPriority] = await Promise.all([
+      prisma.notifications.count(),
+      prisma.notifications.count({ where: { status: "Unread" } }),
+      prisma.notifications.groupBy({
+        by: ["type"],
+        _count: { type: true },
+      }),
+      prisma.notifications.groupBy({
+        by: ["priority"],
+        _count: { priority: true },
+      }),
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        total,
+        unread,
+        byType: byType.reduce((acc, item) => {
+          acc[item.type] = item._count.type;
+          return acc;
+        }, {}),
+        byPriority: byPriority.reduce((acc, item) => {
+          acc[item.priority] = item._count.priority;
+          return acc;
+        }, {}),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching notification stats:", error);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Failed to fetch notification statistics",
+      });
+  }
+};
+
+// Mark notification as read
+export const markNotificationAsRead = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const notification = await prisma.notifications.update({
+      where: { id },
+      data: { status: "Read" },
+    });
+
+    res.json({ success: true, data: notification });
+  } catch (error) {
+    console.error("Error marking notification as read:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to mark notification as read" });
+  }
+};
+
+// Mark all notifications as read
+export const markAllNotificationsAsRead = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { receiverId } = req.body;
+
+    await prisma.notifications.updateMany({
+      where: { receiverId, status: "Unread" },
+      data: { status: "Read" },
+    });
+
+    res.json({ success: true, message: "All notifications marked as read" });
+  } catch (error) {
+    console.error("Error marking all notifications as read:", error);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Failed to mark all notifications as read",
+      });
+  }
+};
+
+// Delete notification
+export const deleteNotification = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    await prisma.notifications.delete({
+      where: { id },
+    });
+
+    res.json({ success: true, message: "Notification deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting notification:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to delete notification" });
+  }
+};
+
+// Get user notifications
+export const getUserNotifications = async (req: Request, res: Response) => {
+  try {
+    const { receiverId } = req.params;
+    const { page = 1, limit = 10, status } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const where: any = { receiverId };
+    if (status) where.status = status;
+
+    const [notifications, total] = await Promise.all([
+      prisma.notifications.findMany({
+        where,
+        skip,
+        take: Number(limit),
+        orderBy: { createdAt: "desc" },
+        include: {
+          creator: {
+            select: { id: true, name: true, email: true, role: true },
+          },
+        },
+      }),
+      prisma.notifications.count({ where }),
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        notifications,
+        pagination: {
+          page: Number(page),
+          limit: Number(limit),
+          total,
+          pages: Math.ceil(total / Number(limit)),
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching user notifications:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch user notifications" });
+  }
+};
+
+// Create notification
+export const createNotification = async (req: Request, res: Response) => {
+  try {
+    const {
+      receiverId,
+      title,
+      message,
+      type = "general",
+      priority = "normal",
+      redirect_link,
+    } = req.body;
+    const creatorId = req.user?.id; // Assuming you have user info in req.user
+
+    const notification = await prisma.notifications.create({
+      data: {
+        creatorId,
+        receiverId,
+        title,
+        message,
+        type,
+        priority,
+        redirect_link,
+      },
+      include: {
+        creator: {
+          select: { id: true, name: true, email: true, role: true },
+        },
+      },
+    });
+
+    res.status(201).json({ success: true, data: notification });
+  } catch (error) {
+    console.error("Error creating notification:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to create notification" });
   }
 };

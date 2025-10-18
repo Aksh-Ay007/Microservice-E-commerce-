@@ -6,6 +6,8 @@ import {
   addCategory,
   addNewAdmin,
   addSubCategory,
+  createNotification,
+  deleteNotification,
   getAllAdmins,
   getAllCustomizations,
   getAllEvents,
@@ -13,7 +15,10 @@ import {
   getAllProducts,
   getAllSellers,
   getAllUsers,
+  getNotificationStats,
   getUserNotifications,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
   uploadBanner,
   uploadLogo,
 } from "../controllers/admin.controller";
@@ -36,15 +41,33 @@ router.post("/add-sub-category", isAuthenticated, isAdmin, addSubCategory);
 router.post("/upload-logo", isAuthenticated, isAdmin, uploadLogo);
 router.post("/upload-banner", isAuthenticated, isAdmin, uploadBanner);
 
-//getAllNotifications
-
+// Admin Notifications
+router.get("/notifications",isAuthenticated,isAdmin, getAllNotifications);
 router.get(
-  "/get-all-notifications",
+  "/notifications/stats",
   isAuthenticated,
   isAdmin,
-  getAllNotifications
+  getNotificationStats
 );
-
-
+router.put(
+  "/notifications/:id/read",
+  isAuthenticated,
+  isAdmin,
+  markNotificationAsRead
+);
+router.put(
+  "/notifications/mark-all-read",
+  isAuthenticated,
+  isAdmin,
+  markAllNotificationsAsRead
+);
+router.delete(
+  "/notifications/:id",
+  isAuthenticated,
+  isAdmin,
+  deleteNotification
+);
+router.get("/notifications/user/:receiverId", getUserNotifications);
+router.post("/notifications", createNotification);
 
 export default router;
