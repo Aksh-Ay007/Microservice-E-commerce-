@@ -5,6 +5,7 @@ import { isSellerAuthenticated } from "../../../../packages/middleware/sellerAut
 import {
   createPaymentIntent,
   createPaymentSession,
+  getAvailableCoupons,
   getAdminOrders,
   getOrderDetails,
   getSellerOrders,
@@ -37,6 +38,7 @@ router.put(
 );
 
 router.put("/verify-coupon", isAuthenticated, verifyCouponCode);
+router.post("/get-available-coupons", isAuthenticated, getAvailableCoupons);
 router.get("/get-user-orders", isAuthenticated, getUserOrders);
 
 router.get("/get-admin-orders", isAuthenticated,isAdmin, getAdminOrders);

@@ -651,6 +651,59 @@ export const verifyCouponCode = async (
   }
 };
 
+//get available coupons for the current cart
+export const getAvailableCoupons = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { cart } = req.body;
+
+    if (!cart || !Array.isArray(cart) || cart.length === 0) {
+      return next(new ValidationError("cart is empty or invalid"));
+    }
+
+    const discountIds: string[] = Array.from(
+      new Set(
+        cart.flatMap((item: any) =>
+          Array.isArray(item?.discount_codes) ? item.discount_codes : []
+        )
+      )
+    );
+
+    if (discountIds.length === 0) {
+      return res.status(200).json({ success: true, coupons: [] });
+    }
+
+    const coupons = await prisma.discount_codes.findMany({
+      where: { id: { in: discountIds } },
+      select: {
+        id: true,
+        public_name: true,
+        discountType: true,
+        discountValue: true,
+        discountCode: true,
+      },
+    });
+
+    // Optional mapping of which product contains which coupon ids
+    const productCouponMap: Record<string, string[]> = {};
+    for (const item of cart) {
+      const itemCodes = Array.isArray(item?.discount_codes)
+        ? item.discount_codes
+        : [];
+      if (itemCodes.length > 0) {
+        productCouponMap[item.id] = itemCodes;
+      }
+    }
+
+    res.status(200).json({ success: true, coupons, productCouponMap });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getUserOrders = async (
   req: any,
   res: Response,

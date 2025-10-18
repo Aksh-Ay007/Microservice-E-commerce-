@@ -36,7 +36,6 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
       return;
     }
 
-    [];
     const result = await stripe.confirmPayment({
       elements,
       confirmParams: {

@@ -386,7 +386,8 @@ export const deleteProduct = async (
       where: { id: productId },
       data: {
         isDeleted: true,
-        deletedAt: new Date(Date.now() + 24 * 60 * 1000),
+        // schedule deletion in 24 hours
+        deletedAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       },
     });
     res.status(200).json({
