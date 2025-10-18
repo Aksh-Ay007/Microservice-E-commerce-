@@ -16,6 +16,10 @@ import {
   refreshToken,
   registerSeller,
   sellerNotification,
+  getSellerNotificationStats,
+  markSellerNotificationAsRead,
+  deleteSellerNotification,
+  markAllSellerNotificationsAsRead,
   unfollowShop,
   updateSellerAvatar,
   updateSellerBanner,
@@ -69,12 +73,36 @@ router.put(
   updateSellerProfile
 );
 
-//notification route can be added here in future
-router.use(
+// Seller Notification Routes
+router.get(
   "/seller-notifications",
   isSellerAuthenticated,
   isSeller,
   sellerNotification
+);
+router.get(
+  "/seller-notifications/stats",
+  isSellerAuthenticated,
+  isSeller,
+  getSellerNotificationStats
+);
+router.put(
+  "/seller-notifications/:id/read",
+  isSellerAuthenticated,
+  isSeller,
+  markSellerNotificationAsRead
+);
+router.delete(
+  "/seller-notifications/:id",
+  isSellerAuthenticated,
+  isSeller,
+  deleteSellerNotification
+);
+router.put(
+  "/seller-notifications/mark-all-read",
+  isSellerAuthenticated,
+  isSeller,
+  markAllSellerNotificationsAsRead
 );
 
 export default router;

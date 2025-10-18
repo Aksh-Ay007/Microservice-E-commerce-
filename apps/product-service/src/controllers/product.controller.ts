@@ -7,6 +7,7 @@ import {
   ValidationError,
 } from "../../../../packages/error-handler";
 import { imagekit } from "./../../../../packages/libs/imagekit/index";
+import { createProductNotification } from "../../../../packages/libs/notification-helper";
 
 interface EventRequest extends Request {
   seller: {
@@ -318,6 +319,19 @@ export const createProduct = async (
       },
       include: { images: true },
     });
+
+    // Create notification for admins about new product
+    try {
+      await createProductNotification(
+        newProduct.id,
+        req.seller.id,
+        newProduct.title,
+        false // isEvent = false for regular products
+      );
+    } catch (notificationError) {
+      console.error("Failed to create product notification:", notificationError);
+      // Don't fail the product creation if notification fails
+    }
 
     res.status(201).json({
       success: true,
@@ -1044,6 +1058,19 @@ export const createEvent = async (
       },
       include: { images: true },
     });
+
+    // Create notification for admins about new event
+    try {
+      await createProductNotification(
+        newEvent.id,
+        req.seller.id,
+        newEvent.title,
+        true // isEvent = true for events
+      );
+    } catch (notificationError) {
+      console.error("Failed to create event notification:", notificationError);
+      // Don't fail the event creation if notification fails
+    }
 
     res.status(201).json({
       success: true,
