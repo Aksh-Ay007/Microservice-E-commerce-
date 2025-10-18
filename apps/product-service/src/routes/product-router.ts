@@ -30,6 +30,7 @@ import {
   topShops,
   updateRating,
   uploadProductImage,
+  getAvailableCouponsForCart,
 } from "../controllers/product.controller";
 import isAuthenticated from '../../../../packages/middleware/isAuthenticated';
 
@@ -99,6 +100,13 @@ router.get("/ratings/product/:productId", getProductRatings);
 router.get("/ratings/stats/:productId", getRatingStats);
 router.put("/ratings/:id", isAuthenticated, updateRating);
 router.delete("/ratings/:id", isAuthenticated, deleteRating);
+
+// Coupons for cart
+router.post(
+  "/available-coupons",
+  isAuthenticated,
+  getAvailableCouponsForCart
+);
 
 
 export default router;

@@ -80,16 +80,21 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
             </div>
           ))}
 
-          <div className="flex justify-between font-semibold pt-2 border-t border-t-slate-200">
-            {!!coupon?.discountAmount  && (
-              <>
-                <span>Discount</span>
-                <span className="text-green-600">
-                  ${coupon?.discountAmount?.toFixed(2)}
-                </span>
-              </>
-            )}
-          </div>
+          {!!coupon?.discountAmount && (
+            <div className="flex items-center justify-between gap-2 pt-2 border-t border-t-slate-200">
+              <div className="flex flex-col">
+                <span className="font-semibold">Discount</span>
+                {coupon?.publicName || coupon?.code ? (
+                  <span className="text-xs text-gray-600">
+                    Applied coupon: {coupon?.publicName || coupon?.code}
+                  </span>
+                ) : null}
+              </div>
+              <span className="text-green-600 font-semibold">
+                -${Number(coupon?.discountAmount).toFixed(2)}
+              </span>
+            </div>
+          )}
 
           <div className="flex justify-between font-semibold mt-2">
             <span>Total</span>
