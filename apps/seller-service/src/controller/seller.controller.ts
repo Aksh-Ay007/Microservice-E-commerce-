@@ -2,7 +2,11 @@ import prisma from "@packages/libs/prisma"; // Adjust the import path as necessa
 import bcrypt from "bcryptjs";
 import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import Stripe from "stripe";
-import { AuthError, NotFoundError, ValidationError } from "../../../../packages/error-handler";
+import {
+  AuthError,
+  NotFoundError,
+  ValidationError,
+} from "../../../../packages/error-handler";
 import { setCookie } from "../utills/cookies/setCookie";
 import {
   checkOtpRegistration,
@@ -98,7 +102,6 @@ export const refreshToken = async (
 };
 
 //register a new Seller
-
 
 export const registerSeller = async (
   req: Request,
@@ -350,8 +353,6 @@ export const loginSeller = async (
 
 //get logged in Seller
 
-
-
 // Update getSeller to include shop with avatar and banner
 export const getSeller = async (
   req: any,
@@ -394,14 +395,6 @@ export const logOutSeller = async (
   res.clearCookie("seller_refresh_token");
   res.status(200).json({ message: "Logged out successfully" });
 };
-
-
-
-
-
-
-
-
 
 // get seller products by shop id (public)
 export const getSellerProducts = async (
@@ -447,8 +440,6 @@ export const getSellerProducts = async (
     next(error);
   }
 };
-
-
 
 // get seller events by shop id (public)
 export const getSellerEvents = async (
@@ -497,8 +488,6 @@ export const getSellerEvents = async (
   }
 };
 
-
-
 // check if current user is following a shop
 export const isFollowingShop = async (
   req: any,
@@ -528,7 +517,6 @@ export const isFollowingShop = async (
   }
 };
 
-
 // follow a shop
 export const followShop = async (
   req: any,
@@ -556,7 +544,9 @@ export const followShop = async (
       where: { userId, shopsId: shopId },
     });
     if (existing) {
-      return res.status(200).json({ success: true, message: "Already following" });
+      return res
+        .status(200)
+        .json({ success: true, message: "Already following" });
     }
 
     await prisma.followers.create({
@@ -568,8 +558,6 @@ export const followShop = async (
     next(error);
   }
 };
-
-
 
 // unfollow a shop
 export const unfollowShop = async (
@@ -604,12 +592,6 @@ export const unfollowShop = async (
     next(error);
   }
 };
-
-
-
-
-
-
 
 // Add these functions to your seller.controller.ts
 
@@ -823,11 +805,6 @@ export const updateSellerBanner = async (
   }
 };
 
-
-
-
-
-
 export const updateSellerProfile = async (
   req: any,
   res: Response,
@@ -835,7 +812,17 @@ export const updateSellerProfile = async (
 ) => {
   try {
     const sellerId = req.seller?.id;
-    const { name, email, phone_number, country, bio, address, opening_hours, website, category } = req.body;
+    const {
+      name,
+      email,
+      phone_number,
+      country,
+      bio,
+      address,
+      opening_hours,
+      website,
+      category,
+    } = req.body;
 
     if (!sellerId) {
       return res.status(401).json({ error: "Seller not authenticated" });
@@ -874,9 +861,6 @@ export const updateSellerProfile = async (
     return next(error);
   }
 };
-
-
-
 
 export const getSellerDetails = async (
   req: Request,
@@ -926,6 +910,32 @@ export const getSellerDetails = async (
       // ✅ Add direct access for convenience
       avatarUrl: shop.avatar?.url || null,
       bannerUrl: shop.coverBanner?.url || null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//fetching notification
+
+export const sellerNotification = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const sellerId = req.seller.id;
+
+    const notifications = await prisma.notifications.findMany({
+      where: {
+        receiverId: sellerId,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.status(200).json({
+      success: true,
+      notifications,
     });
   } catch (error) {
     next(error);

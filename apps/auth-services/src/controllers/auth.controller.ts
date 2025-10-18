@@ -695,24 +695,26 @@ export const updateUserAvatar = async (
   }
 };
 
-export const testImageKit = async (req: any, res: Response) => {
-  try {
-    console.log("🧪 Testing ImageKit connection...");
 
-    const testUpload = await imagekit.upload({
-      file: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
-      fileName: "test.jpg",
-      folder: "/test",
+
+
+export const getUserNotifications = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const notifications = await prisma.notifications.findMany({
+      where: { receiverId: req.user.id },
+      orderBy: { createdAt: "desc" },
     });
 
-    console.log("✅ ImageKit test successful:", testUpload);
-    res.json({
+    res.status(200).json({
       success: true,
-      message: "ImageKit working",
-      upload: testUpload,
+      data: notifications,
     });
   } catch (error) {
-    console.error("❌ ImageKit test failed:", error);
-    res.status(500).json({ success: false, error: error.message });
+    next(error);
   }
 };
+

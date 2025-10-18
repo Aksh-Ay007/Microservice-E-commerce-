@@ -1,8 +1,7 @@
 import prisma from "@packages/libs/prisma";
 import { NextFunction, Request, Response } from "express";
 import { ValidationError } from "../../../../packages/error-handler";
-import { imagekit } from '../../../../packages/libs/imagekit';
-
+import { imagekit } from "../../../../packages/libs/imagekit";
 
 export const getAllProducts = async (
   req: Request,
@@ -288,12 +287,6 @@ export const getAllCustomizations = async (
   }
 };
 
-
-
-
-
-
-
 // ========================================
 // HELPER FUNCTION
 // ========================================
@@ -317,7 +310,6 @@ export const updateSiteConfig = async (data: any) => {
     throw error;
   }
 };
-
 
 // ========================================
 // ADD CATEGORY
@@ -345,14 +337,14 @@ export const addCategory = async (
       categories: [...existing, category],
       subCategories: {
         ...(config?.subCategories as Record<string, string[]>),
-        [category]: []
+        [category]: [],
       },
     });
 
     res.status(200).json({
       success: true,
       message: "Category added successfully",
-      category
+      category,
     });
   } catch (error) {
     next(error);
@@ -386,7 +378,7 @@ export const addSubCategory = async (
 
     const updatedSubs = {
       ...allSubs,
-      [category]: [...current, subCategory]
+      [category]: [...current, subCategory],
     };
 
     await updateSiteConfig({ subCategories: updatedSubs });
@@ -394,14 +386,12 @@ export const addSubCategory = async (
     res.status(200).json({
       success: true,
       message: "Subcategory added successfully",
-      subCategory
+      subCategory,
     });
   } catch (error) {
     next(error);
   }
 };
-
-
 
 export const uploadLogo = async (req: any, res: Response): Promise<void> => {
   try {
@@ -439,10 +429,12 @@ export const uploadLogo = async (req: any, res: Response): Promise<void> => {
   }
 };
 
-
-
 // ✅ Upload Banner Controller
-export const uploadBanner = async (req: Request, res: Response, next: NextFunction) => {
+export const uploadBanner = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { fileName } = req.body;
     if (!fileName) throw new ValidationError("Banner image is required");
@@ -463,5 +455,25 @@ export const uploadBanner = async (req: Request, res: Response, next: NextFuncti
   } catch (error) {
     console.error("❌ uploadBanner error:", error);
     res.status(500).json({ success: false, message: "Banner upload failed" });
+  }
+};
+
+export const getAllNotifications = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const notifications = await prisma.notifications.findMany({
+      where: { receiverId: "admin" },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.status(200).json({
+      success: true,
+      data: notifications,
+    });
+  } catch (error) {
+    next(error);
   }
 };

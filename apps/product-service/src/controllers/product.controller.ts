@@ -8,7 +8,6 @@ import {
 } from "../../../../packages/error-handler";
 import { imagekit } from "./../../../../packages/libs/imagekit/index";
 
-
 interface EventRequest extends Request {
   seller: {
     id: string;
@@ -45,7 +44,6 @@ interface EventRequest extends Request {
     slug: string;
   };
 }
-
 
 export const getCategories = async (
   req: Request,
@@ -100,7 +98,6 @@ export const createDiscountCodes = async (
         sellerId: req.seller.id,
       },
     });
-
 
     res.status(201).json({
       success: true,
@@ -163,7 +160,6 @@ export const deleteDiscountCode = async (
     if (discountCode.sellerId !== sellerId) {
       // return next(new NotFoundError("Unauthorized access!"));
       return next(new AuthError("Unauthorized access!"));
-
     }
 
     await prisma.discount_codes.delete({
@@ -937,9 +933,6 @@ export const topShops = async (
   }
 };
 
-
-
-
 export const createEvent = async (
   req: EventRequest,
   res: Response,
@@ -947,32 +940,67 @@ export const createEvent = async (
 ) => {
   try {
     const {
-      title, short_description, detailed_description, slug, tags, category,
-      stock, sale_price, regular_price, subCategory, starting_date, ending_date,
+      title,
+      short_description,
+      detailed_description,
+      slug,
+      tags,
+      category,
+      stock,
+      sale_price,
+      regular_price,
+      subCategory,
+      starting_date,
+      ending_date,
       // Destructure other optional fields with defaults to satisfy the products model
-      warranty, custom_specifications = {}, cash_on_delivery, brand, video_url,
-      colors = [], sizes = [], discountCodes = [], customProperties = {},
+      warranty,
+      custom_specifications = {},
+      cash_on_delivery,
+      brand,
+      video_url,
+      colors = [],
+      sizes = [],
+      discountCodes = [],
+      customProperties = {},
       images = [], // Pass empty array if not used by the frontend
     } = req.body;
 
     // 1. Validation: Ensure all event-specific fields and base product fields are present
     if (
-      !title || !short_description || !slug || !category || !subCategory ||
-      !stock || !sale_price || !tags || !regular_price ||
-      !starting_date || !ending_date // Crucial checks for an Event
+      !title ||
+      !short_description ||
+      !slug ||
+      !category ||
+      !subCategory ||
+      !stock ||
+      !sale_price ||
+      !tags ||
+      !regular_price ||
+      !starting_date ||
+      !ending_date // Crucial checks for an Event
     ) {
-      return next(new ValidationError("Please fill all required fields, including event start and end dates!"));
+      return next(
+        new ValidationError(
+          "Please fill all required fields, including event start and end dates!"
+        )
+      );
     }
 
     // 2. Authorization & Slug Check
     if (!req.seller?.shop?.id) {
-      return next(new AuthError("Only a shop owner can create events! Unauthorized access."));
+      return next(
+        new AuthError(
+          "Only a shop owner can create events! Unauthorized access."
+        )
+      );
     }
     const slugChecking = await prisma.products.findUnique({
       where: { slug },
     });
     if (slugChecking) {
-      return next(new ValidationError("Slug already exists! Please use a different slug."));
+      return next(
+        new ValidationError("Slug already exists! Please use a different slug.")
+      );
     }
 
     // 3. Create Event-Product
@@ -985,7 +1013,12 @@ export const createEvent = async (
         cashOnDelivery: cash_on_delivery,
         slug,
         shopId: req.seller.shop.id,
-        tags: Array.isArray(tags) ? tags : String(tags).split(",").map(t => t.trim()).filter(Boolean),
+        tags: Array.isArray(tags)
+          ? tags
+          : String(tags)
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean),
         brand,
         video_url,
         category,
@@ -999,7 +1032,7 @@ export const createEvent = async (
         custom_properties: customProperties,
         custom_specifications: custom_specifications,
         starting_date: new Date(starting_date), // Persist event dates
-        ending_date: new Date(ending_date),     // Persist event dates
+        ending_date: new Date(ending_date), // Persist event dates
         images: {
           create: images
             .filter((img: any) => img && img.fileId && img.file_url)
@@ -1032,7 +1065,7 @@ export const getShopEvents = async (
 ) => {
   try {
     if (!req.seller?.shop?.id) {
-        return next(new AuthError("Unauthorized access. Shop not found."));
+      return next(new AuthError("Unauthorized access. Shop not found."));
     }
 
     // Filters: Get products from the shop that have both dates defined
@@ -1069,11 +1102,11 @@ export const deleteEvent = async (
     const event = await prisma.products.findUnique({
       where: { id: eventId },
       select: {
-          id: true,
-          shopId: true,
-          isDeleted: true,
-          starting_date: true,
-          ending_date: true // Used to verify it's an event
+        id: true,
+        shopId: true,
+        isDeleted: true,
+        starting_date: true,
+        ending_date: true, // Used to verify it's an event
       },
     });
 
@@ -1084,7 +1117,9 @@ export const deleteEvent = async (
 
     // 2. Authorization: Check shop ownership
     if (event.shopId !== shopId) {
-      return next(new AuthError("Unauthorized access! Event belongs to a different shop."));
+      return next(
+        new AuthError("Unauthorized access! Event belongs to a different shop.")
+      );
     }
 
     // 3. Soft Delete
@@ -1117,16 +1152,16 @@ export const getEventDetails = async (
   try {
     const event = await prisma.products.findUnique({
       where: {
-          slug: req.params.slug!,
-          // Filter to ensure it is treated as an event
-          starting_date: { not: null },
-          ending_date: { not: null },
+        slug: req.params.slug!,
+        // Filter to ensure it is treated as an event
+        starting_date: { not: null },
+        ending_date: { not: null },
       },
       include: { images: true, Shop: true },
     });
 
     if (!event) {
-        return next(new NotFoundError("Event not found."));
+      return next(new NotFoundError("Event not found."));
     }
 
     return res.status(200).json({ success: true, event });
@@ -1134,8 +1169,6 @@ export const getEventDetails = async (
     return next(error);
   }
 };
-
-
 
 // ==================== RATING FUNCTIONS ====================
 
@@ -1223,9 +1256,11 @@ export const getProductRatings = async (
     const { productId } = req.params;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-    const rating = req.query.rating ? parseInt(req.query.rating as string) : undefined;
-    const sortBy = (req.query.sortBy as string) || 'createdAt';
-    const sortOrder = (req.query.sortOrder as string) || 'desc';
+    const rating = req.query.rating
+      ? parseInt(req.query.rating as string)
+      : undefined;
+    const sortBy = (req.query.sortBy as string) || "createdAt";
+    const sortOrder = (req.query.sortOrder as string) || "desc";
 
     const skip = (page - 1) * limit;
 
@@ -1243,14 +1278,14 @@ export const getProductRatings = async (
               id: true,
               name: true,
               avatar: true,
-            }
-          }
+            },
+          },
         },
         orderBy: { [sortBy]: sortOrder },
         skip,
         take: limit,
       }),
-      prisma.ratings.count({ where: whereClause })
+      prisma.ratings.count({ where: whereClause }),
     ]);
 
     res.status(200).json({
@@ -1261,7 +1296,7 @@ export const getProductRatings = async (
         limit,
         total,
         totalPages: Math.ceil(total / limit),
-      }
+      },
     });
   } catch (error) {
     next(error);
@@ -1278,18 +1313,18 @@ export const getRatingStats = async (
     const { productId } = req.params;
 
     const stats = await prisma.ratings.groupBy({
-      by: ['rating'],
+      by: ["rating"],
       where: { productId },
-      _count: { rating: true }
+      _count: { rating: true },
     });
 
     const totalRatings = await prisma.ratings.count({
-      where: { productId }
+      where: { productId },
     });
 
     const averageResult = await prisma.ratings.aggregate({
       where: { productId },
-      _avg: { rating: true }
+      _avg: { rating: true },
     });
 
     const ratingDistribution = {
@@ -1300,8 +1335,9 @@ export const getRatingStats = async (
       1: 0,
     };
 
-    stats.forEach(stat => {
-      ratingDistribution[stat.rating as keyof typeof ratingDistribution] = stat._count.rating;
+    stats.forEach((stat) => {
+      ratingDistribution[stat.rating as keyof typeof ratingDistribution] =
+        stat._count.rating;
     });
 
     res.status(200).json({
@@ -1331,11 +1367,15 @@ export const updateRating = async (
     }
 
     const existingRating = await prisma.ratings.findFirst({
-      where: { id, userId }
+      where: { id, userId },
     });
 
     if (!existingRating) {
-      return next(new NotFoundError("Rating not found or you are not authorized to update it"));
+      return next(
+        new NotFoundError(
+          "Rating not found or you are not authorized to update it"
+        )
+      );
     }
 
     const updatedRating = await prisma.ratings.update({
@@ -1352,9 +1392,9 @@ export const updateRating = async (
             id: true,
             name: true,
             avatar: true,
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     // Update product rating stats
@@ -1363,7 +1403,7 @@ export const updateRating = async (
     res.status(200).json({
       success: true,
       message: "Rating updated successfully",
-      rating: updatedRating
+      rating: updatedRating,
     });
   } catch (error) {
     next(error);
@@ -1385,11 +1425,15 @@ export const deleteRating = async (
     }
 
     const existingRating = await prisma.ratings.findFirst({
-      where: { id, userId }
+      where: { id, userId },
     });
 
     if (!existingRating) {
-      return next(new NotFoundError("Rating not found or you are not authorized to delete it"));
+      return next(
+        new NotFoundError(
+          "Rating not found or you are not authorized to delete it"
+        )
+      );
     }
 
     const productId = existingRating.productId;
@@ -1400,7 +1444,7 @@ export const deleteRating = async (
 
     res.status(200).json({
       success: true,
-      message: "Rating deleted successfully"
+      message: "Rating deleted successfully",
     });
   } catch (error) {
     next(error);
@@ -1413,7 +1457,7 @@ const updateProductRatingStats = async (productId: string) => {
     const stats = await prisma.ratings.aggregate({
       where: { productId },
       _avg: { rating: true },
-      _count: { rating: true }
+      _count: { rating: true },
     });
 
     await prisma.products.update({
@@ -1421,9 +1465,113 @@ const updateProductRatingStats = async (productId: string) => {
       data: {
         averageRating: stats._avg.rating || 0,
         totalRatings: stats._count.rating || 0,
-      }
+      },
     });
   } catch (error) {
     console.error("Error updating product rating stats:", error);
+  }
+};
+
+export const getAvailableCouponsForCart = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { cart } = req.body as { cart: Array<any> };
+
+    // Return empty if no cart provided
+    if (!cart || !Array.isArray(cart) || cart.length === 0) {
+      return res.status(200).json({ success: true, coupons: [] });
+    }
+
+    // Extract valid product IDs from cart
+    const productIds = Array.from(
+      new Set(
+        cart
+          .map((item: any) => item?.id)
+          .filter((id: unknown) => typeof id === "string" && !!id)
+      )
+    );
+
+    if (productIds.length === 0) {
+      return res.status(200).json({ success: true, coupons: [] });
+    }
+
+    // Fetch products with their discount codes
+    const products = await prisma.products.findMany({
+      where: { id: { in: productIds } },
+      select: {
+        id: true,
+        title: true,
+        discount_codes: true,
+        sale_price: true,
+      },
+    });
+
+    // Collect all unique discount code IDs
+    const discountCodeIds = Array.from(
+      new Set(
+        products.flatMap((p) =>
+          Array.isArray(p.discount_codes) ? p.discount_codes : []
+        )
+      )
+    );
+
+    if (discountCodeIds.length === 0) {
+      return res.status(200).json({ success: true, coupons: [] });
+    }
+
+    // Fetch discount code details
+    const discounts = await prisma.discount_codes.findMany({
+      where: { id: { in: discountCodeIds } },
+      select: {
+        id: true,
+        public_name: true,
+        discountType: true,
+        discountValue: true,
+        discountCode: true,
+      },
+    });
+
+    // Map products to their applicable discount codes
+    const productIdToTitle = new Map(products.map((p) => [p.id, p.title]));
+    const codeIdToProductInfo = new Map<
+      string,
+      Array<{ id: string; title: string }>
+    >(discounts.map((d) => [d.id, []]));
+
+    for (const product of products) {
+      const codes = product.discount_codes as string[];
+      if (!Array.isArray(codes)) continue;
+
+      for (const codeId of codes) {
+        if (!codeIdToProductInfo.has(codeId)) continue;
+        const list = codeIdToProductInfo.get(codeId)!;
+        list.push({
+          id: product.id,
+          title: productIdToTitle.get(product.id) || product.id,
+        });
+      }
+    }
+
+    // Format response
+    const coupons = discounts.map((d) => ({
+      id: d.id,
+      publicName: d.public_name,
+      discountType: d.discountType,
+      discountValue: d.discountValue,
+      code: d.discountCode,
+      applicableProducts:
+        codeIdToProductInfo.get(d.id)?.map((p) => p.title) || [],
+    }));
+
+    res.status(200).json({
+      success: true,
+      coupons,
+    });
+  } catch (error) {
+    console.error("Error fetching available coupons:", error);
+    return next(error);
   }
 };

@@ -36,6 +36,11 @@ const CartPage = () => {
   const [error, setError] = useState("");
   const [storedCouponCode, setStoredCouponCode] = useState("");
 
+  // Add this to your CartPage component
+
+  const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
+  const [showCoupons, setShowCoupons] = useState(false);
+
   const couponCodeApplyHandler = async () => {
     setError("");
     if (!couponCode.trim()) {
@@ -68,6 +73,31 @@ const CartPage = () => {
       setError(error?.response?.data?.message);
     }
   };
+
+  // Fetch available coupons when cart changes
+  useEffect(() => {
+    const fetchAvailableCoupons = async () => {
+      if (cart.length === 0) {
+        setAvailableCoupons([]);
+        return;
+      }
+
+      try {
+        const response = await axiosInstance.post(
+          "/product/api/available-coupons",
+          { cart }
+        );
+
+        if (response.data.success) {
+          setAvailableCoupons(response.data.coupons);
+        }
+      } catch (error) {
+        console.error("Error fetching available coupons:", error);
+      }
+    };
+
+    fetchAvailableCoupons();
+  }, [cart]);
 
   const { data: addresses = [] } = useQuery<any[], Error>({
     queryKey: ["shipping-addresses"],
@@ -284,10 +314,68 @@ const CartPage = () => {
               </div>
 
               {/* Coupon */}
+              {/* Coupon Section (Cleaned Up) */}
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">
                   Have a Coupon?
                 </label>
+
+                {/* Show available coupons button */}
+                {availableCoupons.length > 0 && (
+                  <button
+                    onClick={() => setShowCoupons(!showCoupons)}
+                    className="text-sm text-blue-600 hover:text-blue-700 mb-2 underline"
+                  >
+                    {showCoupons ? "Hide" : "View"} {availableCoupons.length}{" "}
+                    available coupon{availableCoupons.length > 1 ? "s" : ""}
+                  </button>
+                )}
+
+                {/* Available coupons list */}
+                {showCoupons && availableCoupons.length > 0 && (
+                  <div className="mb-3 space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-md p-2">
+                    {availableCoupons.map((coupon) => (
+                      <div
+                        key={coupon.id}
+                        className="flex items-center justify-between p-2 bg-blue-50 rounded-md hover:bg-blue-100 transition"
+                      >
+                        <div className="flex-1">
+                          <p className="font-semibold text-sm text-gray-900">
+                            {coupon.code}
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            {coupon.publicName} - {coupon.discountValue}
+                            {coupon.discountType === "percentage"
+                              ? "%"
+                              : "$"}{" "}
+                            off
+                          </p>
+                          {coupon.applicableProducts.length > 0 && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              Valid for:{" "}
+                              {coupon.applicableProducts.slice(0, 2).join(", ")}
+                              {coupon.applicableProducts.length > 2 &&
+                                ` +${
+                                  coupon.applicableProducts.length - 2
+                                } more`}
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => {
+                            setCouponCode(coupon.code);
+                            setShowCoupons(false);
+                          }}
+                          className="ml-2 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Manual coupon input */}
                 <div className="flex">
                   <input
                     type="text"

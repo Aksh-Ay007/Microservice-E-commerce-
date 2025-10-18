@@ -1,6 +1,9 @@
 import isAuthenticated from "@packages/middleware/isAuthenticated";
 import express, { Router } from "express";
-import { isAdmin, isUser } from "../../../../packages/middleware/authorizeRoles";
+import {
+  isAdmin,
+  isUser,
+} from "../../../../packages/middleware/authorizeRoles";
 import {
   addUserAddress,
   createFirstAdmin,
@@ -8,13 +11,13 @@ import {
   getAdmin,
   getUser,
   getUserAddress,
+  getUserNotifications,
   loginAdmin,
   loginUser,
   logOutAdmin,
   logOutUser,
   refreshToken,
   resetUserPassword,
-  testImageKit,
   updateUserAvatar,
   updateUserPassword,
   userForgotPassword,
@@ -39,7 +42,7 @@ router.post("/change-password", isAuthenticated, updateUserPassword);
 router.get("/shipping-addresses", isAuthenticated, getUserAddress);
 router.post("/add-address", isAuthenticated, addUserAddress);
 router.delete("/delete-address/:addressId", isAuthenticated, deleteUserAddress);
-router.post("/update-avatar",isAuthenticated, updateUserAvatar);
+router.post("/update-avatar", isAuthenticated, updateUserAvatar);
 
 //admin routes
 
@@ -48,7 +51,6 @@ router.post("/signup-admin", createFirstAdmin);
 router.post("/logout-admin", isAuthenticated, logOutAdmin);
 router.get("/logged-in-admin", isAuthenticated, isAdmin, getAdmin);
 
-router.get("/test-imagekit", testImageKit);
-
+router.get("/get-user-notifications", isAuthenticated, getUserNotifications);
 
 export default router;

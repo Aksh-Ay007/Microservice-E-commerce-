@@ -13,6 +13,7 @@ import {
   deleteRating,
   getAllEvents,
   getAllProducts,
+  getAvailableCouponsForCart,
   getCategories,
   getDiscountCodes,
   getEventDetails,
@@ -99,6 +100,8 @@ router.get("/ratings/product/:productId", getProductRatings);
 router.get("/ratings/stats/:productId", getRatingStats);
 router.put("/ratings/:id", isAuthenticated, updateRating);
 router.delete("/ratings/:id", isAuthenticated, deleteRating);
+
+router.post("/available-coupons", getAvailableCouponsForCart);
 
 
 export default router;

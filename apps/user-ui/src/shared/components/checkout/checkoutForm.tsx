@@ -20,10 +20,9 @@ const CheckoutForm = ({
   const stripe = useStripe();
   const elements = useElements();
 
-const [loading, setLoading] = useState(false);
-const [status, setStatus] = useState<"success" | "failed" | null>(null);
-const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<"success" | "failed" | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,11 +80,16 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
           ))}
 
           <div className="flex justify-between font-semibold pt-2 border-t border-t-slate-200">
-            {!!coupon?.discountAmount  && (
+            {!!coupon?.discountAmount && (
               <>
-                <span>Discount</span>
+                <div className="flex flex-col">
+                  <span>Discount</span>
+                  <span className="text-xs text-gray-500 font-normal">
+                    Coupon: {coupon?.code || "Applied"}
+                  </span>
+                </div>
                 <span className="text-green-600">
-                  ${coupon?.discountAmount?.toFixed(2)}
+                  -${coupon?.discountAmount?.toFixed(2)}
                 </span>
               </>
             )}
@@ -93,7 +97,7 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
           <div className="flex justify-between font-semibold mt-2">
             <span>Total</span>
-            <span>${(total - (coupon?.discountAmount||0)).toFixed(2)}</span>
+            <span>${(total - (coupon?.discountAmount || 0)).toFixed(2)}</span>
           </div>
         </div>
 
