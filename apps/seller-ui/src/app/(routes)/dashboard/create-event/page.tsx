@@ -86,6 +86,32 @@ const EventCreatePage = () => {
   // --- (Form Submission) ---
 
   const onSubmit = async (data: EventFormData) => {
+    // Validate dates
+    const startDate = new Date(data.starting_date);
+    const endDate = new Date(data.ending_date);
+    const now = new Date();
+
+    if (startDate <= now) {
+      toast.error("Event start date must be in the future");
+      return;
+    }
+
+    if (endDate <= startDate) {
+      toast.error("Event end date must be after start date");
+      return;
+    }
+
+    if (endDate <= now) {
+      toast.error("Event end date must be in the future");
+      return;
+    }
+
+    // Validate price
+    if (parseFloat(String(data.sale_price)) >= parseFloat(String(data.regular_price))) {
+      toast.error("Sale price must be less than regular price");
+      return;
+    }
+
     const eventData = {
       ...data,
       stock: parseInt(String(data.stock), 10),
@@ -112,7 +138,7 @@ const EventCreatePage = () => {
       );
 
       toast.success(res.data.message || "Event created successfully!");
-      router.push("/seller/events");
+      router.push("/dashboard/events");
     } catch (error: any) {
       console.error("Event creation error:", error);
       toast.error(error?.response?.data?.message || "Failed to create event.");

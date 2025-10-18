@@ -21,6 +21,7 @@ import Payment from "../../../assets/icons/payment";
 import Logo from "../../../assets/svgs/logo";
 import useSeller from "../../../hooks/useSeller";
 import useSidebar from "../../../hooks/useSidebar";
+import { useNotifications } from "../../../context/notification-context";
 import Box from "../box";
 import SidebarItem from "./sidebar.item";
 import SidebarMenu from "./sidebar.menu";
@@ -28,6 +29,7 @@ import { Sidebar } from "./sidebar.styles";
 
 const SideBarWrapper = () => {
   const { activeSideBar, setActiveSideBar } = useSidebar();
+  const { unreadCount } = useNotifications();
 
   const pathName = usePathname();
   const { seller } = useSeller();
@@ -188,10 +190,17 @@ const SideBarWrapper = () => {
               <SidebarItem
                 title="Notifications"
                 icon={
-                  <BellRing
-                    size={24}
-                    color={getIconColor("/dashboard/notifications")}
-                  />
+                  <div className="relative">
+                    <BellRing
+                      size={24}
+                      color={getIconColor("/dashboard/notifications")}
+                    />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </div>
                 }
                 isActive={activeSideBar === "/dashboard/notifications"}
                 href="/dashboard/notifications"

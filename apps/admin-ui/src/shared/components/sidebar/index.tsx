@@ -20,6 +20,7 @@ import Payment from "../../../app/assets/icons/payment";
 import Logo from "../../../app/assets/svgs/logo";
 import useAdmin from "../../../hooks/useAdmin";
 import useSidebar from "../../../hooks/useSidebar";
+import { useNotifications } from "../../../context/notification-context";
 import Box from "../box";
 import SidebarItem from "./sidebar.item";
 import SidebarMenu from "./sidebar.menu";
@@ -29,6 +30,7 @@ const SidebarWrapper = () => {
   const { activeSidebar, setActiveSidebar } = useSidebar();
   const pathName = usePathname();
   const { admin } = useAdmin();
+  const { unreadCount } = useNotifications();
 
   useEffect(() => {
     setActiveSidebar(pathName);
@@ -169,10 +171,17 @@ const SidebarWrapper = () => {
                 title="Notifications"
                 href="/dashboard/notifications"
                 icon={
-                  <BellRing
-                    size={24}
-                    color={getIconColor("/dashboard/notifications")}
-                  />
+                  <div className="relative">
+                    <BellRing
+                      size={24}
+                      color={getIconColor("/dashboard/notifications")}
+                    />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </div>
                 }
               />
             </SidebarMenu>
