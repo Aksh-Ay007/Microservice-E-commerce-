@@ -1,13 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import {
-  ChevronRight,
-  Loader2,
-  MinusIcon,
-  PlusIcon,
-  Trash2Icon,
-} from "lucide-react";
+import { ChevronRight, Loader2, MinusIcon, PlusIcon, Trash2Icon, Copy, Check } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -35,22 +29,25 @@ const CartPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [storedCouponCode, setStoredCouponCode] = useState("");
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
-  const couponCodeApplyHandler = async () => {
+  const couponCodeApplyHandler = async (codeOverride?: string) => {
     setError("");
-    if (!couponCode.trim()) {
+    const codeToApply = (codeOverride ?? couponCode).trim();
+
+    if (!codeToApply) {
       setError("Please enter a coupon code");
       return;
     }
 
     try {
       const res = await axiosInstance.put("/order/api/verify-coupon", {
-        couponCode: couponCode.trim(),
+        couponCode: codeToApply,
         cart,
       });
 
       if (res.data.valid) {
-        setStoredCouponCode(couponCode.trim());
+        setStoredCouponCode(codeToApply);
         setDiscountAmount(parseFloat(res.data.discountAmount));
         setDiscountPercent(res.data.discount);
         setDiscountedProductId(res.data.discountedProductId);
@@ -76,6 +73,18 @@ const CartPage = () => {
       return res.data.addresses;
     },
   });
+
+  // Fetch available coupons for items in the cart
+  const { data: availableCouponsData } = useQuery({
+    queryKey: ["available-coupons", cart?.map((i: any) => i.id).join(",")],
+    queryFn: async () => {
+      const res = await axiosInstance.post("/order/api/get-available-coupons", { cart });
+      return res.data as { success: boolean; coupons: Array<{ id: string; public_name: string; discountType: string; discountValue: number; discountCode: string; }>; };
+    },
+    enabled: cart.length > 0,
+  });
+
+  const coupons = availableCouponsData?.coupons ?? [];
 
   useEffect(() => {
     if (addresses.length > 0 && !selectedAddressId) {
@@ -298,12 +307,61 @@ const CartPage = () => {
                   />
                   <button
                     className="bg-blue-600 text-white px-4 rounded-r-md hover:bg-blue-700 text-sm font-medium"
-                    onClick={couponCodeApplyHandler}
+                    onClick={() => couponCodeApplyHandler()}
                   >
                     Apply
                   </button>
                 </div>
                 {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+
+                {/* Available coupons section */}
+                {coupons.length > 0 && (
+                  <div className="mt-4 border border-gray-200 rounded-lg p-3 bg-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-semibold text-gray-900">Available coupons for your cart</h4>
+                    </div>
+                    <div className="space-y-2 max-h-40 overflow-auto pr-1">
+                      {coupons.map((c) => (
+                        <div key={c.id} className="flex items-start justify-between gap-3 p-2 rounded-md border border-gray-100 hover:bg-gray-50">
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium text-gray-900 truncate">{c.public_name}</div>
+                            <div className="text-xs text-gray-600">
+                              Code: <span className="font-mono bg-gray-100 px-1 py-0.5 rounded">{c.discountCode}</span>
+                              {" "}
+                              <span className="ml-2 text-gray-500">{c.discountType === "percentage" ? `${c.discountValue}% off` : `$${c.discountValue} off`}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                try {
+                                  await navigator.clipboard.writeText(c.discountCode);
+                                  setCopiedCode(c.discountCode);
+                                  toast.success("Coupon code copied");
+                                  setTimeout(() => setCopiedCode(null), 1500);
+                                } catch {
+                                  toast.error("Failed to copy");
+                                }
+                              }}
+                              className="inline-flex items-center gap-1 text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-100"
+                            >
+                              {copiedCode === c.discountCode ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
+                              {copiedCode === c.discountCode ? "Copied" : "Copy"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => couponCodeApplyHandler(c.discountCode)}
+                              className="inline-flex items-center text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                            >
+                              Apply
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Shipping Address */}
