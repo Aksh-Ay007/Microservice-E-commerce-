@@ -828,6 +828,25 @@ const ProfilePage = () => {
                 <OrderTable />
               ) : activeTab === "Change Password" ? (
                 <ChangePassword />
+              ) : activeTab === "Notifications" ? (
+                <div className="space-y-4">
+                  <p className="text-gray-600">
+                    View your notifications on the{" "}
+                    <a
+                      href="/notifications"
+                      className="text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      dedicated notifications page
+                    </a>
+                  </p>
+                  <button
+                    onClick={() => (window.location.href = "/notifications")}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <Bell className="w-4 h-4" />
+                    Go to Notifications
+                  </button>
+                </div>
               ) : (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
