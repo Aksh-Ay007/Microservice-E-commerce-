@@ -137,6 +137,81 @@ export const getDiscountCodes = async (
   }
 };
 
+//get available discount codes for users (public endpoint)
+export const getAvailableDiscountCodes = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { cart } = req.body;
+
+    if (!cart || !Array.isArray(cart) || cart.length === 0) {
+      return res.status(200).json({
+        success: true,
+        availableCoupons: [],
+        message: "No items in cart"
+      });
+    }
+
+    // Get all product IDs from cart
+    const productIds = cart.map((item: any) => item.id);
+
+    // Find products that have discount codes
+    const products = await prisma.products.findMany({
+      where: {
+        id: { in: productIds },
+        discount_codes: { isEmpty: false }
+      },
+      select: {
+        id: true,
+        title: true,
+        discount_codes: true
+      }
+    });
+
+    // Get all discount code IDs from products
+    const discountCodeIds = products.reduce((acc: string[], product) => {
+      return [...acc, ...product.discount_codes];
+    }, []);
+
+    // Fetch discount code details
+    const discountCodes = await prisma.discount_codes.findMany({
+      where: {
+        id: { in: discountCodeIds }
+      },
+      select: {
+        id: true,
+        public_name: true,
+        discountCode: true,
+        discountType: true,
+        discountValue: true
+      }
+    });
+
+    // Map products to their applicable discount codes
+    const availableCoupons = products.map(product => {
+      const applicableCodes = product.discount_codes
+        .map(codeId => discountCodes.find(code => code.id === codeId))
+        .filter(Boolean);
+
+      return {
+        productId: product.id,
+        productTitle: product.title,
+        coupons: applicableCodes
+      };
+    }).filter(item => item.coupons.length > 0);
+
+    res.status(200).json({
+      success: true,
+      availableCoupons,
+      totalCoupons: discountCodes.length
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 //delete discountCodes
 
 export const deleteDiscountCode = async (
