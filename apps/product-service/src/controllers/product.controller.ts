@@ -7,6 +7,8 @@ import {
   ValidationError,
 } from "../../../../packages/error-handler";
 import { imagekit } from "./../../../../packages/libs/imagekit/index";
+import { NotificationService } from "../services/notification.service";
+import NotificationServiceWS from "../../kafka-service/src/notification.service";
 
 interface EventRequest extends Request {
   seller: {
@@ -1044,6 +1046,45 @@ export const createEvent = async (
       },
       include: { images: true },
     });
+
+    // Send notification to admins about new event
+    try {
+      const seller = await prisma.sellers.findUnique({
+        where: { id: req.seller.id },
+        include: { shop: true },
+      });
+
+      if (seller?.shop) {
+        // Database notification
+        await NotificationService.notifyAdminsAboutNewEvent({
+          title: newEvent.title,
+          sellerName: seller.name,
+          shopName: seller.shop.name,
+          eventId: newEvent.id,
+        });
+
+        // Real-time WebSocket notification
+        const wsNotificationService = NotificationServiceWS.getInstance();
+        await wsNotificationService.broadcastToAdmins({
+          id: newEvent.id,
+          title: 'New Event Created',
+          message: `A new event "${newEvent.title}" has been created by ${seller.name} from ${seller.shop.name}`,
+          type: 'product',
+          priority: 'normal',
+          createdAt: newEvent.createdAt.toISOString(),
+          creator: {
+            id: seller.id,
+            name: seller.name,
+            email: seller.email,
+            role: 'seller',
+          },
+          redirect_link: `/admin/events/${newEvent.id}`,
+        });
+      }
+    } catch (notificationError) {
+      console.error('Error sending event notification:', notificationError);
+      // Don't fail the event creation if notification fails
+    }
 
     res.status(201).json({
       success: true,
