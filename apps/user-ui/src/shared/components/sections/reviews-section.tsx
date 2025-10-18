@@ -271,7 +271,7 @@ const ReviewsSection = ({
             >
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                  {review.user.avatar.url ? (
+                  {review.user.avatar?.url ? (
                     <img
                       src={review.user.avatar.url}
                       alt={review.user.name}

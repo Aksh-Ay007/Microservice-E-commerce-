@@ -35,6 +35,28 @@ const CartPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [storedCouponCode, setStoredCouponCode] = useState("");
+  const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
+  const [showAvailableCoupons, setShowAvailableCoupons] = useState(false);
+
+  const fetchAvailableCoupons = async () => {
+    if (cart.length === 0) {
+      setAvailableCoupons([]);
+      return;
+    }
+
+    try {
+      const res = await axiosInstance.post("/product/api/get-available-discount-codes", {
+        cart,
+      });
+
+      if (res.data.success) {
+        setAvailableCoupons(res.data.availableCoupons || []);
+      }
+    } catch (error) {
+      console.error("Error fetching available coupons:", error);
+      setAvailableCoupons([]);
+    }
+  };
 
   const couponCodeApplyHandler = async () => {
     setError("");
@@ -55,6 +77,7 @@ const CartPage = () => {
         setDiscountPercent(res.data.discount);
         setDiscountedProductId(res.data.discountedProductId);
         setCouponCode("");
+        setShowAvailableCoupons(false);
       } else {
         setDiscountAmount(0);
         setDiscountPercent(0);
@@ -67,6 +90,11 @@ const CartPage = () => {
       setDiscountedProductId("");
       setError(error?.response?.data?.message);
     }
+  };
+
+  const applyCouponFromList = (couponCode: string) => {
+    setCouponCode(couponCode);
+    setShowAvailableCoupons(false);
   };
 
   const { data: addresses = [] } = useQuery<any[], Error>({
@@ -85,6 +113,10 @@ const CartPage = () => {
       }
     }
   }, [addresses, selectedAddressId]);
+
+  useEffect(() => {
+    fetchAvailableCoupons();
+  }, [cart]);
 
   const createPaymentSession = async () => {
     if (addresses.length === 0) {
@@ -285,9 +317,72 @@ const CartPage = () => {
 
               {/* Coupon */}
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">
-                  Have a Coupon?
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium">
+                    Have a Coupon?
+                  </label>
+                  {availableCoupons.length > 0 && (
+                    <button
+                      onClick={() => setShowAvailableCoupons(!showAvailableCoupons)}
+                      className="text-xs text-blue-600 hover:text-blue-800 underline"
+                    >
+                      {showAvailableCoupons ? "Hide" : "Show"} Available ({availableCoupons.length})
+                    </button>
+                  )}
+                </div>
+                
+                {/* Available Coupons Display */}
+                {showAvailableCoupons && availableCoupons.length > 0 && (
+                  <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <p className="text-xs text-blue-800 font-medium mb-2">Available Coupons for your cart:</p>
+                    <div className="space-y-2">
+                      {availableCoupons.map((item, index) => (
+                        <div key={index} className="space-y-1">
+                          <p className="text-xs text-gray-600 font-medium">{item.productTitle}:</p>
+                          {item.coupons.map((coupon: any, couponIndex: number) => (
+                            <div
+                              key={couponIndex}
+                              className="flex items-center justify-between bg-white p-2 rounded border border-gray-200 hover:border-blue-300 transition-colors"
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-medium text-gray-800">
+                                    {coupon.public_name}
+                                  </span>
+                                  <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                                    {coupon.discountType === "percentage" 
+                                      ? `${coupon.discountValue}% OFF` 
+                                      : `$${coupon.discountValue} OFF`
+                                    }
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <code className="text-xs bg-gray-100 px-2 py-1 rounded font-mono text-gray-700">
+                                    {coupon.discountCode}
+                                  </code>
+                                  <button
+                                    onClick={() => navigator.clipboard.writeText(coupon.discountCode)}
+                                    className="text-xs text-blue-600 hover:text-blue-800"
+                                    title="Copy code"
+                                  >
+                                    Copy
+                                  </button>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => applyCouponFromList(coupon.discountCode)}
+                                className="ml-2 text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors"
+                              >
+                                Apply
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex">
                   <input
                     type="text"
@@ -304,6 +399,13 @@ const CartPage = () => {
                   </button>
                 </div>
                 {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+                
+                {storedCouponCode && (
+                  <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-xs">
+                    <span className="text-green-700 font-medium">Applied: </span>
+                    <code className="bg-green-100 px-1 py-0.5 rounded">{storedCouponCode}</code>
+                  </div>
+                )}
               </div>
 
               {/* Shipping Address */}

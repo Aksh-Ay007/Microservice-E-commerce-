@@ -13,6 +13,7 @@ import {
   deleteRating,
   getAllEvents,
   getAllProducts,
+  getAvailableDiscountCodes,
   getCategories,
   getDiscountCodes,
   getEventDetails,
@@ -42,6 +43,7 @@ router.post(
   createDiscountCodes
 );
 router.get("/get-discount-codes", isSellerAuthenticated, getDiscountCodes);
+router.post("/get-available-discount-codes", getAvailableDiscountCodes);
 router.delete(
   "/delete-discount-code/:id",
   isSellerAuthenticated,
