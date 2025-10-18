@@ -319,6 +319,33 @@ export const createProduct = async (
       include: { images: true },
     });
 
+    // ✅ Create notifications for admins about new product
+    try {
+      const admins = await prisma.users.findMany({
+        where: { role: "admin" },
+        select: { id: true },
+      });
+
+      const notificationPromises = admins.map((admin) =>
+        prisma.notifications.create({
+          data: {
+            creatorId: req.seller.id,
+            receiverId: admin.id,
+            title: "New Product Created",
+            message: `A new product "${title}" has been created by seller ${req.seller.id}`,
+            type: "product",
+            priority: "normal",
+            redirect_link: `/product/${slug}`,
+          },
+        })
+      );
+
+      await Promise.all(notificationPromises);
+    } catch (notifError) {
+      console.error("Failed to create product notifications:", notifError);
+      // Don't fail the product creation if notifications fail
+    }
+
     res.status(201).json({
       success: true,
       message: "Product created successfully",
@@ -1044,6 +1071,60 @@ export const createEvent = async (
       },
       include: { images: true },
     });
+
+    // ✅ Create notifications for admins and shop followers about new event
+    try {
+      // Get all admins
+      const admins = await prisma.users.findMany({
+        where: { role: "admin" },
+        select: { id: true },
+      });
+
+      // Get all shop followers
+      const followers = await prisma.followers.findMany({
+        where: { shopsId: req.seller.shop.id },
+        select: { userId: true },
+      });
+
+      // Create notifications for admins
+      const adminNotifications = admins.map((admin) =>
+        prisma.notifications.create({
+          data: {
+            creatorId: req.seller.id,
+            receiverId: admin.id,
+            title: "New Event Created",
+            message: `A new event "${title}" has been created starting ${new Date(
+              starting_date
+            ).toLocaleDateString()}`,
+            type: "product",
+            priority: "high",
+            redirect_link: `/product/${slug}`,
+          },
+        })
+      );
+
+      // Create notifications for followers
+      const followerNotifications = followers.map((follower) =>
+        prisma.notifications.create({
+          data: {
+            creatorId: req.seller.id,
+            receiverId: follower.userId,
+            title: "New Event from Shop You Follow",
+            message: `Check out the new event "${title}" - starts ${new Date(
+              starting_date
+            ).toLocaleDateString()}!`,
+            type: "product",
+            priority: "normal",
+            redirect_link: `/product/${slug}`,
+          },
+        })
+      );
+
+      await Promise.all([...adminNotifications, ...followerNotifications]);
+    } catch (notifError) {
+      console.error("Failed to create event notifications:", notifError);
+      // Don't fail the event creation if notifications fail
+    }
 
     res.status(201).json({
       success: true,
