@@ -580,12 +580,15 @@ export const markAllNotificationsAsRead = async (
   res: Response
 ) => {
   try {
-    const { receiverId } = req.body;
+    const { receiverId } = req.body as { receiverId?: string };
 
-    await prisma.notifications.updateMany({
-      where: { receiverId, status: "Unread" },
-      data: { status: "Read" },
-    });
+    const where: any = { status: "Unread" };
+    // If receiverId is provided and not 'all', scope to that user
+    if (receiverId && receiverId !== 'all') {
+      where.receiverId = receiverId;
+    }
+
+    await prisma.notifications.updateMany({ where, data: { status: "Read" } });
 
     res.json({ success: true, message: "All notifications marked as read" });
   } catch (error) {
@@ -673,7 +676,7 @@ export const createNotification = async (req: Request, res: Response) => {
       priority = "normal",
       redirect_link,
     } = req.body;
-    const creatorId = req.user?.id; // Assuming you have user info in req.user
+    const creatorId = (req as any).user?.id || (req as any).admin?.id; // set by isAuthenticated
 
     const notification = await prisma.notifications.create({
       data: {

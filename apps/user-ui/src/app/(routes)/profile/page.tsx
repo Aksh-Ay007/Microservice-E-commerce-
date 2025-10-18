@@ -40,6 +40,7 @@ import ChangePassword from "../../../shared/components/change-password";
 import ShippingAddressSection from "../../../shared/components/shippingAddress";
 import OrderTable from "../../../shared/components/tables/order-table";
 import axiosInstance from "../../../utils/axiosinstance";
+import { useState as useReactState } from "react";
 
 const ProfilePage = () => {
   const [isUploading, setIsUploading] = useState(false);
@@ -57,6 +58,8 @@ const ProfilePage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const [notifications, setNotifications] = useReactState<any[]>([]);
+  const [notifLoading, setNotifLoading] = useReactState(false);
 
   const { user, isLoading } = useRequireAuth();
 
@@ -100,6 +103,21 @@ const ProfilePage = () => {
       });
     }
   }, [user]);
+
+  useEffect(() => {
+    const loadNotifs = async () => {
+      try {
+        setNotifLoading(true);
+        const res = await axiosInstance.get("/api/get-user-notifications");
+        setNotifications(res.data?.data || []);
+      } catch (e) {
+        // silent
+      } finally {
+        setNotifLoading(false);
+      }
+    };
+    loadNotifs();
+  }, []);
 
   const logOutHandler = async () => {
     await axiosInstance.get("/api/logout-user").then(() => {
@@ -828,6 +846,33 @@ const ProfilePage = () => {
                 <OrderTable />
               ) : activeTab === "Change Password" ? (
                 <ChangePassword />
+              ) : activeTab === "Notifications" ? (
+                <div>
+                  {notifLoading ? (
+                    <div className="text-gray-500">Loading notifications...</div>
+                  ) : notifications.length === 0 ? (
+                    <div className="text-gray-500">No notifications</div>
+                  ) : (
+                    <div className="divide-y">
+                      {notifications.map((n: any) => (
+                        <div
+                          key={n.id}
+                          className={`py-3 ${n.status === 'Unread' ? 'bg-blue-50' : ''}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-medium text-gray-800">{n.title}</div>
+                              <div className="text-sm text-gray-600">{n.message}</div>
+                            </div>
+                            <div className="text-xs text-gray-500 ml-4">
+                              {new Date(n.createdAt).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

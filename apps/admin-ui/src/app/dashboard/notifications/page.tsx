@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Bell, Search, Filter, Trash2, Eye, EyeOff, AlertCircle, Info, CheckCircle, XCircle } from 'lucide-react';
+import axiosInstance from '../../../utils/axiosinstance';
 
 interface Notification {
   id: string;
@@ -51,13 +52,11 @@ export default function NotificationsPage() {
       const params = new URLSearchParams({
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
-        ...filters
+        ...filters,
       });
 
-      const response = await fetch(`/api/admin/notifications?${params}`);
-      const data = await response.json();
-
-      if (data.success) {
+      const { data } = await axiosInstance.get(`/admin/api/notifications?${params.toString()}`);
+      if (data?.success) {
         setNotifications(data.data.notifications);
         setPagination(data.data.pagination);
       }
@@ -71,10 +70,8 @@ export default function NotificationsPage() {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/admin/notifications/stats');
-      const data = await response.json();
-
-      if (data.success) {
+      const { data } = await axiosInstance.get('/admin/api/notifications/stats');
+      if (data?.success) {
         setStats(data.data);
       }
     } catch (error) {
@@ -90,17 +87,10 @@ export default function NotificationsPage() {
   // Mark as read
   const markAsRead = async (id: string) => {
     try {
-      const response = await fetch(`/api/admin/notifications/${id}/read`, {
-        method: 'PUT'
-      });
-
-      if (response.ok) {
-        setNotifications(prev =>
-          prev.map(notif =>
-            notif.id === id ? { ...notif, status: 'Read' } : notif
-          )
-        );
-        fetchStats(); // Refresh stats
+      const res = await axiosInstance.put(`/admin/api/notifications/${id}/read`);
+      if (res.status === 200) {
+        setNotifications(prev => prev.map(notif => (notif.id === id ? { ...notif, status: 'Read' } : notif)));
+        fetchStats();
       }
     } catch (error) {
       console.error('Error marking as read:', error);
@@ -110,13 +100,10 @@ export default function NotificationsPage() {
   // Delete notification
   const deleteNotification = async (id: string) => {
     try {
-      const response = await fetch(`/api/admin/notifications/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
+      const res = await axiosInstance.delete(`/admin/api/notifications/${id}`);
+      if (res.status === 200) {
         setNotifications(prev => prev.filter(notif => notif.id !== id));
-        fetchStats(); // Refresh stats
+        fetchStats();
       }
     } catch (error) {
       console.error('Error deleting notification:', error);
@@ -126,17 +113,10 @@ export default function NotificationsPage() {
   // Mark all as read
   const markAllAsRead = async () => {
     try {
-      const response = await fetch('/api/admin/notifications/mark-all-read', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ receiverId: 'all' })
-      });
-
-      if (response.ok) {
-        setNotifications(prev =>
-          prev.map(notif => ({ ...notif, status: 'Read' }))
-        );
-        fetchStats(); // Refresh stats
+      const res = await axiosInstance.put('/admin/api/notifications/mark-all-read', { receiverId: 'all' });
+      if (res.status === 200) {
+        setNotifications(prev => prev.map(notif => ({ ...notif, status: 'Read' })));
+        fetchStats();
       }
     } catch (error) {
       console.error('Error marking all as read:', error);

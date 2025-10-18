@@ -67,7 +67,7 @@ router.delete(
   isAdmin,
   deleteNotification
 );
-router.get("/notifications/user/:receiverId", getUserNotifications);
-router.post("/notifications", createNotification);
+router.get("/notifications/user/:receiverId", isAuthenticated, isAdmin, getUserNotifications);
+router.post("/notifications", isAuthenticated, isAdmin, createNotification);
 
 export default router;
