@@ -916,8 +916,7 @@ export const getSellerDetails = async (
   }
 };
 
-//fetching notification
-
+//fetching notification with pagination and filters
 export const sellerNotification = async (
   req: any,
   res: Response,
@@ -925,19 +924,192 @@ export const sellerNotification = async (
 ) => {
   try {
     const sellerId = req.seller.id;
+    const { page = 1, limit = 10, status, type, priority, search } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
 
-    const notifications = await prisma.notifications.findMany({
-      where: {
-        receiverId: sellerId,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const where: any = { receiverId: sellerId };
+    if (status) where.status = status;
+    if (type) where.type = type;
+    if (priority) where.priority = priority;
+    if (search) {
+      where.OR = [
+        { title: { contains: search as string, mode: "insensitive" } },
+        { message: { contains: search as string, mode: "insensitive" } },
+      ];
+    }
+
+    const [notifications, total] = await Promise.all([
+      prisma.notifications.findMany({
+        where,
+        skip,
+        take: Number(limit),
+        orderBy: { createdAt: "desc" },
+        include: {
+          creator: {
+            select: { id: true, name: true, email: true, role: true },
+          },
+        },
+      }),
+      prisma.notifications.count({ where }),
+    ]);
 
     res.status(200).json({
       success: true,
       notifications,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        pages: Math.ceil(total / Number(limit)),
+      },
     });
   } catch (error) {
     next(error);
+  }
+};
+
+// Get seller notification statistics
+export const getSellerNotificationStats = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const sellerId = req.seller.id;
+
+    const [total, unread, byType, byPriority] = await Promise.all([
+      prisma.notifications.count({ where: { receiverId: sellerId } }),
+      prisma.notifications.count({ 
+        where: { receiverId: sellerId, status: "Unread" } 
+      }),
+      prisma.notifications.groupBy({
+        by: ["type"],
+        where: { receiverId: sellerId },
+        _count: { type: true },
+      }),
+      prisma.notifications.groupBy({
+        by: ["priority"],
+        where: { receiverId: sellerId },
+        _count: { priority: true },
+      }),
+    ]);
+
+    res.json({
+      success: true,
+      total,
+      unread,
+      byType: byType.reduce((acc, item) => {
+        acc[item.type] = item._count.type;
+        return acc;
+      }, {} as any),
+      byPriority: byPriority.reduce((acc, item) => {
+        acc[item.priority] = item._count.priority;
+        return acc;
+      }, {} as any),
+    });
+  } catch (error) {
+    console.error("Error fetching seller notification stats:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch notification statistics",
+    });
+  }
+};
+
+// Mark seller notification as read
+export const markSellerNotificationAsRead = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const sellerId = req.seller.id;
+
+    const notification = await prisma.notifications.findFirst({
+      where: { id, receiverId: sellerId },
+    });
+
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: "Notification not found",
+      });
+    }
+
+    const updatedNotification = await prisma.notifications.update({
+      where: { id },
+      data: { status: "Read" },
+    });
+
+    res.json({ success: true, data: updatedNotification });
+  } catch (error) {
+    console.error("Error marking seller notification as read:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to mark notification as read",
+    });
+  }
+};
+
+// Delete seller notification
+export const deleteSellerNotification = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const sellerId = req.seller.id;
+
+    const notification = await prisma.notifications.findFirst({
+      where: { id, receiverId: sellerId },
+    });
+
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: "Notification not found",
+      });
+    }
+
+    await prisma.notifications.delete({
+      where: { id },
+    });
+
+    res.json({ success: true, message: "Notification deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting seller notification:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete notification",
+    });
+  }
+};
+
+// Mark all seller notifications as read
+export const markAllSellerNotificationsAsRead = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const sellerId = req.seller.id;
+
+    await prisma.notifications.updateMany({
+      where: { receiverId: sellerId, status: "Unread" },
+      data: { status: "Read" },
+    });
+
+    res.json({ 
+      success: true, 
+      message: "All notifications marked as read" 
+    });
+  } catch (error) {
+    console.error("Error marking all seller notifications as read:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to mark all notifications as read",
+    });
   }
 };
