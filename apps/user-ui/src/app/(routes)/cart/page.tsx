@@ -36,6 +36,14 @@ const CartPage = () => {
   const [error, setError] = useState("");
   const [storedCouponCode, setStoredCouponCode] = useState("");
 
+  const removeCoupon = () => {
+    setStoredCouponCode("");
+    setDiscountAmount(0);
+    setDiscountPercent(0);
+    setDiscountedProductId("");
+    setError("");
+  };
+
   const couponCodeApplyHandler = async () => {
     setError("");
     if (!couponCode.trim()) {
@@ -270,11 +278,24 @@ const CartPage = () => {
               </h3>
 
               {discountAmount > 0 && (
-                <div className="flex justify-between text-sm text-gray-700 mb-2">
-                  <span>Discount ({discountPercent}%)</span>
-                  <span className="text-green-600">
-                    -${discountAmount.toFixed(2)}
-                  </span>
+                <div className="flex justify-between items-center text-sm text-gray-700 mb-2 p-2 bg-green-50 rounded-md">
+                  <div className="flex flex-col">
+                    <span>Discount ({discountPercent}%)</span>
+                    <span className="text-xs text-green-600 font-medium">
+                      Coupon: {storedCouponCode}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-green-600 font-semibold">
+                      -${discountAmount.toFixed(2)}
+                    </span>
+                    <button
+                      onClick={removeCoupon}
+                      className="text-red-500 hover:text-red-700 text-xs underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
               )}
 
