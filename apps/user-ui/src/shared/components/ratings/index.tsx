@@ -18,7 +18,7 @@ const Ratings: FC<Props> = ({ rating }) => {
     }
   }
 
-  return <div className="flex gap-1">{stars}</div>;
+  return <div className="flex gap-1 items-center">{stars}</div>;
 };
 
 export default Ratings;

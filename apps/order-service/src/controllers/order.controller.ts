@@ -596,8 +596,13 @@ export const verifyCouponCode = async (
   try {
     const { couponCode, cart } = req.body;
 
-    if (!couponCode || !cart || cart.length === 0) {
-      return next(new ValidationError("coupon code and cart are required"));
+    // Enhanced validation
+    if (!couponCode || typeof couponCode !== 'string' || couponCode.trim().length === 0) {
+      return next(new ValidationError("Valid coupon code is required"));
+    }
+    
+    if (!cart || !Array.isArray(cart) || cart.length === 0) {
+      return next(new ValidationError("Cart is required and must not be empty"));
     }
 
     //fetch discount code
@@ -644,6 +649,8 @@ export const verifyCouponCode = async (
       discount: discount.discountValue,
       discountAmount: discountAmount.toFixed(2),
       discountedProductId: matchingProduct.id,
+      public_name: discount.public_name,
+      discountCode: discount.discountCode,
       message: "Discount applied to 1 eligible product ",
     });
   } catch (error) {

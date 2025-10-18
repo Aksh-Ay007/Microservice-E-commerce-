@@ -326,6 +326,10 @@ const Page = () => {
                   Coupon Used
                 </h2>
                 <p className="text-sm text-gray-700">
+                  <span className="font-semibold text-indigo-800">
+                    {order.couponCode.public_name || 'Coupon'}
+                  </span>
+                  <br />
                   Code:{" "}
                   <span className="font-mono font-bold text-indigo-800 bg-indigo-100 px-2 py-0.5 rounded">
                     {order.couponCode.discountCode}

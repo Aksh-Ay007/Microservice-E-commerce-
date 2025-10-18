@@ -36,7 +36,6 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
       return;
     }
 
-    [];
     const result = await stripe.confirmPayment({
       elements,
       confirmParams: {
@@ -64,10 +63,12 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
         className="bg-white w-full max-w-lg p-8 rounded-md shadow space-y-6"
         onSubmit={handleSubmit}
       >
-        <h2 className="text-2xl font-semibold text-gray-800">
-          {" "}
+        <h2 className="text-2xl font-semibold text-gray-800 mb-2">
           Secure Payment Checkout
         </h2>
+        <p className="text-sm text-gray-600 mb-6">
+          Complete your purchase securely with Stripe
+        </p>
         {/* dynamic order summery */}
 
         <div className="bg-gray-100 p-4 rounded-md text-sm text-gray-700 space-y-6">
@@ -83,9 +84,9 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
           <div className="flex justify-between font-semibold pt-2 border-t border-t-slate-200">
             {!!coupon?.discountAmount  && (
               <>
-                <span>Discount</span>
+                <span>Discount ({coupon?.public_name || coupon?.code || 'Coupon'})</span>
                 <span className="text-green-600">
-                  ${coupon?.discountAmount?.toFixed(2)}
+                  -${coupon?.discountAmount?.toFixed(2)}
                 </span>
               </>
             )}
@@ -102,10 +103,10 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
         <button
           type="submit"
           disabled={!stripe || loading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+          className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loading && <Loader2 className="animate-spin w-5 h-5" />}
-          {loading ? "Processing..." : "Pay Now"}
+          {loading ? "Processing Payment..." : "Pay Now"}
         </button>
 
         {errorMsg && (
