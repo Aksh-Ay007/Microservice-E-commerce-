@@ -5,14 +5,18 @@ import { isSellerAuthenticated } from "../../../../packages/middleware/sellerAut
 import {
   createShop,
   createStripeConnectLink,
+  deleteSellerNotification,
   followShop,
   getSeller,
   getSellerDetails,
   getSellerEvents,
+  getSellerNotificationStats,
   getSellerProducts,
   isFollowingShop,
   loginSeller,
   logOutSeller,
+  markAllSellerNotificationsAsRead,
+  markSellerNotificationAsRead,
   refreshToken,
   registerSeller,
   sellerNotification,
@@ -69,12 +73,36 @@ router.put(
   updateSellerProfile
 );
 
-//notification route can be added here in future
-router.use(
+// Seller Notification Routes
+router.get(
   "/seller-notifications",
   isSellerAuthenticated,
   isSeller,
   sellerNotification
+);
+router.get(
+  "/seller-notifications/stats",
+  isSellerAuthenticated,
+  isSeller,
+  getSellerNotificationStats
+);
+router.put(
+  "/seller-notifications/:id/read",
+  isSellerAuthenticated,
+  isSeller,
+  markSellerNotificationAsRead
+);
+router.delete(
+  "/seller-notifications/:id",
+  isSellerAuthenticated,
+  isSeller,
+  deleteSellerNotification
+);
+router.put(
+  "/seller-notifications/mark-all-read",
+  isSellerAuthenticated,
+  isSeller,
+  markAllSellerNotificationsAsRead
 );
 
 export default router;

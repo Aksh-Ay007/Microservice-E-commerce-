@@ -546,12 +546,10 @@ export const getNotificationStats = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error fetching notification stats:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to fetch notification statistics",
-      });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch notification statistics",
+    });
   }
 };
 
@@ -582,20 +580,27 @@ export const markAllNotificationsAsRead = async (
   try {
     const { receiverId } = req.body;
 
-    await prisma.notifications.updateMany({
-      where: { receiverId, status: "Unread" },
-      data: { status: "Read" },
-    });
+    if (receiverId === "all") {
+      // Mark all notifications as read
+      await prisma.notifications.updateMany({
+        where: { status: "Unread" },
+        data: { status: "Read" },
+      });
+    } else {
+      // Mark specific user's notifications as read
+      await prisma.notifications.updateMany({
+        where: { receiverId, status: "Unread" },
+        data: { status: "Read" },
+      });
+    }
 
     res.json({ success: true, message: "All notifications marked as read" });
   } catch (error) {
     console.error("Error marking all notifications as read:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to mark all notifications as read",
-      });
+    res.status(500).json({
+      success: false,
+      message: "Failed to mark all notifications as read",
+    });
   }
 };
 

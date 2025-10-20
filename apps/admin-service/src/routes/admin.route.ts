@@ -42,7 +42,8 @@ router.post("/upload-logo", isAuthenticated, isAdmin, uploadLogo);
 router.post("/upload-banner", isAuthenticated, isAdmin, uploadBanner);
 
 // Admin Notifications
-router.get("/notifications",isAuthenticated,isAdmin, getAllNotifications);
+// Admin Notifications
+router.get("/notifications", isAuthenticated, isAdmin, getAllNotifications);
 router.get(
   "/notifications/stats",
   isAuthenticated,
@@ -69,5 +70,6 @@ router.delete(
 );
 router.get("/notifications/user/:receiverId", getUserNotifications);
 router.post("/notifications", createNotification);
+
 
 export default router;

@@ -54,7 +54,9 @@ export default function NotificationsPage() {
         ...filters
       });
 
-      const response = await fetch(`/api/admin/notifications?${params}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URI}/admin/api/notifications?${params}`, {
+        credentials: 'include'
+      });
       const data = await response.json();
 
       if (data.success) {
@@ -71,7 +73,9 @@ export default function NotificationsPage() {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/admin/notifications/stats');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URI}/admin/api/notifications/stats`, {
+        credentials: 'include'
+      });
       const data = await response.json();
 
       if (data.success) {
@@ -90,8 +94,9 @@ export default function NotificationsPage() {
   // Mark as read
   const markAsRead = async (id: string) => {
     try {
-      const response = await fetch(`/api/admin/notifications/${id}/read`, {
-        method: 'PUT'
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URI}/admin/api/notifications/${id}/read`, {
+        method: 'PUT',
+        credentials: 'include'
       });
 
       if (response.ok) {
@@ -110,8 +115,9 @@ export default function NotificationsPage() {
   // Delete notification
   const deleteNotification = async (id: string) => {
     try {
-      const response = await fetch(`/api/admin/notifications/${id}`, {
-        method: 'DELETE'
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URI}/admin/api/notifications/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
       });
 
       if (response.ok) {
@@ -126,9 +132,10 @@ export default function NotificationsPage() {
   // Mark all as read
   const markAllAsRead = async () => {
     try {
-      const response = await fetch('/api/admin/notifications/mark-all-read', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URI}/admin/api/notifications/mark-all-read`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ receiverId: 'all' })
       });
 
