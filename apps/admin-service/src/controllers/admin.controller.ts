@@ -1,6 +1,6 @@
 import prisma from "@packages/libs/prisma";
 import { NextFunction, Request, Response } from "express";
-import { ValidationError } from "../../../../packages/error-handler";
+import { ValidationError, NotFoundError, ForbiddenError } from "../../../../packages/error-handler";
 import { imagekit } from "../../../../packages/libs/imagekit";
 
 export const getAllProducts = async (
@@ -703,5 +703,333 @@ export const createNotification = async (req: Request, res: Response) => {
     res
       .status(500)
       .json({ success: false, message: "Failed to create notification" });
+  }
+};
+
+// NEW: Ban/Unban Functions
+export const banUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userId } = req.params;
+    
+    const user = await prisma.users.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return next(new NotFoundError("User not found"));
+    }
+
+    if (user.role === 'banned') {
+      return next(new ValidationError("User is already banned"));
+    }
+
+    // Update user to mark as banned
+    await prisma.users.update({
+      where: { id: userId },
+      data: {
+        role: 'banned',
+        updatedAt: new Date()
+      }
+    });
+
+    // Create notification for user
+    await prisma.notifications.create({
+      data: {
+        creatorId: req.user?.id || 'system',
+        receiverId: userId,
+        title: 'Account Banned',
+        message: 'Your account has been banned by an administrator. Please contact support for more information.',
+        type: 'system',
+        priority: 'high',
+        status: 'Unread'
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "User has been banned successfully"
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const unbanUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userId } = req.params;
+    
+    const user = await prisma.users.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return next(new NotFoundError("User not found"));
+    }
+
+    if (user.role !== 'banned') {
+      return next(new ValidationError("User is not banned"));
+    }
+
+    await prisma.users.update({
+      where: { id: userId },
+      data: {
+        role: 'user',
+        updatedAt: new Date()
+      }
+    });
+
+    // Create notification for user
+    await prisma.notifications.create({
+      data: {
+        creatorId: req.user?.id || 'system',
+        receiverId: userId,
+        title: 'Account Unbanned',
+        message: 'Your account has been unbanned. You can now access all features.',
+        type: 'system',
+        priority: 'normal',
+        status: 'Unread'
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "User has been unbanned successfully"
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const banSeller = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { sellerId } = req.params;
+    
+    const seller = await prisma.sellers.findUnique({
+      where: { id: sellerId }
+    });
+
+    if (!seller) {
+      return next(new NotFoundError("Seller not found"));
+    }
+
+    // Update seller to mark as banned
+    await prisma.sellers.update({
+      where: { id: sellerId },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date()
+      }
+    });
+
+    // Also ban their shop
+    await prisma.shops.updateMany({
+      where: { sellerId },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date()
+      }
+    });
+
+    // Create notification for seller
+    await prisma.notifications.create({
+      data: {
+        creatorId: req.user?.id || 'system',
+        receiverId: sellerId,
+        title: 'Seller Account Banned',
+        message: 'Your seller account has been banned by an administrator. Please contact support for more information.',
+        type: 'system',
+        priority: 'high',
+        status: 'Unread'
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Seller has been banned successfully"
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const unbanSeller = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { sellerId } = req.params;
+    
+    const seller = await prisma.sellers.findUnique({
+      where: { id: sellerId }
+    });
+
+    if (!seller) {
+      return next(new NotFoundError("Seller not found"));
+    }
+
+    await prisma.sellers.update({
+      where: { id: sellerId },
+      data: {
+        isDeleted: false,
+        deletedAt: null
+      }
+    });
+
+    await prisma.shops.updateMany({
+      where: { sellerId },
+      data: {
+        isDeleted: false,
+        deletedAt: null
+      }
+    });
+
+    // Create notification for seller
+    await prisma.notifications.create({
+      data: {
+        creatorId: req.user?.id || 'system',
+        receiverId: sellerId,
+        title: 'Seller Account Unbanned',
+        message: 'Your seller account has been unbanned. You can now access all seller features.',
+        type: 'system',
+        priority: 'normal',
+        status: 'Unread'
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Seller has been unbanned successfully"
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// NEW: Dashboard Analytics Functions
+export const getDashboardStats = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const [
+      totalUsers,
+      totalSellers,
+      totalOrders,
+      totalRevenue,
+      activeSellers,
+      totalProducts,
+      recentUsers,
+      recentSellers
+    ] = await Promise.all([
+      prisma.users.count({ where: { role: { not: 'banned' } } }),
+      prisma.sellers.count({ where: { isDeleted: false } }),
+      prisma.orders.count(),
+      prisma.orders.aggregate({
+        _sum: { total: true },
+        where: { status: 'completed' }
+      }),
+      prisma.sellers.count({ 
+        where: { 
+          isDeleted: false,
+          shop: {
+            some: {
+              products: {
+                some: {}
+              }
+            }
+          }
+        }
+      }),
+      prisma.products.count({ where: { isDeleted: false } }),
+      prisma.users.count({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+          }
+        }
+      }),
+      prisma.sellers.count({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+          }
+        }
+      })
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalUsers,
+        totalSellers,
+        totalOrders,
+        totalRevenue: totalRevenue._sum.total || 0,
+        activeSellers,
+        totalProducts,
+        recentUsers,
+        recentSellers
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getRecentOrders = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+    
+    const orders = await prisma.orders.findMany({
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: { name: true, email: true }
+        },
+        shop: {
+          select: { name: true }
+        }
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      data: { orders }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getDeviceAnalytics = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // This would typically come from Kafka analytics
+    // For now, return mock data - you'll integrate with your Kafka system
+    const deviceData = [
+      { name: "Phone", value: 55 },
+      { name: "Tablet", value: 20 },
+      { name: "Computer", value: 25 }
+    ];
+
+    res.status(200).json({
+      success: true,
+      data: { devices: deviceData }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getGeographicalData = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // This would typically come from Kafka analytics
+    // For now, return mock data - you'll integrate with your Kafka system
+    const geographicalData = [
+      { country: "USA", users: 1200, sellers: 150 },
+      { country: "Canada", users: 800, sellers: 90 },
+      { country: "UK", users: 600, sellers: 70 },
+      { country: "Germany", users: 400, sellers: 50 }
+    ];
+
+    res.status(200).json({
+      success: true,
+      data: { geographical: geographicalData }
+    });
+  } catch (error) {
+    next(error);
   }
 };

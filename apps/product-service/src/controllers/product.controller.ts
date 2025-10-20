@@ -38,6 +38,9 @@ interface EventRequest extends Request {
     images?: Array<{ fileId: string; file_url: string }>;
     starting_date: string; // Crucial for defining an event
     ending_date: string; // Crucial for defining an event
+    // NEW: Product selection fields
+    selectedProducts?: string[];
+    eventType?: 'general' | 'product_specific';
   };
   params: {
     eventId: string;
@@ -952,6 +955,9 @@ export const createEvent = async (
       subCategory,
       starting_date,
       ending_date,
+      // NEW: Product selection fields
+      selectedProducts = [],
+      eventType = 'general',
       // Destructure other optional fields with defaults to satisfy the products model
       warranty,
       custom_specifications = {},
@@ -1029,7 +1035,11 @@ export const createEvent = async (
         stock: parseInt(String(stock)),
         sale_price: parseFloat(String(sale_price)),
         regular_price: parseFloat(String(regular_price)),
-        custom_properties: customProperties,
+        custom_properties: {
+          ...customProperties,
+          selectedProducts,
+          eventType,
+        },
         custom_specifications: custom_specifications,
         starting_date: new Date(starting_date), // Persist event dates
         ending_date: new Date(ending_date), // Persist event dates
@@ -1044,6 +1054,36 @@ export const createEvent = async (
       },
       include: { images: true },
     });
+
+    // 4. If product-specific event, create event-product relationships
+    if (eventType === 'product_specific' && selectedProducts.length > 0) {
+      // Create event-product relationships (you'll need to add this table to your schema)
+      // For now, we'll store the relationships in the custom_properties
+      
+      // Send notifications to users who have these products in wishlist
+      const wishlistUsers = await prisma.wishlists.findMany({
+        where: {
+          productId: { in: selectedProducts },
+        },
+        select: { userId: true },
+        distinct: ['userId'],
+      });
+
+      // Create notifications for wishlist users
+      if (wishlistUsers.length > 0) {
+        await prisma.notifications.createMany({
+          data: wishlistUsers.map(({ userId }) => ({
+            creatorId: req.seller.id,
+            receiverId: userId,
+            title: 'New Event on Your Wishlist Items',
+            message: `A new event "${title}" has been created featuring products from your wishlist!`,
+            type: 'event',
+            priority: 'normal',
+            redirect_link: `/event/${newEvent.slug}`,
+          })),
+        });
+      }
+    }
 
     res.status(201).json({
       success: true,
@@ -1167,6 +1207,49 @@ export const getEventDetails = async (
     return res.status(200).json({ success: true, event });
   } catch (error) {
     return next(error);
+  }
+};
+
+// NEW: Get seller's products for event creation
+export const getSellerProductsForEvent = async (
+  req: EventRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { shopId } = req.seller.shop;
+    
+    const products = await prisma.products.findMany({
+      where: {
+        shopId,
+        isDeleted: false,
+        // Exclude events (products with starting_date and ending_date)
+        starting_date: null,
+        ending_date: null,
+      },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        sale_price: true,
+        regular_price: true,
+        stock: true,
+        images: {
+          select: { url: true },
+          take: 1,
+        },
+        category: true,
+        subCategory: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.status(200).json({
+      success: true,
+      products,
+    });
+  } catch (error) {
+    next(error);
   }
 };
 

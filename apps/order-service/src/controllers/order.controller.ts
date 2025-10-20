@@ -9,6 +9,7 @@ import Stripe from "stripe";
 import {
   NotFoundError,
   ValidationError,
+  ForbiddenError,
 } from "../../../../packages/error-handler";
 import redis from "../../../../packages/libs/redis";
 
@@ -698,6 +699,241 @@ export const getAdminOrders = async (
 
     res.status(200).json({ success: true, orders });
 
+  } catch (error) {
+    next(error);
+  }
+};
+
+// NEW: Cash on Delivery Functions
+export const createCODOrder = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { cart, selectedAddressId, coupon } = req.body;
+    const userId = req.user?.id;
+
+    if (!cart || !Array.isArray(cart) || cart.length === 0) {
+      return next(new ValidationError("Cart is empty or invalid"));
+    }
+
+    // Group cart items by shop
+    const shopGroups = cart.reduce((acc: any, item: any) => {
+      if (!acc[item.shopId]) {
+        acc[item.shopId] = [];
+      }
+      acc[item.shopId].push(item);
+      return acc;
+    }, {});
+
+    const orders = [];
+
+    // Create order for each shop
+    for (const [shopId, items] of Object.entries(shopGroups)) {
+      const shopItems = items as any[];
+      const total = shopItems.reduce((sum, item) => sum + (item.sale_price * item.quantity), 0);
+      
+      // Apply coupon if applicable
+      let discountAmount = 0;
+      if (coupon && coupon.shopId === shopId) {
+        discountAmount = coupon.discountAmount || 0;
+      }
+
+      const order = await prisma.orders.create({
+        data: {
+          userId,
+          shopId,
+          total: total - discountAmount,
+          shippingAddressId: selectedAddressId,
+          couponCode: coupon?.discountCode || null,
+          discountAmount,
+          status: 'pending', // COD orders start as pending
+          deliveryStatus: 'Ordered',
+          paymentMethod: 'COD',
+          items: {
+            create: shopItems.map((item) => ({
+              productId: item.id,
+              quantity: item.quantity,
+              price: item.sale_price,
+              selectedOptions: item.selectedOptions || {},
+            })),
+          },
+        },
+        include: {
+          items: true,
+          shop: true,
+          user: true,
+        },
+      });
+
+      orders.push(order);
+
+      // Send notification to seller
+      await prisma.notifications.create({
+        data: {
+          creatorId: userId,
+          receiverId: shopId,
+          title: 'New COD Order',
+          message: `You have received a new Cash on Delivery order #${order.id}`,
+          type: 'order',
+          priority: 'high',
+          redirect_link: `/seller/orders/${order.id}`,
+        },
+      });
+    }
+
+    // Send confirmation email to user
+    const user = await prisma.users.findUnique({
+      where: { id: userId },
+    });
+
+    if (user?.email) {
+      await sendEmail({
+        to: user.email,
+        subject: 'Order Confirmation - Cash on Delivery',
+        template: 'cod-order-confirmation',
+        data: {
+          userName: user.name,
+          orders: orders,
+          totalAmount: orders.reduce((sum, order) => sum + order.total, 0),
+        },
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "COD order created successfully",
+      orders: orders.map(order => ({
+        id: order.id,
+        shopName: order.shop.name,
+        total: order.total,
+        status: order.status,
+      })),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateCODOrderStatus = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { orderId } = req.params;
+    const { status, deliveryStatus } = req.body;
+    const sellerId = req.seller?.id;
+
+    const order = await prisma.orders.findUnique({
+      where: { id: orderId },
+      include: { shop: true, user: true },
+    });
+
+    if (!order) {
+      return next(new NotFoundError("Order not found"));
+    }
+
+    if (order.shop.sellerId !== sellerId) {
+      return next(new ForbiddenError("You can only update your own orders"));
+    }
+
+    const updatedOrder = await prisma.orders.update({
+      where: { id: orderId },
+      data: {
+        status: status || order.status,
+        deliveryStatus: deliveryStatus || order.deliveryStatus,
+        updatedAt: new Date(),
+      },
+      include: {
+        items: true,
+        shop: true,
+        user: true,
+      },
+    });
+
+    // Send notification to user
+    await prisma.notifications.create({
+      data: {
+        creatorId: sellerId,
+        receiverId: order.userId,
+        title: 'Order Status Update',
+        message: `Your order #${orderId} status has been updated to ${status || order.status}`,
+        type: 'order',
+        priority: 'normal',
+        redirect_link: `/order/${orderId}`,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Order status updated successfully",
+      order: updatedOrder,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const confirmCODPayment = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { orderId } = req.params;
+    const sellerId = req.seller?.id;
+
+    const order = await prisma.orders.findUnique({
+      where: { id: orderId },
+      include: { shop: true, user: true },
+    });
+
+    if (!order) {
+      return next(new NotFoundError("Order not found"));
+    }
+
+    if (order.shop.sellerId !== sellerId) {
+      return next(new ForbiddenError("You can only update your own orders"));
+    }
+
+    if (order.paymentMethod !== 'COD') {
+      return next(new ValidationError("This order is not a COD order"));
+    }
+
+    const updatedOrder = await prisma.orders.update({
+      where: { id: orderId },
+      data: {
+        status: 'completed',
+        paymentStatus: 'paid',
+        updatedAt: new Date(),
+      },
+      include: {
+        items: true,
+        shop: true,
+        user: true,
+      },
+    });
+
+    // Send notification to user
+    await prisma.notifications.create({
+      data: {
+        creatorId: sellerId,
+        receiverId: order.userId,
+        title: 'Payment Confirmed',
+        message: `Payment for order #${orderId} has been confirmed. Thank you for your purchase!`,
+        type: 'order',
+        priority: 'normal',
+        redirect_link: `/order/${orderId}`,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Payment confirmed successfully",
+      order: updatedOrder,
+    });
   } catch (error) {
     next(error);
   }

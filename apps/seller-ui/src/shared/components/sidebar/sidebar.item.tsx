@@ -6,11 +6,21 @@ interface Props {
   icon: React.ReactNode;
   isActive: boolean;
   href: string;
+  onMobileMenuClose?: () => void;
 }
 
-const SidebarItem = ({ icon, title, isActive, href }: Props) => {
+const SidebarItem = ({ icon, title, isActive, href, onMobileMenuClose }: Props) => {
   return (
-    <Link href={href} className="my-2 block">
+    <Link 
+      href={href} 
+      className="my-2 block"
+      onClick={() => {
+        // Close mobile menu when item is clicked
+        if (onMobileMenuClose) {
+          onMobileMenuClose();
+        }
+      }}
+    >
       <div
         className={`flex gap-2 w-full min-h-12 h-full items-center px-[13px] rounded-lg cursor-pointer transition
     hover:bg-[#2b2f31]

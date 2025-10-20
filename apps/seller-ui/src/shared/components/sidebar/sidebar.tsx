@@ -26,7 +26,7 @@ import SidebarItem from "./sidebar.item";
 import SidebarMenu from "./sidebar.menu";
 import { Sidebar } from "./sidebar.styles";
 
-const SideBarWrapper = () => {
+const SideBarWrapper = ({ onMobileMenuClose }: { onMobileMenuClose?: () => void }) => {
   const { activeSideBar, setActiveSideBar } = useSidebar();
 
   const pathName = usePathname();
@@ -50,7 +50,7 @@ const SideBarWrapper = () => {
         overflowY: "scroll",
         scrollbarWidth: "none",
       }}
-      className="sidebar-wrapper"
+      className="sidebar-wrapper bg-slate-900"
     >
       <Sidebar.Header>
         <Box>
@@ -76,6 +76,7 @@ const SideBarWrapper = () => {
             icon={<Home fill={getIconColor("dashboard")} />}
             isActive={activeSideBar === "/dashboard"}
             href="/dashboard"
+            onMobileMenuClose={onMobileMenuClose}
           />
 
           <div className="mt-2 block">
@@ -90,6 +91,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/profile"}
                 href="/dashboard/profile"
+                onMobileMenuClose={onMobileMenuClose}
               />
               <SidebarItem
                 title="Orders"
@@ -101,6 +103,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/orders"}
                 href="/dashboard/orders"
+                onMobileMenuClose={onMobileMenuClose}
               />
 
               <SidebarItem
@@ -108,6 +111,7 @@ const SideBarWrapper = () => {
                 icon={<Payment fill={getIconColor("/dashboard/payments")} />}
                 isActive={activeSideBar === "/dashboard/payments"}
                 href="/dashboard/payments"
+                onMobileMenuClose={onMobileMenuClose}
               />
             </SidebarMenu>
 
@@ -122,6 +126,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/create-product"}
                 href="/dashboard/create-product"
+                onMobileMenuClose={onMobileMenuClose}
               />
 
               <SidebarItem
@@ -134,6 +139,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/all-products"}
                 href="/dashboard/all-products"
+                onMobileMenuClose={onMobileMenuClose}
               />
             </SidebarMenu>
 
@@ -148,6 +154,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/create-event"}
                 href="/dashboard/create-event"
+                onMobileMenuClose={onMobileMenuClose}
               />
 
               <SidebarItem
@@ -160,6 +167,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/all-events"}
                 href="/dashboard/all-events"
+                onMobileMenuClose={onMobileMenuClose}
               />
             </SidebarMenu>
 
@@ -171,6 +179,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/inbox"}
                 href="/dashboard/inbox"
+                onMobileMenuClose={onMobileMenuClose}
               />
 
               <SidebarItem
@@ -183,6 +192,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/settings"}
                 href="/dashboard/settings"
+                onMobileMenuClose={onMobileMenuClose}
               />
 
               <SidebarItem
@@ -195,6 +205,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/notifications"}
                 href="/dashboard/notifications"
+                onMobileMenuClose={onMobileMenuClose}
               />
             </SidebarMenu>
 
@@ -209,6 +220,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/discount-codes"}
                 href="/dashboard/discount-codes"
+                onMobileMenuClose={onMobileMenuClose}
               />
 
               <SidebarItem
@@ -216,6 +228,7 @@ const SideBarWrapper = () => {
                 icon={<LogOut size={20} color={getIconColor("/logout")} />}
                 isActive={activeSideBar === "/logout"}
                 href="/logout"
+                onMobileMenuClose={onMobileMenuClose}
               />
             </SidebarMenu>
           </div>
