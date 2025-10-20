@@ -1052,6 +1052,7 @@ export const markSellerNotificationAsRead = async (
 };
 
 // Delete seller notification
+// Delete seller notification
 export const deleteSellerNotification = async (
   req: any,
   res: Response,
@@ -1083,6 +1084,7 @@ export const deleteSellerNotification = async (
   }
 };
 
+
 // Mark all seller notifications as read
 export const markAllSellerNotificationsAsRead = async (
   req: any,
@@ -1103,7 +1105,7 @@ export const markAllSellerNotificationsAsRead = async (
     });
   } catch (error) {
     console.error("Error marking all seller notifications as read:", error);
-
     return next(error);
+
   }
 };

@@ -9,6 +9,7 @@ import useUser from "../../../hooks/useUser";
 import { useStore } from "../../../store";
 import axiosInstance from "../../../utils/axiosinstance";
 import HeaderBottom from "./header-bottom";
+import useLayout from "../../../hooks/useLayout";
 
 const Header = () => {
   const { user, isLoading } = useUser();
@@ -18,6 +19,41 @@ const Header = () => {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [searchError, setSearchError] = useState(false);
+  const [localCartCount, setLocalCartCount] = useState(0);
+  const [localWishlistCount, setLocalWishlistCount] = useState(0);
+  const { layout, isLoading: layoutLoading } = useLayout();
+
+  // Load cart/wishlist from localStorage for non-logged users
+  useEffect(() => {
+    if (!user) {
+      const savedCart = localStorage.getItem("cart");
+      const savedWishlist = localStorage.getItem("wishlist");
+
+      if (savedCart) {
+        try {
+          const cartData = JSON.parse(savedCart);
+          setLocalCartCount(cartData.length);
+        } catch (error) {
+          console.error("Error parsing cart from localStorage:", error);
+        }
+      }
+
+      if (savedWishlist) {
+        try {
+          const wishlistData = JSON.parse(savedWishlist);
+          setLocalWishlistCount(wishlistData.length);
+        } catch (error) {
+          console.error("Error parsing wishlist from localStorage:", error);
+        }
+      }
+    }
+  }, [user]);
+
+  // Get current counts
+  const currentCartCount = user ? cart?.length || 0 : localCartCount;
+  const currentWishlistCount = user
+    ? wishlist?.length || 0
+    : localWishlistCount;
 
   const handleSearchClick = async () => {
     if (!searchQuery.trim()) return;
@@ -54,7 +90,10 @@ const Header = () => {
         <div>
           <Link href={"/"}>
             <Image
-              src="https://ik.imagekit.io/AkshayMicroMart/photo/micromartLogo.png?updatedAt=1759960829231"
+              src={
+                layout?.logo ||
+                "https://ik.imagekit.io/AkshayMicroMart/photo/micromartLogo.png?updatedAt=1759960829231"
+              }
               width={150}
               height={50}
               alt="logo"
@@ -154,10 +193,10 @@ const Header = () => {
               className="relative hover:scale-110 transition-transform duration-200"
             >
               <HeartIcon className="text-gray-700 w-6 h-6" />
-              {wishlist?.length > 0 && (
+              {currentWishlistCount > 0 && (
                 <div className="w-5 h-5 border-2 border-white bg-red-500 rounded-full flex items-center justify-center absolute -top-2 -right-3">
                   <span className="text-white font-medium text-xs">
-                    {wishlist.length}
+                    {currentWishlistCount}
                   </span>
                 </div>
               )}
@@ -168,10 +207,10 @@ const Header = () => {
               className="relative hover:scale-110 transition-transform duration-200"
             >
               <ShoppingCartIcon className="text-gray-700 w-6 h-6" />
-              {cart?.length > 0 && (
+              {currentCartCount > 0 && (
                 <div className="w-5 h-5 border-2 border-white bg-red-500 rounded-full flex items-center justify-center absolute -top-2 -right-3">
                   <span className="text-white font-medium text-xs">
-                    {cart.length}
+                    {currentCartCount}
                   </span>
                 </div>
               )}
@@ -186,7 +225,10 @@ const Header = () => {
         <div className="flex items-center justify-between">
           <Link href={"/"}>
             <Image
-              src="https://ik.imagekit.io/AkshayMicroMart/photo/micromartLogo.png?updatedAt=1759960829231"
+              src={
+                layout?.logo ||
+                "https://ik.imagekit.io/AkshayMicroMart/photo/micromartLogo.png?updatedAt=1759960829231"
+              }
               width={120}
               height={40}
               alt="logo"
@@ -217,18 +259,18 @@ const Header = () => {
 
             <Link href="/wishlist" className="relative">
               <HeartIcon className="w-6 h-6 text-gray-700" />
-              {wishlist?.length > 0 && (
+              {currentWishlistCount > 0 && (
                 <div className="w-4 h-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full absolute -top-1 -right-2">
-                  {wishlist.length}
+                  {currentWishlistCount}
                 </div>
               )}
             </Link>
 
             <Link href="/cart" className="relative">
               <ShoppingCartIcon className="w-6 h-6 text-gray-700" />
-              {cart?.length > 0 && (
+              {currentCartCount > 0 && (
                 <div className="w-4 h-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full absolute -top-1 -right-2">
-                  {cart.length}
+                  {currentCartCount}
                 </div>
               )}
             </Link>

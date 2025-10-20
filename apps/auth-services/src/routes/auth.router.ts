@@ -9,6 +9,7 @@ import {
   createFirstAdmin,
   deleteUserAddress,
   getAdmin,
+  getLayoutData,
   getUser,
   getUserAddress,
   getUserNotifications,
@@ -52,5 +53,10 @@ router.post("/logout-admin", isAuthenticated, logOutAdmin);
 router.get("/logged-in-admin", isAuthenticated, isAdmin, getAdmin);
 
 router.get("/get-user-notifications", isAuthenticated, getUserNotifications);
+
+router.get('/get-layout',getLayoutData)
+
+
+
 
 export default router;
