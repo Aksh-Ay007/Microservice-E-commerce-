@@ -8,7 +8,7 @@ export const errorMiddleware = (
   next: NextFunction
 ) => {
   if (err instanceof AppError) {
-    console.log(
+    console.error(
       `Error ${req.method} ${req.url} - ${err.statusCode} - ${err.message}`
     );
 
@@ -19,7 +19,16 @@ export const errorMiddleware = (
     });
   }
 
+  // ✅ Improved: Log full error details in development
+  console.error("Unexpected error:", {
+    message: err.message,
+    stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined,
+    method: req.method,
+    url: req.url,
+  });
+
   return res.status(500).json({
-    error: "something went wrong please try again later",
+    error: "Something went wrong, please try again later",
+    ...(process.env.NODE_ENV !== 'production' && { details: err.message }),
   });
 };

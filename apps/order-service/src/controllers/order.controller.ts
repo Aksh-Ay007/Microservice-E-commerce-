@@ -373,7 +373,7 @@ export const createOrder = async (
             coupon?.discountAmount > 0
               ? totalAmount - coupon.discountAmount
               : totalAmount,
-          trackingUrl: `https://micro-mart.com/order/${sessionId}`,
+          trackingUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/order/${sessionId}`,
         }
       );
 
@@ -394,7 +394,7 @@ export const createOrder = async (
             message: `You have a new order for ${productTitle} in your shop.`,
             creatorId: userId,
             receiverId: shop.sellerId,
-            redirect_link: `https://micro-mart.com/order/${sessionId}`,
+            redirect_link: `${process.env.SELLER_FRONTEND_URL || 'http://localhost:3001'}/order/${sessionId}`,
           },
         });
       }
@@ -406,7 +406,7 @@ export const createOrder = async (
           message: `A new order has been created by ${name}.`,
           creatorId: userId,
           receiverId: "admin",
-          redirect_link: `https://micro-mart.com/order/${sessionId}`,
+          redirect_link: `${process.env.ADMIN_FRONTEND_URL || 'http://localhost:3002'}/order/${sessionId}`,
         },
       });
 
@@ -432,15 +432,16 @@ export const getSellerOrders = async (
   next: NextFunction
 ) => {
   try {
-
-
     const shop = await prisma.shops.findUnique({
       where: {
         sellerId: req.seller.id,
       },
     });
 
-
+    // ✅ Fix: Check if shop exists before querying orders
+    if (!shop) {
+      return next(new NotFoundError("Shop not found for this seller"));
+    }
 
     const orders = await prisma.orders.findMany({
       where: { shopId: shop.id },

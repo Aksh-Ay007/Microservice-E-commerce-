@@ -44,7 +44,7 @@ export const userRegistration = async (
     await sendOtp(name, email, "user-activation-mail");
 
     res.status(200).json({
-      message: "OTP sent please varify your account",
+      message: "OTP sent, please verify your account",
     });
   } catch (error) {
     return next(error);
@@ -441,7 +441,7 @@ export const getUserAddress = async (
       orderBy: { createdAt: "desc" },
     });
 
-    res.status(200).json({ suceess: true, addresses });
+    res.status(200).json({ success: true, addresses });
   } catch (error) {
     next(error);
   }
