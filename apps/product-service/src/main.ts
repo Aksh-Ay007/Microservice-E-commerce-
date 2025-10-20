@@ -12,7 +12,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || ["http://localhost:3000"],
     allowedHeaders: ["Authorization", "Content-Type"],
     credentials: true,
   })
@@ -22,7 +22,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
-  res.send({ message: "Hello everyon is testing product-services!" });
+  res.send({ message: "Welcome to product-services!" });
 });
 
 //swagger

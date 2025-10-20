@@ -9,9 +9,12 @@ import axiosInstance from "../../../utils/axiosinstance";
 import CheckoutForm from "../../../shared/components/checkout/checkoutForm";
 
 // ✅ Load Stripe once
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-);
+// ✅ Improved: Add validation for Stripe key
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+if (!stripeKey) {
+  console.error("Missing NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY");
+}
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 
 
@@ -137,6 +140,25 @@ const Page = () => {
           >
             Return to Cart
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ Improved: Add null check for stripePromise
+  if (!stripePromise) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh] px-4">
+        <div className="w-full text-center">
+          <div className="flex justify-center mb-4">
+            <XCircle className="text-red-500 w-10 h-10" />
+          </div>
+          <h2 className="text-xl font-semibold text-red-600 mb-2">
+            Configuration Error
+          </h2>
+          <p className="text-sm text-gray-600 mb-6">
+            Payment system is not properly configured. Please contact support.
+          </p>
         </div>
       </div>
     );
