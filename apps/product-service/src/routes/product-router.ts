@@ -31,6 +31,8 @@ import {
   topShops,
   updateRating,
   uploadProductImage,
+  // NEW: Product selection for events
+  getSellerProductsForEvent,
 } from "../controllers/product.controller";
 import isAuthenticated from '../../../../packages/middleware/isAuthenticated';
 
@@ -93,6 +95,8 @@ router.post("/create-event", isSellerAuthenticated, createEvent);
 router.get("/get-shop-events", isSellerAuthenticated, getShopEvents);
 router.delete("/delete-event/:eventId", isSellerAuthenticated, deleteEvent);
 router.get("/get-event-details/:slug", getEventDetails);
+// NEW: Get seller products for event creation
+router.get("/get-seller-products-for-event", isSellerAuthenticated, getSellerProductsForEvent);
 
 
 router.post("/ratings", isAuthenticated, createRating);

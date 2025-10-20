@@ -21,6 +21,15 @@ import {
   markNotificationAsRead,
   uploadBanner,
   uploadLogo,
+  // New functions
+  banUser,
+  unbanUser,
+  banSeller,
+  unbanSeller,
+  getDashboardStats,
+  getRecentOrders,
+  getDeviceAnalytics,
+  getGeographicalData,
 } from "../controllers/admin.controller";
 
 const router: Router = express.Router();
@@ -71,5 +80,16 @@ router.delete(
 router.get("/notifications/user/:receiverId", getUserNotifications);
 router.post("/notifications", createNotification);
 
+// Ban/Unban routes
+router.put("/ban-user/:userId", isAuthenticated, isAdmin, banUser);
+router.put("/unban-user/:userId", isAuthenticated, isAdmin, unbanUser);
+router.put("/ban-seller/:sellerId", isAuthenticated, isAdmin, banSeller);
+router.put("/unban-seller/:sellerId", isAuthenticated, isAdmin, unbanSeller);
+
+// Dashboard analytics routes
+router.get("/dashboard-stats", isAuthenticated, isAdmin, getDashboardStats);
+router.get("/recent-orders", isAuthenticated, isAdmin, getRecentOrders);
+router.get("/device-analytics", isAuthenticated, isAdmin, getDeviceAnalytics);
+router.get("/geographical-data", isAuthenticated, isAdmin, getGeographicalData);
 
 export default router;
