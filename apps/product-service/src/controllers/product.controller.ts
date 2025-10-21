@@ -16,6 +16,7 @@ interface EventRequest extends Request {
     };
   };
   body: {
+    productId: string; // NEW: Add this line
     title: string;
     short_description: string;
     detailed_description?: string;
@@ -36,8 +37,8 @@ interface EventRequest extends Request {
     subCategory: string;
     customProperties?: any;
     images?: Array<{ fileId: string; file_url: string }>;
-    starting_date: string; // Crucial for defining an event
-    ending_date: string; // Crucial for defining an event
+    starting_date: string;
+    ending_date: string;
   };
   params: {
     eventId: string;
@@ -940,6 +941,7 @@ export const createEvent = async (
 ) => {
   try {
     const {
+      productId, // NEW: The product to create event for
       title,
       short_description,
       detailed_description,
@@ -952,7 +954,6 @@ export const createEvent = async (
       subCategory,
       starting_date,
       ending_date,
-      // Destructure other optional fields with defaults to satisfy the products model
       warranty,
       custom_specifications = {},
       cash_on_delivery,
@@ -962,11 +963,12 @@ export const createEvent = async (
       sizes = [],
       discountCodes = [],
       customProperties = {},
-      images = [], // Pass empty array if not used by the frontend
+      images = [],
     } = req.body;
 
-    // 1. Validation: Ensure all event-specific fields and base product fields are present
+    // 1. Validation
     if (
+      !productId ||
       !title ||
       !short_description ||
       !slug ||
@@ -977,16 +979,16 @@ export const createEvent = async (
       !tags ||
       !regular_price ||
       !starting_date ||
-      !ending_date // Crucial checks for an Event
+      !ending_date
     ) {
       return next(
         new ValidationError(
-          "Please fill all required fields, including event start and end dates!"
+          "Please fill all required fields, including product selection and event dates!"
         )
       );
     }
 
-    // 2. Authorization & Slug Check
+    // 2. Authorization
     if (!req.seller?.shop?.id) {
       return next(
         new AuthError(
@@ -994,6 +996,24 @@ export const createEvent = async (
         )
       );
     }
+
+    // 3. Verify product exists and belongs to seller
+    const originalProduct = await prisma.products.findFirst({
+      where: {
+        id: productId,
+        shopId: req.seller.shop.id,
+        isDeleted: false,
+      },
+      include: { images: true },
+    });
+
+    if (!originalProduct) {
+      return next(
+        new NotFoundError("Product not found or doesn't belong to your shop")
+      );
+    }
+
+    // 4. Slug Check
     const slugChecking = await prisma.products.findUnique({
       where: { slug },
     });
@@ -1003,14 +1023,24 @@ export const createEvent = async (
       );
     }
 
-    // 3. Create Event-Product
+    // 5. Use product images if no images provided
+    const eventImages =
+      images.length > 0
+        ? images
+        : originalProduct.images.map((img) => ({
+            fileId: img.file_id,
+            file_url: img.url,
+          }));
+
+    // 6. Create Event (as a new product with event dates)
     const newEvent = await prisma.products.create({
       data: {
         title,
         short_description,
-        detailed_description,
-        warranty,
-        cashOnDelivery: cash_on_delivery,
+        detailed_description:
+          detailed_description || originalProduct.detailed_description,
+        warranty: warranty || originalProduct.warranty,
+        cashOnDelivery: cash_on_delivery || originalProduct.cashOnDelivery,
         slug,
         shopId: req.seller.shop.id,
         tags: Array.isArray(tags)
@@ -1019,22 +1049,22 @@ export const createEvent = async (
               .split(",")
               .map((t) => t.trim())
               .filter(Boolean),
-        brand,
-        video_url,
+        brand: brand || originalProduct.brand,
+        video_url: video_url || originalProduct.video_url,
         category,
         subCategory,
-        colors: colors,
+        colors: colors.length > 0 ? colors : originalProduct.colors,
         discount_codes: discountCodes,
-        sizes: sizes,
+        sizes: sizes.length > 0 ? sizes : originalProduct.sizes,
         stock: parseInt(String(stock)),
         sale_price: parseFloat(String(sale_price)),
         regular_price: parseFloat(String(regular_price)),
         custom_properties: customProperties,
         custom_specifications: custom_specifications,
-        starting_date: new Date(starting_date), // Persist event dates
-        ending_date: new Date(ending_date), // Persist event dates
+        starting_date: new Date(starting_date),
+        ending_date: new Date(ending_date),
         images: {
-          create: images
+          create: eventImages
             .filter((img: any) => img && img.fileId && img.file_url)
             .map((img: any) => ({
               file_id: img.fileId,
@@ -1049,11 +1079,16 @@ export const createEvent = async (
       success: true,
       message: "Event created successfully",
       newEvent,
+      originalProduct: {
+        id: originalProduct.id,
+        title: originalProduct.title,
+      },
     });
   } catch (error) {
     next(error);
   }
 };
+
 
 // ----------------------------------------------------------------------
 // GET SHOP EVENTS (filters products model)

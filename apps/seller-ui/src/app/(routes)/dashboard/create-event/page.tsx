@@ -1,19 +1,18 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRightIcon } from "lucide-react";
+import { ChevronRightIcon, Sparkles } from "lucide-react";
 import Link from "next/link";
-// Cannot fix these "module not found" errors, assuming paths are correct:
 import Input from "packages/components/input";
 import RichTextEditor from "packages/components/rich-text-editor";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import axiosInstance from "../../../../utils/axiosinstance";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-// Define the minimal product/event data structure
 interface EventFormData {
+  productId: string;
   title: string;
   slug: string;
   short_description: string;
@@ -26,7 +25,6 @@ interface EventFormData {
   stock: number | string;
   sale_price: number | string;
   regular_price: number | string;
-  // Minimal fields to satisfy the product model
   images: Array<{ fileId: string; file_url: string }>;
   customProperties: {};
   custom_specifications: {};
@@ -36,21 +34,24 @@ interface EventFormData {
 const EventCreatePage = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string>("");
 
   const {
     register,
     control,
     watch,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<EventFormData>({
     defaultValues: {
+      productId: "",
       stock: 1,
       sale_price: 1,
       regular_price: 1,
-      short_description: "Limited time event",
-      detailed_description: "Join our flash event for amazing deals!",
-      tags: "event, sale, deal",
+      short_description: "",
+      detailed_description: "",
+      tags: "",
       images: [],
       customProperties: {},
       custom_specifications: {},
@@ -58,7 +59,18 @@ const EventCreatePage = () => {
     },
   });
 
-  // --- (Data Fetching: Categories) ---
+  // Fetch seller's products
+  const { data: productsData, isLoading: productsLoading } = useQuery({
+    queryKey: ["shop-products-for-event"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/product/api/get-shop-products");
+      return res.data.products;
+    },
+  });
+
+  const products = productsData || [];
+
+  // Fetch categories
   const { data, isLoading: categoriesLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -83,11 +95,45 @@ const EventCreatePage = () => {
     return selectedCategory ? subCategoriesData[selectedCategory] || [] : [];
   }, [selectedCategory, subCategoriesData]);
 
-  // --- (Form Submission) ---
+  // When product is selected, auto-fill form fields
+  useEffect(() => {
+    if (selectedProductId) {
+      const selectedProduct = products.find(
+        (p: any) => p.id === selectedProductId
+      );
+      if (selectedProduct) {
+        setValue("productId", selectedProduct.id);
+        setValue("title", `Event: ${selectedProduct.title}`);
+        setValue("slug", `event-${selectedProduct.slug}-${Date.now()}`);
+        setValue("short_description", selectedProduct.short_description);
+        setValue("detailed_description", selectedProduct.detailed_description);
+        setValue("category", selectedProduct.category);
+        setValue("subCategory", selectedProduct.subCategory);
+        setValue("regular_price", selectedProduct.regular_price);
+        setValue(
+          "sale_price",
+          Math.round(selectedProduct.sale_price * 0.8 * 100) / 100
+        ); // 20% discount suggestion
+        setValue("stock", selectedProduct.stock);
+        setValue("tags", selectedProduct.tags.join(", "));
+      }
+    }
+  }, [selectedProductId, products, setValue]);
 
   const onSubmit = async (data: EventFormData) => {
+    if (!data.productId) {
+      toast.error("Please select a product for this event");
+      return;
+    }
+
     const eventData = {
-      ...data,
+      productId: data.productId,
+      title: data.title,
+      slug: data.slug,
+      short_description: data.short_description,
+      detailed_description: data.detailed_description,
+      category: data.category,
+      subCategory: data.subCategory,
       stock: parseInt(String(data.stock), 10),
       sale_price: parseFloat(String(data.sale_price)),
       regular_price: parseFloat(String(data.regular_price)),
@@ -112,7 +158,7 @@ const EventCreatePage = () => {
       );
 
       toast.success(res.data.message || "Event created successfully!");
-      router.push("/seller/events");
+      router.push("/dashboard/all-events");
     } catch (error: any) {
       console.error("Event creation error:", error);
       toast.error(error?.response?.data?.message || "Failed to create event.");
@@ -121,13 +167,11 @@ const EventCreatePage = () => {
     }
   };
 
-  // --- (Render logic) ---
-
   return (
     <div className="w-full mx-auto p-4 md:p-8 text-white">
       <div className="flex items-center space-x-2 text-sm text-gray-400 mb-6">
         <Link
-          href="/seller/dashboard"
+          href="/dashboard"
           className="hover:text-blue-600 transition-colors"
         >
           Dashboard
@@ -136,21 +180,80 @@ const EventCreatePage = () => {
         <span className="font-medium text-gray-200">Create New Event</span>
       </div>
 
-      <h1 className="text-2xl md:text-3xl font-bold text-white mb-6">
-        Create New Event
-      </h1>
+      <div className="flex items-center gap-3 mb-6">
+        <Sparkles className="w-8 h-8 text-yellow-400" />
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">
+            Create Event Promotion
+          </h1>
+          <p className="text-gray-400 text-sm mt-1">
+            Create a time-limited promotion for your products
+          </p>
+        </div>
+      </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        {/* --- Core Event Details Section --- */}
+        {/* --- Product Selection Section --- */}
+        <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 p-4 md:p-6 rounded-lg shadow-lg border border-blue-700/50 space-y-6">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg md:text-xl font-semibold text-white">
+              Step 1: Select Product
+            </h2>
+            <span className="text-red-400 text-sm">*Required</span>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Choose Product to Promote
+            </label>
+            <select
+              value={selectedProductId}
+              onChange={(e) => setSelectedProductId(e.target.value)}
+              className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={productsLoading}
+            >
+              <option value="">
+                {productsLoading
+                  ? "Loading products..."
+                  : "-- Select a product --"}
+              </option>
+              {products.map((product: any) => (
+                <option key={product.id} value={product.id}>
+                  {product.title} - ${product.sale_price} (Stock:{" "}
+                  {product.stock})
+                </option>
+              ))}
+            </select>
+            {!selectedProductId && (
+              <p className="mt-2 text-sm text-blue-300 flex items-center gap-2">
+                <Sparkles className="w-4 h-4" />
+                Select a product to automatically fill event details
+              </p>
+            )}
+          </div>
+
+          {selectedProductId && (
+            <div className="bg-green-900/30 border border-green-600 rounded-lg p-4">
+              <p className="text-green-300 text-sm flex items-center gap-2">
+                <span className="text-xl">✓</span>
+                <span>
+                  Product selected! Event will use this product's images and
+                  details.
+                </span>
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* --- Event Details Section --- */}
         <div className="bg-gray-900 p-4 md:p-6 rounded-lg shadow-lg border border-gray-800 space-y-6">
           <h2 className="text-lg md:text-xl font-semibold text-white border-b border-gray-700 pb-3">
-            Event Details
+            Step 2: Customize Event Details
           </h2>
 
           <Input
             label="Event Title"
             {...register("title", { required: "Event title is required" })}
-            // 🚫 REMOVED: error={errors.title?.message as string}
           />
           {errors.title && (
             <p className="mt-1 text-sm text-red-600">
@@ -162,7 +265,6 @@ const EventCreatePage = () => {
             label="URL Slug"
             description="Unique identifier for the event page URL."
             {...register("slug", { required: "Slug is required" })}
-            // 🚫 REMOVED: error={errors.slug?.message as string}
           />
           {errors.slug && (
             <p className="mt-1 text-sm text-red-600">
@@ -178,9 +280,8 @@ const EventCreatePage = () => {
               render={({ field, fieldState }) => (
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Event Starting Date
+                    Event Starting Date <span className="text-red-500">*</span>
                   </label>
-                  {/* ✅ FIX APPLIED: Using standard HTML input for 'datetime-local' */}
                   <input
                     type="datetime-local"
                     className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -201,9 +302,8 @@ const EventCreatePage = () => {
               render={({ field, fieldState }) => (
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Event Ending Date
+                    Event Ending Date <span className="text-red-500">*</span>
                   </label>
-                  {/* ✅ FIX APPLIED: Using standard HTML input for 'datetime-local' */}
                   <input
                     type="datetime-local"
                     className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -228,9 +328,8 @@ const EventCreatePage = () => {
                 <label className="block text-sm font-medium text-gray-300 mb-1">
                   Short Description
                 </label>
-                {/* ⚠️ FIX APPLIED: Only passing field props (value, onChange) */}
                 <RichTextEditor
-                  placeholder="Briefly describe the event..."
+                  placeholder="Briefly describe the event promotion..."
                   value={field.value as string}
                   onChange={field.onChange}
                 />
@@ -242,6 +341,7 @@ const EventCreatePage = () => {
               </div>
             )}
           />
+
           <Controller
             name="detailed_description"
             control={control}
@@ -250,42 +350,27 @@ const EventCreatePage = () => {
                 <label className="block text-sm font-medium text-gray-300 mb-1">
                   Detailed Description (Optional)
                 </label>
-                {/* ⚠️ FIX APPLIED: Only passing field props (value, onChange) */}
                 <RichTextEditor
+                  placeholder="Add more details about your event..."
                   value={field.value as string}
                   onChange={field.onChange}
                 />
-                {errors.detailed_description && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.detailed_description.message as string}
-                  </p>
-                )}
               </div>
             )}
           />
+
           <Input
             label="Tags (Comma separated)"
-            description="Keywords to help customers find your event (e.g., flash sale, deals)"
+            description="Keywords for event discovery"
             {...register("tags")}
-            // 🚫 REMOVED: error={errors.tags?.message as string}
           />
-          {errors.tags && (
-            <p className="mt-1 text-sm text-red-600">
-              {errors.tags.message as string}
-            </p>
-          )}
         </div>
 
-        {/* --- Minimal Product Data (Required by the underlying 'products' model) --- */}
+        {/* --- Pricing & Category Section --- */}
         <div className="bg-gray-900 p-4 md:p-6 rounded-lg shadow-lg border border-gray-800 space-y-6">
           <h2 className="text-lg md:text-xl font-semibold text-white border-b border-gray-700 pb-3">
-            Associated Product Information (Required)
+            Step 3: Set Event Pricing
           </h2>
-
-          <p className="text-sm text-gray-400">
-            Since events use the product data structure, provide minimal
-            information for the product associated with this event.
-          </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
@@ -340,14 +425,13 @@ const EventCreatePage = () => {
             </div>
 
             <Input
-              label="Stock Quantity"
+              label="Event Stock"
               type="number"
               {...register("stock", {
                 required: "Stock is required",
                 valueAsNumber: true,
                 min: { value: 1, message: "Min 1" },
               })}
-              // 🚫 REMOVED: error={errors.stock?.message as string}
             />
             {errors.stock && (
               <p className="mt-1 text-sm text-red-600">
@@ -365,7 +449,6 @@ const EventCreatePage = () => {
                 required: "Regular Price is required",
                 valueAsNumber: true,
               })}
-              // 🚫 REMOVED: error={errors.regular_price?.message as string}
             />
             {errors.regular_price && (
               <p className="mt-1 text-sm text-red-600">
@@ -373,9 +456,10 @@ const EventCreatePage = () => {
               </p>
             )}
             <Input
-              label="Sale Price ($)"
+              label="Event Sale Price ($)"
               type="number"
               step="0.01"
+              description="Special discounted price for this event"
               {...register("sale_price", {
                 required: "Sale Price is required",
                 valueAsNumber: true,
@@ -383,7 +467,6 @@ const EventCreatePage = () => {
                   Number(value) < Number(regularPrice) ||
                   "Sale price must be less than regular price",
               })}
-              // 🚫 REMOVED: error={errors.sale_price?.message as string}
             />
             {errors.sale_price && (
               <p className="mt-1 text-sm text-red-600">
@@ -391,16 +474,45 @@ const EventCreatePage = () => {
               </p>
             )}
           </div>
+
+          {selectedProductId && (
+            <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-4">
+              <p className="text-blue-300 text-sm">
+                💡 <strong>Note:</strong> This event will display using the
+                selected product's images. Customers will see this as a
+                time-limited promotion.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* --- Submission Button --- */}
-        <div className="pt-6 border-t border-gray-800 flex justify-end">
+        <div className="pt-6 border-t border-gray-800 flex flex-col sm:flex-row gap-4 justify-between items-center">
+          <p className="text-sm text-gray-400">
+            {selectedProductId ? (
+              <span className="text-green-400">✓ Ready to create event</span>
+            ) : (
+              <span className="text-yellow-400">
+                ⚠ Please select a product first
+              </span>
+            )}
+          </p>
           <button
             type="submit"
-            className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150 disabled:bg-gray-500 disabled:cursor-not-allowed"
-            disabled={loading}
+            className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150 disabled:bg-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            disabled={loading || !selectedProductId}
           >
-            {loading ? "Creating Event..." : "Create Event"}
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                Creating Event...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5" />
+                Create Event Promotion
+              </>
+            )}
           </button>
         </div>
       </form>
