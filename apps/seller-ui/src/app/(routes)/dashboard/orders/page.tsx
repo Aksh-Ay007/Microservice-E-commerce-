@@ -106,10 +106,10 @@ const OrderTable = () => {
   });
 
   return (
-    <div className="w-full min-h-screen px-6 py-8 bg-[#0F1117]">
+    <div className="w-full min-h-screen px-4 md:px-6 py-6 md:py-8 bg-[#0F1117]">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-1">Orders</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-1">Orders</h2>
           <div className="flex items-center text-sm text-gray-400">
             <Link href="/dashboard" className="hover:text-blue-400">
               Dashboard
@@ -139,14 +139,14 @@ const OrderTable = () => {
         ) : orders?.length === 0 ? (
           <p className="text-center py-8 text-gray-500">No orders found.</p>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full text-xs md:text-sm">
             <thead className="bg-[#20232D] border-b border-gray-700">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="text-left px-4 py-3 font-semibold text-gray-300"
+                      className="text-left px-3 md:px-4 py-3 font-semibold text-gray-300 whitespace-nowrap"
                     >
                       {flexRender(
                         header.column.columnDef.header,
@@ -164,7 +164,7 @@ const OrderTable = () => {
                   className="border-b border-gray-800 hover:bg-[#222633] transition"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-3 text-gray-200">
+                    <td key={cell.id} className="px-3 md:px-4 py-3 text-gray-200 whitespace-nowrap">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

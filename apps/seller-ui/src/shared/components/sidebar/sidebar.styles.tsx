@@ -6,8 +6,8 @@ export const SideBarWrapper = styled.div`
 background-color:var(--background);
 transition:transform 0.25 ease;
 height:100%;
-position:fixed;
-transform:translateX(-100%);
+position:relative;
+transform:none;
 width:16rem;
 flex-shrink:0;
 z-index:202;
@@ -23,12 +23,11 @@ padding-right:var(--space-6);
 }
 
 @media(min-width:768px){
-
-margin-left:0;
-display:flex;
-position:static;
-height:100vh;
-transform:translateX(0);
+  margin-left:0;
+  display:flex;
+  position:static;
+  height:100vh;
+  transform:none;
 }
 
 /* varient for collapsed*/
@@ -38,7 +37,7 @@ ${(props: any) =>
 
    display:inherit;
    margin-left:0;
-   transform:translateX(0);
+   transform:none;
 
    `}
 

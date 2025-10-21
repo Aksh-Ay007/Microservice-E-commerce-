@@ -196,11 +196,11 @@ const Page = () => {
   const getLastMessage = (chat: any) => chat?.lastMessage || "";
 
   return (
-    <div className="w-full min-h-screen p-8 bg-gray-950">
+    <div className="w-full min-h-screen p-4 md:p-8 bg-gray-950">
       <div className="max-w-7xl mx-auto">
-        <div className="flex h-[85vh] rounded-lg shadow-2xl overflow-hidden bg-gray-900">
+        <div className="flex h-[85vh] md:h-[80vh] rounded-lg shadow-2xl overflow-hidden bg-gray-900">
           {/* Sidebar */}
-          <div className="w-[340px] border-r border-gray-800 bg-gray-900">
+          <div className="hidden md:block w-[320px] border-r border-gray-800 bg-gray-900">
             <div className="p-5 border-b border-gray-800 bg-gray-900">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
@@ -316,25 +316,25 @@ const Page = () => {
             {selectedChat ? (
               <>
                 {/* Chat Header */}
-                <div className="p-5 border-b border-gray-800 bg-gray-900 flex items-center gap-4">
+                <div className="p-4 md:p-5 border-b border-gray-800 bg-gray-900 flex items-center gap-4">
                   <div className="relative">
                     <Image
                       src={
-                        selectedChat. user?.avatar.url ||
+                        selectedChat.user?.avatar.url ||
                         "https://ik.imagekit.io/AkshayMicroMart/photo/useravatar.jpg?updatedAt=1760470134415"
                       }
                       alt={selectedChat.user?.name}
-                      width={48}
-                      height={48}
-                      className="rounded-full w-[48px] h-[48px] object-cover ring-2 ring-gray-700"
+                      width={40}
+                      height={40}
+                      className="rounded-full w-10 h-10 md:w-[48px] md:h-[48px] object-cover ring-2 ring-gray-700"
                     />
                     {selectedChat.user?.isOnline && (
-                      <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-green-500 ring-2 ring-gray-900" />
+                      <span className="absolute bottom-0 right-0 w-3 h-3 md:w-3.5 md:h-3.5 rounded-full bg-green-500 ring-2 ring-gray-900" />
                     )}
                   </div>
 
                   <div>
-                    <h2 className="text-white font-semibold text-base">
+                    <h2 className="text-white font-semibold text-sm md:text-base">
                       {selectedChat.user?.name}
                     </h2>
                     <p className="text-xs text-gray-400 flex items-center gap-1.5">
@@ -353,7 +353,7 @@ const Page = () => {
                 {/* Messages */}
                 <div
                   ref={messageContainerRef}
-                  className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-950"
+                  className="flex-1 overflow-y-auto p-4 md:p-6 space-y-3 md:space-y-4 bg-gray-950"
                 >
                   {messages?.map((msg: any, index: number) => (
                     <div
@@ -363,7 +363,7 @@ const Page = () => {
                       }`}
                     >
                       <div
-                        className={`max-w-[75%] ${
+                        className={`max-w-[85%] md:max-w-[75%] ${
                           msg.senderType === "seller"
                             ? "bg-blue-600 text-white"
                             : "bg-gray-800 text-white border border-gray-700"
@@ -373,7 +373,7 @@ const Page = () => {
                             : "rounded-bl-sm"
                         }`}
                       >
-                        <p className="text-sm leading-relaxed">
+                        <p className="text-xs md:text-sm leading-relaxed">
                           {msg.text || msg.content}
                         </p>
                       </div>
