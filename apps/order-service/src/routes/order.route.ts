@@ -5,6 +5,7 @@ import { isSellerAuthenticated } from "../../../../packages/middleware/sellerAut
 import {
   createPaymentIntent,
   createPaymentSession,
+  createCODOrder,
   getAdminOrders,
   getOrderDetails,
   getSellerOrders,
@@ -18,6 +19,7 @@ const router: Router = express.Router();
 
 router.post("/create-payment-intent", isAuthenticated, createPaymentIntent);
 router.post("/create-payment-session", isAuthenticated, createPaymentSession);
+router.post("/create-cod-order", isAuthenticated, createCODOrder);
 router.get("/verifying-payment-session", isAuthenticated, verifyPaymentSession);
 
 router.get(

@@ -191,6 +191,236 @@ export const verifyPaymentSession = async (
   }
 };
 
+// NEW: Create COD Order
+export const createCODOrder = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { cart, selectedAddressId, coupon } = req.body;
+    const userId = req.user?.id;
+
+    if (!cart || !Array.isArray(cart) || cart.length === 0) {
+      return next(new ValidationError("Cart is empty or invalid"));
+    }
+
+    if (!selectedAddressId) {
+      return next(new ValidationError("Shipping address is required"));
+    }
+
+    // Calculate subTotal early
+    const subTotal = cart.reduce(
+      (total: number, item: any) => total + item.quantity * item.sale_price,
+      0
+    );
+
+    // Verify address belongs to user
+    const address = await prisma.address.findFirst({
+      where: {
+        id: selectedAddressId,
+        userId: userId,
+      },
+    });
+
+    if (!address) {
+      return next(new ValidationError("Invalid shipping address"));
+    }
+
+    const user = await prisma.users.findUnique({ where: { id: userId } });
+    const name = user?.name!;
+    const email = user?.email!;
+
+    // Group items by shop
+    const shopGrouped = cart.reduce((acc: any, item: any) => {
+      if (!acc[item.shopId]) acc[item.shopId] = [];
+      acc[item.shopId].push(item);
+      return acc;
+    }, {});
+
+    const orderIds: string[] = [];
+
+    // Process each shop order
+    for (const shopId in shopGrouped) {
+      const orderItems = shopGrouped[shopId];
+      let orderTotal = orderItems.reduce(
+        (sum: number, p: any) => sum + p.quantity * p.sale_price,
+        0
+      );
+
+      // Apply coupon discount if applicable
+      if (
+        coupon &&
+        coupon.discountedProductId &&
+        orderItems.some((item: any) => item.id === coupon.discountedProductId)
+      ) {
+        const discountedItem = orderItems.find(
+          (item: any) => item.id === coupon.discountedProductId
+        );
+
+        if (discountedItem) {
+          const discount =
+            coupon.discountPercent > 0
+              ? (discountedItem.sale_price *
+                  discountedItem.quantity *
+                  coupon.discountPercent) /
+                100
+              : coupon.discountAmount;
+          orderTotal -= discount;
+        }
+      }
+
+      // Create Order with COD status
+      const newOrder = await prisma.orders.create({
+        data: {
+          userId,
+          shopId,
+          total: orderTotal,
+          status: "Cash on Delivery",
+          deliveryStatus: "Ordered",
+          shippingAddressId: selectedAddressId,
+          couponCode: coupon?.code || null,
+          discountAmount: coupon?.discountAmount || 0,
+          items: {
+            create: orderItems.map((item: any) => ({
+              productId: item.id,
+              quantity: item.quantity,
+              price: item.sale_price,
+              selectedOptions: item.selectedOptions,
+            })),
+          },
+        },
+      });
+
+      orderIds.push(newOrder.id);
+
+      // Update product stock and analytics
+      for (const item of orderItems) {
+        const { id: productId, quantity } = item;
+
+        await prisma.products.update({
+          where: { id: productId },
+          data: {
+            stock: { decrement: quantity },
+            totalSales: { increment: quantity },
+          },
+        });
+
+        await prisma.productAnalytics.upsert({
+          where: { productId },
+          create: {
+            productId,
+            shopId,
+            purchases: quantity,
+            lastViewedAt: new Date(),
+          },
+          update: {
+            purchases: { increment: quantity },
+          },
+        });
+
+        // Update user analytics
+        const existingAnalytics = await prisma.userAnalytics.findUnique({
+          where: { userId },
+        });
+
+        const newAction = {
+          productId,
+          shopId,
+          action: "purchase",
+          timestamp: new Date(),
+        };
+
+        const currentActions = Array.isArray(existingAnalytics?.actions)
+          ? (existingAnalytics.actions as Prisma.JsonArray)
+          : [];
+
+        if (existingAnalytics) {
+          await prisma.userAnalytics.update({
+            where: { userId },
+            data: {
+              lastVisited: new Date(),
+              actions: [...currentActions, newAction],
+            },
+          });
+        } else {
+          await prisma.userAnalytics.create({
+            data: {
+              userId,
+              lastVisited: new Date(),
+              actions: [newAction],
+            },
+          });
+        }
+      }
+    }
+
+    // Send order confirmation email
+    await sendEmail(
+      email,
+      "MicroMart Order Confirmation - Cash on Delivery",
+      "order-confirmation",
+      {
+        name,
+        cart,
+        totalAmount:
+          coupon?.discountAmount > 0
+            ? subTotal - coupon.discountAmount
+            : subTotal,
+        trackingUrl: `${process.env.NEXT_PUBLIC_USER_UI_LINK}/order/${orderIds[0]}`,
+        paymentMethod: "Cash on Delivery",
+      }
+    );
+
+    // Create notifications for sellers
+    const createdShopIds = Object.keys(shopGrouped);
+    const sellerShops = await prisma.shops.findMany({
+      where: { id: { in: createdShopIds } },
+      select: { id: true, sellerId: true, name: true },
+    });
+
+    for (const shop of sellerShops) {
+      const firstProduct = shopGrouped[shop.id][0];
+      const productTitle = firstProduct.title || "new-item";
+
+      await prisma.notifications.create({
+        data: {
+          title: "New COD Order Received",
+          message: `You have a new Cash on Delivery order for ${productTitle}.`,
+          creatorId: userId,
+          receiverId: shop.sellerId,
+          redirect_link: `/order/${orderIds[0]}`,
+          type: "order",
+          priority: "high",
+        },
+      });
+    }
+
+    // Create notification for admin
+    await prisma.notifications.create({
+      data: {
+        title: "New COD Order",
+        message: `${name} placed a Cash on Delivery order.`,
+        creatorId: userId,
+        receiverId: "admin",
+        redirect_link: `/order/${orderIds[0]}`,
+        type: "order",
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Order placed successfully! Pay when delivered.",
+      orderId: orderIds[0],
+      orderIds,
+      totalAmount: subTotal - (coupon?.discountAmount || 0),
+    });
+  } catch (error) {
+    console.error("Error creating COD order:", error);
+    next(error);
+  }
+};
+
 //create order
 
 export const createOrder = async (
