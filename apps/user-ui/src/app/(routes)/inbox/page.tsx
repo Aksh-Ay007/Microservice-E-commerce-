@@ -233,12 +233,33 @@ useEffect(() => {
 
   return (
     <div className="w-full bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+      {/* Mobile Floating Toggle Button - Shows when chat is open */}
+      {!showSidebar && selectedChat && (
+        <button
+          onClick={() => setShowSidebar(true)}
+          className="md:hidden fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-indigo-600 text-white px-5 py-3 rounded-full shadow-lg hover:bg-indigo-700 transition-all"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          <span className="font-medium">Chats</span>
+        </button>
+      )}
+
       <div className="w-full md:w-[85%] lg:w-[80%] mx-auto md:pt-6 md:pb-8 px-0 md:px-4">
-        <div className="flex h-screen md:h-[85vh] md:rounded-2xl md:shadow-2xl overflow-hidden md:border border-slate-200/50 bg-white">
+        <div className="flex h-screen md:h-[85vh] md:rounded-2xl md:shadow-2xl overflow-hidden md:border border-slate-200/50 bg-white relative">
+          {/* Mobile Overlay - Click to close sidebar */}
+          {showSidebar && selectedChat && (
+            <div
+              className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+              onClick={() => setShowSidebar(false)}
+            />
+          )}
+
           {/* Sidebar */}
           <div className={`${
             showSidebar ? 'flex' : 'hidden md:flex'
-          } w-full md:w-[340px] flex-col border-r border-slate-200 bg-gradient-to-b from-white to-slate-50/50`}>
+          } w-full md:w-[340px] flex-col border-r border-slate-200 bg-gradient-to-b from-white to-slate-50/50 z-40 md:z-auto`}>
             <div className="p-5 border-b border-slate-200 bg-gradient-to-r from-indigo-600 to-purple-600">
               <h1 className="text-xl font-bold text-white tracking-tight">
                 Messages
