@@ -288,9 +288,9 @@ const AllEventsPage = () => {
 
   // Main UI
   return (
-    <div className="w-full min-h-screen px-6 py-8 bg-gray-950">
+    <div className="w-full min-h-screen px-4 md:px-6 py-6 md:py-8 bg-gray-950 max-w-screen-xl mx-auto">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold text-white mb-1">All Events</h2>
           <div className="flex items-center text-sm text-gray-400">
@@ -319,7 +319,7 @@ const AllEventsPage = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
           <div className="flex items-center">
             <Calendar className="w-8 h-8 text-blue-400" />
@@ -390,7 +390,7 @@ const AllEventsPage = () => {
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="text-left px-4 py-3 font-semibold text-gray-200"
+                    className="text-left px-3 md:px-4 py-3 font-semibold text-gray-200"
                   >
                     {flexRender(
                       header.column.columnDef.header,
@@ -408,7 +408,7 @@ const AllEventsPage = () => {
                 className="border-b border-gray-700 hover:bg-gray-750 transition"
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-3 text-gray-200">
+                  <td key={cell.id} className="px-3 md:px-4 py-3 text-gray-200">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
@@ -419,7 +419,7 @@ const AllEventsPage = () => {
       </div>
 
       {/* Footer */}
-      <div className="mt-6 flex justify-between items-center text-gray-400">
+      <div className="mt-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 text-gray-400">
         <p className="text-sm">
           Showing {filteredEvents.length} of {allEvents.length} events
         </p>

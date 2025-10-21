@@ -196,12 +196,12 @@ const Page = () => {
   const getLastMessage = (chat: any) => chat?.lastMessage || "";
 
   return (
-    <div className="w-full min-h-screen p-8 bg-gray-950">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex h-[85vh] rounded-lg shadow-2xl overflow-hidden bg-gray-900">
+    <div className="w-full min-h-screen p-4 md:p-8 bg-gray-950">
+      <div className="max-w-screen-xl mx-auto">
+        <div className="flex flex-col md:flex-row min-h-[70vh] md:h-[85vh] rounded-lg shadow-2xl overflow-hidden bg-gray-900">
           {/* Sidebar */}
-          <div className="w-[340px] border-r border-gray-800 bg-gray-900">
-            <div className="p-5 border-b border-gray-800 bg-gray-900">
+          <div className="w-full md:w-[340px] border-b md:border-b-0 md:border-r border-gray-800 bg-gray-900">
+            <div className="p-4 md:p-5 border-b border-gray-800 bg-gray-900">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <h1 className="text-2xl font-semibold text-white">
@@ -225,7 +225,7 @@ const Page = () => {
               </div>
             </div>
 
-            <div className="divide-y divide-gray-800">
+            <div className="divide-y divide-gray-800 max-h-80 md:max-h-none overflow-y-auto">
               {isLoading ? (
                 <div className="p-6 text-center">
                   <div className="inline-block w-6 h-6 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -316,7 +316,7 @@ const Page = () => {
             {selectedChat ? (
               <>
                 {/* Chat Header */}
-                <div className="p-5 border-b border-gray-800 bg-gray-900 flex items-center gap-4">
+                <div className="p-4 md:p-5 border-b border-gray-800 bg-gray-900 flex items-center gap-4">
                   <div className="relative">
                     <Image
                       src={
@@ -353,7 +353,7 @@ const Page = () => {
                 {/* Messages */}
                 <div
                   ref={messageContainerRef}
-                  className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-950"
+                  className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-gray-950"
                 >
                   {messages?.map((msg: any, index: number) => (
                     <div
