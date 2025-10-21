@@ -194,21 +194,20 @@ const ProductList = () => {
   };
 
   return (
-    <div className="w-full min-h-screen p-8">
+    <div className="w-full min-h-screen p-4 sm:p-6 lg:p-8 bg-[#0F1117]">
       {/* Header */}
-      <div className="flex items-center justify-between mb-1">
-        <h2 className="text-2xl text-white font-semibold">All Products</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+        <h2 className="text-xl sm:text-2xl text-white font-semibold">All Products</h2>
         <Link
           href={"/dashboard/create-product"}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 w-full sm:w-auto"
         >
           <Plus size={16} />
-          Add New Product
+          <span className="sm:inline">Add New Product</span>
         </Link>
       </div>
       {/* BreadCrumbs */}
-
-      <div className="flex items-center  mb-4">
+      <div className="flex items-center mb-4">
         <Link href={"/dashboard"} className="text-blue-400 cursor-pointer">
           Dashboard
         </Link>
@@ -217,59 +216,66 @@ const ProductList = () => {
       </div>
 
       {/* search bar */}
-      <div className="mb-4 flex items-center bg-gray-900 p-2 rounded-md flex-1">
-        <Search className="text-gray-400 mr-2" size={18} />
-
+      <div className="mb-6 flex items-center bg-gray-900 p-3 rounded-lg border border-gray-700">
+        <Search className="text-gray-400 mr-2 flex-shrink-0" size={18} />
         <input
           type="text"
           placeholder="Search products..."
-          className="w-full bg-transparent  text-white outline-none "
+          className="w-full bg-transparent text-white outline-none placeholder-gray-500"
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
         />
       </div>
       {/* Table */}
-
-      <div className="overflow-x-auto bg-gray-900 rounded-lg p-4">
+      <div className="overflow-x-auto bg-gray-900 rounded-lg border border-gray-700 shadow-sm">
         {isLoading ? (
-          <p className="text-center text-white">Loading products...</p>
+          <div className="p-8 text-center">
+            <div className="inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-2"></div>
+            <p className="text-gray-400">Loading products...</p>
+          </div>
+        ) : products?.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-gray-400">No products found.</p>
+          </div>
         ) : (
-          <table className="w-full text-white">
-            <thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id} className="border-b border-gray-800">
-                  {headerGroup.headers.map((header) => (
-                    <th key={header.id} className="text-left p-3">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
+          <div className="min-w-full">
+            <table className="w-full text-white">
+              <thead className="bg-gray-800 border-b border-gray-700">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <th key={header.id} className="text-left p-3 sm:p-4 font-semibold text-gray-300">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
 
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="border-b border-gray-800 hover:bg-gray-900 transition"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="p-3">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              <tbody>
+                {table.getRowModel().rows.map((row) => (
+                  <tr
+                    key={row.id}
+                    className="border-b border-gray-800 hover:bg-gray-800/50 transition"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="p-3 sm:p-4">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {showDeleteModal && (

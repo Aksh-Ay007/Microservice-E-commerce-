@@ -176,29 +176,28 @@ const Page = () => {
   const handleSaveDraft = () => {};
 
   return (
-    <form
-      className="w-full mx-auto p-8 shadow-md rounded-lg text-white bg-gray-800"
-      onSubmit={handleSubmit(onSubmit)}
-    >
-      {/* Heading and breadcrumbs */}
+    <div className="min-h-screen bg-[#0F1117] p-4 sm:p-6 lg:p-8">
+      <form
+        className="w-full max-w-7xl mx-auto shadow-md rounded-lg text-white bg-gray-900 border border-gray-700 p-4 sm:p-6 lg:p-8"
+        onSubmit={handleSubmit(onSubmit)}
+      >
+        {/* Heading and breadcrumbs */}
+        <h2 className="text-xl sm:text-2xl py-2 font-semibold font-Poppins text-white">
+          Create Product
+        </h2>
 
-      <h2 className="text-2xl py-2 font-semibold font-Poppins text-white">
-        Create Product
-      </h2>
-
-      <div className="flex items-center">
-        <Link href="/dashboard" className="text-[#80Deea] cursor-pointer">
-          Dashboard
-        </Link>
-        <ChevronRightIcon size={20} className="opacity-[.8]" />
-        <span>Create Product</span>
-      </div>
-      {/* content Layout */}
-
-      <div className="py-4 w-full flex gap-6">
-        {/* Left side-image upload section */}
-
-        <div className="md:w-[35%]">
+        <div className="flex items-center mb-6">
+          <Link href="/dashboard" className="text-[#80Deea] cursor-pointer hover:underline">
+            Dashboard
+          </Link>
+          <ChevronRightIcon size={20} className="opacity-[.8] mx-1" />
+          <span>Create Product</span>
+        </div>
+        
+        {/* content Layout */}
+        <div className="py-4 w-full flex flex-col lg:flex-row gap-6">
+          {/* Left side-image upload section */}
+          <div className="w-full lg:w-[35%]">
           {images?.length > 0 && (
             <ImagePlaceHolder
               setOpenImageModal={setOpenImageModal}
@@ -213,7 +212,7 @@ const Page = () => {
             />
           )}
 
-          <div className="grid grid-cols-2 gap-3 mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-3 mt-4">
             {images.slice(1).map((_, index) => (
               <ImagePlaceHolder
                 setOpenImageModal={setOpenImageModal}
@@ -231,13 +230,11 @@ const Page = () => {
           </div>
         </div>
 
-        {/* Right side-form inputs*/}
-
-        <div className="md:w-[65%]">
-          <div className="w-full flex gap-6">
-            {/* Product title inputs */}
-
-            <div className="w-2/4">
+          {/* Right side-form inputs*/}
+          <div className="w-full lg:w-[65%] mt-6 lg:mt-0">
+            <div className="w-full flex flex-col xl:flex-row gap-6">
+              {/* Product title inputs */}
+              <div className="w-full xl:w-1/2">
               <Input
                 label="Product Title *"
                 placeholder="Enter Product Title"
@@ -402,9 +399,8 @@ const Page = () => {
               </div>
             </div>
 
-            {/* category  */}
-
-            <div className="w-2/4">
+              {/* category  */}
+              <div className="w-full xl:w-1/2">
               <label className="block font-semibold text-gray-300 mb-1">
                 Category *
               </label>
@@ -639,7 +635,7 @@ const Page = () => {
                 {discountLoading ? (
                   <p className="text-gray-400">Loading discount codes...</p>
                 ) : (
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
                     {discountCodes?.map((code: any) => {
                       const selected = watch("discountCodes")?.includes(
                         code.id
@@ -649,7 +645,7 @@ const Page = () => {
                         <button
                           key={code.id}
                           type="button"
-                          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border shadow-sm transition ${
+                          className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium border shadow-sm transition ${
                             selected
                               ? "bg-blue-600 text-white border-blue-500"
                               : "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700"
@@ -738,25 +734,26 @@ const Page = () => {
         </div>
       )}
 
-      <div className="mt-6 flex justify-end gap-3">
-        {isChanged && (
+        <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
+          {isChanged && (
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors w-full sm:w-auto"
+            >
+              Save Draft
+            </button>
+          )}
           <button
-            type="button"
-            onClick={handleSaveDraft}
-            className="px-4 py-2 bg-gray-700 text-white rounded-md"
+            type="submit"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+            disabled={loading}
           >
-            Save Draft
+            {loading ? "Creating..." : "Create"}
           </button>
-        )}
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md"
-          disabled={loading}
-        >
-          {loading ? "Creating..." : "Create"}
-        </button>
-      </div>
-    </form>
+        </div>
+      </form>
+    </div>
   );
 };
 
