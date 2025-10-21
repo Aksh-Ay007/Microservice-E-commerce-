@@ -177,28 +177,28 @@ const Page = () => {
 
   return (
     <form
-      className="w-full mx-auto p-8 shadow-md rounded-lg text-white bg-gray-800"
+      className="w-full mx-auto p-4 sm:p-6 lg:p-8 shadow-md rounded-lg text-white bg-[#1C1F29] border border-gray-700"
       onSubmit={handleSubmit(onSubmit)}
     >
       {/* Heading and breadcrumbs */}
 
-      <h2 className="text-2xl py-2 font-semibold font-Poppins text-white">
+      <h2 className="text-xl sm:text-2xl py-2 font-semibold font-Poppins text-white">
         Create Product
       </h2>
 
-      <div className="flex items-center">
-        <Link href="/dashboard" className="text-[#80Deea] cursor-pointer">
+      <div className="flex items-center text-sm sm:text-base">
+        <Link href="/dashboard" className="text-blue-400 cursor-pointer">
           Dashboard
         </Link>
-        <ChevronRightIcon size={20} className="opacity-[.8]" />
+        <ChevronRightIcon size={16} className="opacity-[.8] mx-1" />
         <span>Create Product</span>
       </div>
       {/* content Layout */}
 
-      <div className="py-4 w-full flex gap-6">
+      <div className="py-4 w-full flex flex-col lg:flex-row gap-6">
         {/* Left side-image upload section */}
 
-        <div className="md:w-[35%]">
+        <div className="w-full lg:w-[35%]">
           {images?.length > 0 && (
             <ImagePlaceHolder
               setOpenImageModal={setOpenImageModal}
@@ -233,11 +233,11 @@ const Page = () => {
 
         {/* Right side-form inputs*/}
 
-        <div className="md:w-[65%]">
-          <div className="w-full flex gap-6">
+        <div className="w-full lg:w-[65%]">
+          <div className="w-full flex flex-col xl:flex-row gap-6">
             {/* Product title inputs */}
 
-            <div className="w-2/4">
+            <div className="w-full xl:w-2/4">
               <Input
                 label="Product Title *"
                 placeholder="Enter Product Title"
@@ -404,7 +404,7 @@ const Page = () => {
 
             {/* category  */}
 
-            <div className="w-2/4">
+            <div className="w-full xl:w-2/4">
               <label className="block font-semibold text-gray-300 mb-1">
                 Category *
               </label>
@@ -738,19 +738,19 @@ const Page = () => {
         </div>
       )}
 
-      <div className="mt-6 flex justify-end gap-3">
+      <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
         {isChanged && (
           <button
             type="button"
             onClick={handleSaveDraft}
-            className="px-4 py-2 bg-gray-700 text-white rounded-md"
+            className="px-4 py-2 bg-gray-700 text-white rounded-md w-full sm:w-auto"
           >
             Save Draft
           </button>
         )}
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md w-full sm:w-auto"
           disabled={loading}
         >
           {loading ? "Creating..." : "Create"}
