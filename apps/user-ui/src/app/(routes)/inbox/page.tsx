@@ -233,8 +233,8 @@ useEffect(() => {
 
   return (
     <div className="w-full bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
-      {/* Mobile Floating Toggle Button - Shows when chat is open */}
-      {!showSidebar && selectedChat && (
+      {/* Mobile Floating Toggle Button - Shows when sidebar is hidden */}
+      {!showSidebar && (
         <button
           onClick={() => setShowSidebar(true)}
           className="md:hidden fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-indigo-600 text-white px-5 py-3 rounded-full shadow-lg hover:bg-indigo-700 transition-all"
