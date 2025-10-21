@@ -3,6 +3,7 @@ import { isAdmin, isSeller } from "../../../../packages/middleware/authorizeRole
 import isAuthenticated from "../../../../packages/middleware/isAuthenticated";
 import { isSellerAuthenticated } from "../../../../packages/middleware/sellerAuth.middleware";
 import {
+  createCODOrder,
   createPaymentIntent,
   createPaymentSession,
   getAdminOrders,
@@ -19,6 +20,7 @@ const router: Router = express.Router();
 router.post("/create-payment-intent", isAuthenticated, createPaymentIntent);
 router.post("/create-payment-session", isAuthenticated, createPaymentSession);
 router.get("/verifying-payment-session", isAuthenticated, verifyPaymentSession);
+router.post("/create-cod-order", isAuthenticated, createCODOrder);
 
 router.get(
   "/get-seller-orders",

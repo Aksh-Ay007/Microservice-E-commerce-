@@ -22,6 +22,7 @@ const Page = () => {
   const [chats, setChats] = useState<any[]>([]);
   const [selectedChat, setSelectedChat] = useState<any | null>(null);
   const [message, setMessage] = useState("");
+  const [showSidebar, setShowSidebar] = useState(true);
 
   const conversationId = searchParams.get("conversationId");
 
@@ -82,83 +83,81 @@ const Page = () => {
   }, [conversationId, chats]);
 
   // ✅ WebSocket Events
-  // Replace your useEffect for WebSocket Events with this:
+  useEffect(() => {
+    if (!ws) return;
 
-useEffect(() => {
-  if (!ws) return;
+    const handleMessage = (event: MessageEvent) => {
+      const data = JSON.parse(event.data);
 
-  const handleMessage = (event: MessageEvent) => {
-    const data = JSON.parse(event.data);
+      if (data.type === "NEW_MESSAGE") {
+        const newMsg = data.payload;
 
-    if (data.type === "NEW_MESSAGE") {
-      const newMsg = data.payload;
+        // ✅ FIX: Only add message if it's NOT from the current user
+        if (newMsg.conversationId === conversationId && newMsg.senderType !== "user") {
+          queryClient.setQueryData(
+            ["user-messages", conversationId],
+            (old: any = []) => [
+              ...old,
+              {
+                content: newMsg.messageBody || newMsg.content || "",
+                senderType: newMsg.senderType,
+                createdAt: new Date().toISOString(),
+              },
+            ]
+          );
+          scrollToBottom();
+        }
 
-      // ✅ FIX: Only add message if it's NOT from the current user
-      if (newMsg.conversationId === conversationId && newMsg.senderType !== "user") {
-        queryClient.setQueryData(
-          ["user-messages", conversationId],
-          (old: any = []) => [
-            ...old,
-            {
-              content: newMsg.messageBody || newMsg.content || "",
-              senderType: newMsg.senderType,
-              createdAt: new Date().toISOString(),
-            },
-          ]
+        // Sidebar updates (keep this as is)
+        setChats((prevChats) =>
+          prevChats.map((chat) =>
+            chat.conversationId === newMsg.conversationId
+              ? {
+                  ...chat,
+                  lastMessage: newMsg.content || newMsg.messageBody,
+                  unseenCount:
+                    newMsg.conversationId === conversationId
+                      ? 0
+                      : (chat.unseenCount || 0) + 1,
+                  seller: {
+                    ...chat.seller,
+                    isOnline:
+                      newMsg.senderType === "seller"
+                        ? true
+                        : chat.seller?.isOnline,
+                  },
+                }
+              : chat
+          )
         );
-        scrollToBottom();
       }
 
-      // Sidebar updates (keep this as is)
-      setChats((prevChats) =>
-        prevChats.map((chat) =>
-          chat.conversationId === newMsg.conversationId
-            ? {
-                ...chat,
-                lastMessage: newMsg.content || newMsg.messageBody,
-                unseenCount:
-                  newMsg.conversationId === conversationId
-                    ? 0
-                    : (chat.unseenCount || 0) + 1,
-                seller: {
-                  ...chat.seller,
-                  isOnline:
-                    newMsg.senderType === "seller"
-                      ? true
-                      : chat.seller?.isOnline,
-                },
-              }
-            : chat
-        )
-      );
-    }
+      if (data.type === "UNSEEN_COUNT_UPDATE") {
+        const { conversationId, count } = data.payload;
+        setChats((prevChats) =>
+          prevChats.map((chat) =>
+            chat.conversationId === conversationId
+              ? { ...chat, unseenCount: count }
+              : chat
+          )
+        );
+      }
 
-    if (data.type === "UNSEEN_COUNT_UPDATE") {
-      const { conversationId, count } = data.payload;
-      setChats((prevChats) =>
-        prevChats.map((chat) =>
-          chat.conversationId === conversationId
-            ? { ...chat, unseenCount: count }
-            : chat
-        )
-      );
-    }
+      if (data.type === "ONLINE_STATUS_UPDATE") {
+        const { sellerId, isOnline } = data.payload;
+        setChats((prevChats) =>
+          prevChats.map((chat) =>
+            chat.seller?.id === sellerId
+              ? { ...chat, seller: { ...chat.seller, isOnline } }
+              : chat
+          )
+        );
+      }
+    };
 
-    if (data.type === "ONLINE_STATUS_UPDATE") {
-      const { sellerId, isOnline } = data.payload;
-      setChats((prevChats) =>
-        prevChats.map((chat) =>
-          chat.seller?.id === sellerId
-            ? { ...chat, seller: { ...chat.seller, isOnline } }
-            : chat
-        )
-      );
-    }
-  };
-
-  ws.addEventListener("message", handleMessage);
-  return () => ws.removeEventListener("message", handleMessage);
-}, [ws, conversationId, queryClient]);
+    ws.addEventListener("message", handleMessage);
+    return () => ws.removeEventListener("message", handleMessage);
+  }, [ws, conversationId, queryClient]);
 
   // ✅ Select Chat
   const handleChatSelect = (chat: any) => {
@@ -170,6 +169,7 @@ useEffect(() => {
     );
 
     router.push(`?conversationId=${chat.conversationId}`);
+    setShowSidebar(false); // Hide sidebar on mobile when chat selected
 
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(
@@ -231,10 +231,33 @@ useEffect(() => {
 
   return (
     <div className="w-full bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
-      <div className="md:w-[85%] lg:w-[80%] mx-auto pt-6 pb-8 px-4">
-        <div className="flex h-[85vh] rounded-2xl shadow-2xl overflow-hidden border border-slate-200/50 bg-white">
+      {/* Mobile Floating Toggle Button - Shows when sidebar is hidden */}
+      {!showSidebar && (
+        <button
+          onClick={() => setShowSidebar(true)}
+          className="md:hidden fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-indigo-600 text-white px-5 py-3 rounded-full shadow-lg hover:bg-indigo-700 transition-all"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          <span className="font-medium">Chats</span>
+        </button>
+      )}
+
+      <div className="w-full md:w-[85%] lg:w-[80%] mx-auto md:pt-6 md:pb-8 px-0 md:px-4">
+        <div className="flex h-screen md:h-[85vh] md:rounded-2xl md:shadow-2xl overflow-hidden md:border border-slate-200/50 bg-white relative">
+          {/* Mobile Overlay - Click to close sidebar */}
+          {showSidebar && selectedChat && (
+            <div
+              className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+              onClick={() => setShowSidebar(false)}
+            />
+          )}
+
           {/* Sidebar */}
-          <div className="w-[340px] border-r border-slate-200 bg-gradient-to-b from-white to-slate-50/50">
+          <div className={`${
+            showSidebar ? 'flex' : 'hidden md:flex'
+          } w-full md:w-[340px] flex-col border-r border-slate-200 bg-gradient-to-b from-white to-slate-50/50 z-40 md:z-auto`}>
             <div className="p-5 border-b border-slate-200 bg-gradient-to-r from-indigo-600 to-purple-600">
               <h1 className="text-xl font-bold text-white tracking-tight">
                 Messages
@@ -244,7 +267,7 @@ useEffect(() => {
               </p>
             </div>
 
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100 overflow-y-auto">
               {isLoading ? (
                 <div className="p-6 text-center">
                   <div className="inline-block w-6 h-6 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
@@ -316,11 +339,22 @@ useEffect(() => {
           </div>
 
           {/* Chat Area */}
-          <div className="flex-1 flex flex-col bg-gradient-to-br from-slate-50 to-white">
+          <div className={`${
+            showSidebar ? 'hidden md:flex' : 'flex'
+          } flex-1 flex-col bg-gradient-to-br from-slate-50 to-white`}>
             {selectedChat ? (
               <>
                 {/* Chat Header */}
-                <div className="p-5 border-b border-slate-200 bg-white shadow-sm flex items-center gap-4">
+                <div className="p-4 md:p-5 border-b border-slate-200 bg-white shadow-sm flex items-center gap-3 md:gap-4">
+                  {/* Back button for mobile */}
+                  <button
+                    onClick={() => setShowSidebar(true)}
+                    className="md:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                  >
+                    <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
                   <div className="relative">
                     <Image
                       src={
@@ -330,14 +364,14 @@ useEffect(() => {
                       alt={selectedChat.seller?.name}
                       width={48}
                       height={48}
-                      className="rounded-full w-[48px] h-[48px] object-cover"
+                      className="rounded-full w-10 h-10 md:w-12 md:h-12 object-cover"
                     />
                     {selectedChat.seller?.isOnline && (
-                      <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 md:w-3.5 md:h-3.5 rounded-full bg-emerald-500 ring-2 ring-white" />
                     )}
                   </div>
-                  <div>
-                    <h2 className="text-slate-800 font-bold text-base">
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-slate-800 font-bold text-sm md:text-base truncate">
                       {selectedChat.seller?.name}
                     </h2>
                     <p className="text-xs text-slate-500">
@@ -349,7 +383,7 @@ useEffect(() => {
                 {/* Messages */}
                 <div
                   ref={messageContainerRef}
-                  className="flex-1 overflow-y-auto p-6 space-y-4"
+                  className="flex-1 overflow-y-auto p-4 md:p-6 space-y-3 md:space-y-4"
                 >
                   {messages.map((msg: any, i: number) => (
                     <div
@@ -359,17 +393,17 @@ useEffect(() => {
                       }`}
                     >
                       <div
-                        className={`max-w-[75%] ${
+                        className={`max-w-[85%] md:max-w-[75%] ${
                           msg.senderType === "user"
                             ? "bg-indigo-600 text-white"
                             : "bg-white text-slate-800 border border-slate-100"
-                        } px-4 py-3 rounded-2xl ${
+                        } px-3 py-2 md:px-4 md:py-3 rounded-2xl ${
                           msg.senderType === "user"
                             ? "rounded-br-md"
                             : "rounded-bl-md"
                         }`}
                       >
-                        <p className="text-sm leading-relaxed">
+                        <p className="text-sm leading-relaxed break-words">
                           {msg.text || msg.content}
                         </p>
                       </div>
@@ -390,8 +424,11 @@ useEffect(() => {
                 />
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-slate-400">
-                <p>Select a conversation to start chatting</p>
+              <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-4">
+                <svg className="w-16 h-16 md:w-20 md:h-20 mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <p className="text-center text-sm md:text-base">Select a conversation to start chatting</p>
               </div>
             )}
           </div>

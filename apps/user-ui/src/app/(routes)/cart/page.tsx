@@ -35,8 +35,7 @@ const CartPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [storedCouponCode, setStoredCouponCode] = useState("");
-
-  // Add this to your CartPage component
+  const [paymentMethod, setPaymentMethod] = useState("credit_card"); // NEW: Track payment method
 
   const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
   const [showCoupons, setShowCoupons] = useState(false);
@@ -116,17 +115,19 @@ const CartPage = () => {
     }
   }, [addresses, selectedAddressId]);
 
-  const createPaymentSession = async () => {
+  // NEW: Handle checkout based on payment method
+  const handleCheckout = async () => {
     if (addresses.length === 0) {
-      toast.error("Please add a shipping address to create an Order!.");
+      toast.error("Please add a shipping address to create an Order!");
       return;
     }
 
     setLoading(true);
+
     try {
-      const res = await axiosInstance.post(
-        "/order/api/create-payment-session",
-        {
+      if (paymentMethod === "cash_on_delivery") {
+        // COD Flow - Create order directly
+        const res = await axiosInstance.post("/order/api/create-cod-order", {
           cart,
           selectedAddressId,
           coupon: {
@@ -135,11 +136,29 @@ const CartPage = () => {
             discountAmount,
             discountedProductId,
           },
-        }
-      );
-      router.push(`/checkout?sessionId=${res.data.sessionId}`);
-    } catch {
-      toast.error("Error initiating checkout. Please try again.");
+        });
+
+        toast.success("Order placed successfully! Pay on delivery.");
+        router.push(`/order-success?orderId=${res.data.orderId}`);
+      } else {
+        // Online Payment Flow - Create payment session
+        const res = await axiosInstance.post(
+          "/order/api/create-payment-session",
+          {
+            cart,
+            selectedAddressId,
+            coupon: {
+              code: storedCouponCode,
+              discountPercent,
+              discountAmount,
+              discountedProductId,
+            },
+          }
+        );
+        router.push(`/checkout?sessionId=${res.data.sessionId}`);
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Error processing checkout. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -314,7 +333,6 @@ const CartPage = () => {
               </div>
 
               {/* Coupon */}
-              {/* Coupon Section (Cleaned Up) */}
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">
                   Have a Coupon?
@@ -418,15 +436,28 @@ const CartPage = () => {
                 )}
               </div>
 
-              {/* Payment */}
+              {/* Payment Method - UPDATED */}
               <div className="mb-5">
                 <label className="block text-sm font-medium mb-1">
                   Payment Method
                 </label>
-                <select className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-blue-500">
-                  <option value="credit_card">Online Payment</option>
-                  <option value="cash_on_delivery">Cash on Delivery</option>
+                <select
+                  className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-blue-500"
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                >
+                  <option value="credit_card">💳 Online Payment (Card)</option>
+                  <option value="cash_on_delivery">💵 Cash on Delivery</option>
                 </select>
+
+                {/* COD Info Message */}
+                {paymentMethod === "cash_on_delivery" && (
+                  <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <p className="text-xs text-yellow-800">
+                      ℹ️ You will pay in cash when the order is delivered to your address.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Total */}
@@ -435,14 +466,19 @@ const CartPage = () => {
                 <span>${(subTotal - discountAmount).toFixed(2)}</span>
               </div>
 
-              {/* Checkout Button */}
+              {/* Checkout Button - UPDATED */}
               <button
-                onClick={createPaymentSession}
+                onClick={handleCheckout}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-[#010f1c] text-white hover:bg-[#0989FF] transition rounded-lg text-sm font-medium"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-[#010f1c] text-white hover:bg-[#0989FF] transition rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading && <Loader2 className="animate-spin h-5 w-5" />}
-                {loading ? "Redirecting..." : "Proceed to Checkout"}
+                {loading
+                  ? "Processing..."
+                  : paymentMethod === "cash_on_delivery"
+                  ? "Place Order (Pay on Delivery)"
+                  : "Proceed to Payment"
+                }
               </button>
             </div>
           </div>
