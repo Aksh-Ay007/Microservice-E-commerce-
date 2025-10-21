@@ -12,14 +12,13 @@ const OrderSuccessPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const orderId = searchParams.get("orderId");
-  const clearCart = useStore((state: any) => state.clearCart);
 
   // Clear cart on success
   useEffect(() => {
     if (orderId) {
-      clearCart();
+      useStore.setState({ cart: [] });
     }
-  }, [orderId, clearCart]);
+  }, [orderId]);
 
   // Fetch order details
   const { data: orderData, isLoading } = useQuery({
