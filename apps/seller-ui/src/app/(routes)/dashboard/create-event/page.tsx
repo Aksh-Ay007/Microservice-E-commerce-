@@ -124,8 +124,8 @@ const EventCreatePage = () => {
   // --- (Render logic) ---
 
   return (
-    <div className="w-full mx-auto p-4 md:p-8 text-gray-900">
-      <div className="flex items-center space-x-2 text-sm text-gray-500 mb-6">
+    <div className="w-full mx-auto p-4 md:p-8 text-white">
+      <div className="flex items-center space-x-2 text-sm text-gray-400 mb-6">
         <Link
           href="/seller/dashboard"
           className="hover:text-blue-600 transition-colors"
@@ -133,17 +133,17 @@ const EventCreatePage = () => {
           Dashboard
         </Link>
         <ChevronRightIcon className="w-4 h-4" />
-        <span className="font-medium text-gray-700">Create New Event</span>
+        <span className="font-medium text-gray-200">Create New Event</span>
       </div>
 
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">
+      <h1 className="text-2xl md:text-3xl font-bold text-white mb-6">
         Create New Event
       </h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         {/* --- Core Event Details Section --- */}
-        <div className="bg-white p-6 rounded-lg shadow-md space-y-6">
-          <h2 className="text-xl font-semibold text-gray-800 border-b pb-3">
+        <div className="bg-gray-900 p-4 md:p-6 rounded-lg shadow-lg border border-gray-800 space-y-6">
+          <h2 className="text-lg md:text-xl font-semibold text-white border-b border-gray-700 pb-3">
             Event Details
           </h2>
 
@@ -177,13 +177,13 @@ const EventCreatePage = () => {
               rules={{ required: "Starting date is required" }}
               render={({ field, fieldState }) => (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Event Starting Date
                   </label>
                   {/* ✅ FIX APPLIED: Using standard HTML input for 'datetime-local' */}
                   <input
                     type="datetime-local"
-                    className="w-full border border-gray-300 rounded-lg p-2.5"
+                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     {...field}
                   />
                   {fieldState.error && (
@@ -200,13 +200,13 @@ const EventCreatePage = () => {
               rules={{ required: "Ending date is required" }}
               render={({ field, fieldState }) => (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Event Ending Date
                   </label>
                   {/* ✅ FIX APPLIED: Using standard HTML input for 'datetime-local' */}
                   <input
                     type="datetime-local"
-                    className="w-full border border-gray-300 rounded-lg p-2.5"
+                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     {...field}
                   />
                   {fieldState.error && (
@@ -225,7 +225,7 @@ const EventCreatePage = () => {
             rules={{ required: "Short description is required" }}
             render={({ field }) => (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   Short Description
                 </label>
                 {/* ⚠️ FIX APPLIED: Only passing field props (value, onChange) */}
@@ -247,7 +247,7 @@ const EventCreatePage = () => {
             control={control}
             render={({ field }) => (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   Detailed Description (Optional)
                 </label>
                 {/* ⚠️ FIX APPLIED: Only passing field props (value, onChange) */}
@@ -277,24 +277,24 @@ const EventCreatePage = () => {
         </div>
 
         {/* --- Minimal Product Data (Required by the underlying 'products' model) --- */}
-        <div className="bg-white p-6 rounded-lg shadow-md space-y-6">
-          <h2 className="text-xl font-semibold text-gray-800 border-b pb-3">
+        <div className="bg-gray-900 p-4 md:p-6 rounded-lg shadow-lg border border-gray-800 space-y-6">
+          <h2 className="text-lg md:text-xl font-semibold text-white border-b border-gray-700 pb-3">
             Associated Product Information (Required)
           </h2>
 
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-400">
             Since events use the product data structure, provide minimal
             information for the product associated with this event.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Category
               </label>
               <select
                 {...register("category", { required: "Category is required" })}
-                className="w-full border border-gray-300 rounded-lg p-2.5"
+                className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select Category</option>
                 {categoriesLoading ? (
@@ -315,7 +315,7 @@ const EventCreatePage = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Sub Category
               </label>
               <select
@@ -323,7 +323,7 @@ const EventCreatePage = () => {
                   required: "Sub Category is required",
                 })}
                 disabled={!selectedCategory || subCategories.length === 0}
-                className="w-full border border-gray-300 rounded-lg p-2.5 disabled:bg-gray-50"
+                className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-2.5 disabled:bg-gray-700 disabled:opacity-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select Sub Category</option>
                 {subCategories.map((sub: string) => (
@@ -394,10 +394,10 @@ const EventCreatePage = () => {
         </div>
 
         {/* --- Submission Button --- */}
-        <div className="pt-6 border-t flex justify-end">
+        <div className="pt-6 border-t border-gray-800 flex justify-end">
           <button
             type="submit"
-            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150 disabled:bg-gray-400"
+            className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150 disabled:bg-gray-500 disabled:cursor-not-allowed"
             disabled={loading}
           >
             {loading ? "Creating Event..." : "Create Event"}
