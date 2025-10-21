@@ -363,20 +363,29 @@ const ProfilePage = () => {
             />
           </div>
 
+          {/* Sidebar Toggle (Mobile) - Fixed */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="lg:hidden fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-full shadow-lg hover:bg-blue-700 transition-all"
+          >
+            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            <span className="font-medium">Menu</span>
+          </button>
+
           {/* 3-Column Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-[250px_1fr_300px] gap-6 relative">
-            {/* Sidebar Toggle (Mobile) */}
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md shadow-sm mb-3"
-            >
-              {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
-              Menu
-            </button>
+
+            {/* Mobile Overlay */}
+            {sidebarOpen && (
+              <div
+                className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+                onClick={() => setSidebarOpen(false)}
+              />
+            )}
 
             {/* Sidebar */}
             <aside
-              className={`bg-white rounded-md shadow-sm border border-gray-100 w-full lg:w-[250px] lg:static z-20 transition-all duration-300 fixed top-0 left-0 h-full lg:h-auto p-5 ${
+              className={`bg-white rounded-md shadow-sm border border-gray-100 w-full lg:w-[250px] lg:static z-40 transition-all duration-300 fixed top-0 left-0 h-full lg:h-auto p-5 overflow-y-auto ${
                 sidebarOpen
                   ? "translate-x-0"
                   : "-translate-x-full lg:translate-x-0"
