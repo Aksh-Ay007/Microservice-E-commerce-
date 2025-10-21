@@ -12,7 +12,7 @@ const SidebarItem = ({ icon, title, isActive, href }: Props) => {
   return (
     <Link href={href} className="my-2 block">
       <div
-        className={`flex gap-2 w-full min-h-12 h-full items-center px-[13px] rounded-lg cursor-pointer transition
+        className={`flex gap-2 w-full min-h-12 h-full items-center px-[13px] rounded-lg cursor-pointer transition-all duration-200
     hover:bg-[#2b2f31]
     ${
       isActive
@@ -20,8 +20,10 @@ const SidebarItem = ({ icon, title, isActive, href }: Props) => {
         : ""
     }`}
       >
-        {icon}
-        <h5 className="text-slate-200 text-lg">{title}</h5>
+        <div className="flex-shrink-0">
+          {icon}
+        </div>
+        <h5 className="text-slate-200 text-sm lg:text-lg truncate">{title}</h5>
       </div>
     </Link>
   );

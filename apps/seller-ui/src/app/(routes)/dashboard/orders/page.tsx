@@ -106,7 +106,7 @@ const OrderTable = () => {
   });
 
   return (
-    <div className="w-full min-h-screen px-6 py-8 bg-[#0F1117]">
+    <div className="w-full min-h-screen px-4 lg:px-6 py-8 bg-[#0F1117]">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white mb-1">Orders</h2>
@@ -139,42 +139,99 @@ const OrderTable = () => {
         ) : orders?.length === 0 ? (
           <p className="text-center py-8 text-gray-500">No orders found.</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-[#20232D] border-b border-gray-700">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      className="text-left px-4 py-3 font-semibold text-gray-300"
+          <>
+            {/* Desktop Table */}
+            <div className="hidden lg:block">
+              <table className="w-full text-sm">
+                <thead className="bg-[#20232D] border-b border-gray-700">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <th
+                          key={header.id}
+                          className="text-left px-4 py-3 font-semibold text-gray-300"
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody>
+                  {table.getRowModel().rows.map((row) => (
+                    <tr
+                      key={row.id}
+                      className="border-b border-gray-800 hover:bg-[#222633] transition"
                     >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                    </th>
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id} className="px-4 py-3 text-gray-200">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </td>
+                      ))}
+                    </tr>
                   ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="lg:hidden">
               {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="border-b border-gray-800 hover:bg-[#222633] transition"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-3 text-gray-200">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  ))}
-                </tr>
+                <div key={row.id} className="border-b border-gray-800 p-4 hover:bg-[#222633] transition">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 className="text-white font-medium">
+                        #{row.original.id.slice(-6).toUpperCase()}
+                      </h3>
+                      <p className="text-gray-400 text-sm">
+                        {row.original.user.name ?? "Guest"}
+                      </p>
+                    </div>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        row.original.status === "Paid"
+                          ? "bg-emerald-600/80 text-white"
+                          : "bg-yellow-500/80 text-white"
+                      }`}
+                    >
+                      {row.original.status}
+                    </span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm text-gray-400">Total</p>
+                      <p className="text-lg font-semibold text-green-400">
+                        ${row.original.total.toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-400">Date</p>
+                      <p className="text-sm text-gray-200">
+                        {new Date(row.original.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3 pt-3 border-t border-gray-800">
+                    <Link
+                      href={`/order/${row.original.id}`}
+                      className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition w-full justify-center"
+                    >
+                      <Eye size={16} />
+                      <span className="text-sm">View Details</span>
+                    </Link>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
     </div>
