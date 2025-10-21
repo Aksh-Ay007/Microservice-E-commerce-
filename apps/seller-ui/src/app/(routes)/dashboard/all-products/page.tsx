@@ -194,13 +194,13 @@ const ProductList = () => {
   };
 
   return (
-    <div className="w-full min-h-screen p-8">
+    <div className="w-full min-h-screen px-4 md:px-6 lg:px-8 py-6 md:py-8 bg-[#0F1117]">
       {/* Header */}
-      <div className="flex items-center justify-between mb-1">
-        <h2 className="text-2xl text-white font-semibold">All Products</h2>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
+        <h2 className="text-2xl md:text-3xl text-white font-semibold">All Products</h2>
         <Link
           href={"/dashboard/create-product"}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 w-full sm:w-auto"
         >
           <Plus size={16} />
           Add New Product
@@ -208,7 +208,7 @@ const ProductList = () => {
       </div>
       {/* BreadCrumbs */}
 
-      <div className="flex items-center  mb-4">
+      <div className="flex items-center mb-4">
         <Link href={"/dashboard"} className="text-blue-400 cursor-pointer">
           Dashboard
         </Link>
@@ -217,27 +217,27 @@ const ProductList = () => {
       </div>
 
       {/* search bar */}
-      <div className="mb-4 flex items-center bg-gray-900 p-2 rounded-md flex-1">
+      <div className="mb-4 flex items-center bg-[#1C1F29] border border-gray-700 p-3 rounded-lg flex-1">
         <Search className="text-gray-400 mr-2" size={18} />
 
         <input
           type="text"
           placeholder="Search products..."
-          className="w-full bg-transparent  text-white outline-none "
+          className="w-full bg-transparent text-white outline-none"
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
         />
       </div>
       {/* Table */}
 
-      <div className="overflow-x-auto bg-gray-900 rounded-lg p-4">
+      <div className="overflow-x-auto bg-[#1C1F29] border border-gray-700 rounded-lg p-4">
         {isLoading ? (
-          <p className="text-center text-white">Loading products...</p>
+          <p className="text-center text-white py-8">Loading products...</p>
         ) : (
-          <table className="w-full text-white">
+          <table className="w-full text-white min-w-[768px]">
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id} className="border-b border-gray-800">
+                <tr key={headerGroup.id} className="border-b border-gray-700">
                   {headerGroup.headers.map((header) => (
                     <th key={header.id} className="text-left p-3">
                       {header.isPlaceholder
@@ -256,7 +256,7 @@ const ProductList = () => {
               {table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  className="border-b border-gray-800 hover:bg-gray-900 transition"
+                  className="border-b border-gray-700 hover:bg-[#222633] transition"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="p-3">

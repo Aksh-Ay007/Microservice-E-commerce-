@@ -179,16 +179,16 @@ export default function SellerNotificationsPage() {
   };
 
   return (
-    <div className="p-6 bg-gray-950 min-h-screen text-white">
+    <div className="px-4 md:px-6 lg:px-8 py-6 md:py-8 bg-[#0F1117] min-h-screen text-white">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Notifications</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-white">Notifications</h1>
         <p className="text-gray-400">Manage your notifications and stay updated</p>
       </div>
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-gray-800 p-4 rounded-lg shadow border border-gray-700">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-[#1C1F29] p-4 rounded-lg shadow border border-gray-700">
             <div className="flex items-center">
               <Bell className="w-8 h-8 text-blue-400" />
               <div className="ml-4">
@@ -197,7 +197,7 @@ export default function SellerNotificationsPage() {
               </div>
             </div>
           </div>
-          <div className="bg-gray-800 p-4 rounded-lg shadow border border-gray-700">
+          <div className="bg-[#1C1F29] p-4 rounded-lg shadow border border-gray-700">
             <div className="flex items-center">
               <EyeOff className="w-8 h-8 text-orange-400" />
               <div className="ml-4">
@@ -206,7 +206,7 @@ export default function SellerNotificationsPage() {
               </div>
             </div>
           </div>
-          <div className="bg-gray-800 p-4 rounded-lg shadow border border-gray-700">
+          <div className="bg-[#1C1F29] p-4 rounded-lg shadow border border-gray-700">
             <div className="flex items-center">
               <Eye className="w-8 h-8 text-green-400" />
               <div className="ml-4">
@@ -215,7 +215,7 @@ export default function SellerNotificationsPage() {
               </div>
             </div>
           </div>
-          <div className="bg-gray-800 p-4 rounded-lg shadow border border-gray-700">
+          <div className="bg-[#1C1F29] p-4 rounded-lg shadow border border-gray-700">
             <div className="flex items-center">
               <AlertCircle className="w-8 h-8 text-red-400" />
               <div className="ml-4">
@@ -228,8 +228,8 @@ export default function SellerNotificationsPage() {
       )}
 
       {/* Filters */}
-      <div className="bg-gray-800 p-4 rounded-lg shadow mb-6 border border-gray-700">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="bg-[#1C1F29] p-4 rounded-lg shadow mb-6 border border-gray-700">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">Search</label>
             <div className="relative">
@@ -287,8 +287,8 @@ export default function SellerNotificationsPage() {
       </div>
 
       {/* Actions */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <button
             onClick={markAllAsRead}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
@@ -297,7 +297,7 @@ export default function SellerNotificationsPage() {
           </button>
           <button
             onClick={() => refetch()}
-            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
           >
             <RefreshCw className="w-4 h-4" />
             Refresh
@@ -309,7 +309,7 @@ export default function SellerNotificationsPage() {
       </div>
 
       {/* Notifications List */}
-      <div className="bg-gray-800 rounded-lg shadow border border-gray-700">
+      <div className="bg-[#1C1F29] rounded-lg shadow border border-gray-700">
         {isLoading ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto"></div>
@@ -325,8 +325,8 @@ export default function SellerNotificationsPage() {
             {notifications.map((notification: Notification) => (
               <div
                 key={notification.id}
-                className={`p-4 hover:bg-gray-750 transition-colors ${
-                  notification.status === 'Unread' ? 'bg-gray-750 border-l-4 border-blue-500' : ''
+                className={`p-4 hover:bg-[#222633] transition-colors ${
+                  notification.status === 'Unread' ? 'bg-[#222633] border-l-4 border-blue-500' : ''
                 }`}
               >
                 <div className="flex items-start justify-between">
