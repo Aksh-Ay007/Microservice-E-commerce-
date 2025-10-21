@@ -50,48 +50,47 @@ const Login = () => {
   };
 
   return (
-    <div className="w-full py-10 min-h-screen bg-[#f9fafb]">
+    <div className="w-full py-10 min-h-screen bg-gray-950 text-white">
       <div className="text-center mb-4">
         <span
-          className="px-3 py-1 text-sm font-semibold text-white
-          bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full shadow"
+          className="px-3 py-1 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full shadow"
         >
           Seller Portal
         </span>
       </div>
-      <h1 className="text-4xl font-Poppins font-semibold text-black text-center">
+      <h1 className="text-4xl font-Poppins font-semibold text-white text-center">
         Seller Login
       </h1>
-      <p className="text-center text-lg font-medium py-3 text-gray-600">
+      <p className="text-center text-lg font-medium py-3 text-gray-400">
         Access your MicroMart Seller Dashboard
       </p>
 
       <div className="w-full flex justify-center">
-        <div className="md:w-[480px] p-8 bg-white shadow-lg rounded-xl">
+        <div className="md:w-[480px] p-8 bg-gray-900 border border-gray-800 shadow-lg rounded-xl">
           <h3 className="text-3xl font-semibold text-center mb-2">
             Login to MicroMart
           </h3>
-          <p className="text-center text-gray-500 mb-4">
+          <p className="text-center text-gray-400 mb-4">
             Don't have an account?{" "}
-            <Link href={"/signup"} className="text-cyan-500 hover:underline">
+            <Link href={"/signup"} className="text-cyan-400 hover:underline">
               Sign up
             </Link>
           </p>
 
-          <div className="flex items-center my-5 text-gray-400 text-sm">
-            <div className="flex-1 border-t border-gray-300" />
+          <div className="flex items-center my-5 text-gray-500 text-sm">
+            <div className="flex-1 border-t border-gray-700" />
             <span className="px-3">or Sign in with Email</span>
-            <div className="flex-1 border-t border-gray-300" />
+            <div className="flex-1 border-t border-gray-700" />
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)}>
             {/* Email */}
-            <label className="block text-gray-700 mb-1">Email</label>
+            <label className="block text-gray-300 mb-1">Email</label>
             <input
               type="email"
               placeholder="support@micromart.com"
-              className="w-full p-3 border border-gray-200 rounded-lg
-                         focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+              className="w-full p-3 border border-gray-700 bg-transparent text-white rounded-lg
+                         focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                          outline-none transition"
               {...register("email", {
                 required: "Email is required",
@@ -102,17 +101,17 @@ const Login = () => {
               })}
             />
             {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email.message}</p>
+              <p className="text-red-400 text-sm">{errors.email.message}</p>
             )}
 
             {/* Password */}
-            <label className="block text-gray-700 mb-1 mt-3">Password</label>
+            <label className="block text-gray-300 mb-1 mt-3">Password</label>
             <div className="relative">
               <input
                 type={passwordVisible ? "text" : "password"}
                 placeholder="Min 6 characters"
-                className="w-full p-3 border border-gray-200 rounded-lg
-                           focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+                className="w-full p-3 border border-gray-700 bg-transparent text-white rounded-lg
+                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                            outline-none transition"
                 {...register("password", {
                   required: "Password is required",
@@ -131,14 +130,14 @@ const Login = () => {
               </button>
             </div>
             {errors.password && (
-              <p className="text-red-500 text-sm mt-1">
+              <p className="text-red-400 text-sm mt-1">
                 {errors.password.message}
               </p>
             )}
 
             {/* Remember + Forgot */}
             <div className="flex justify-between items-center my-4">
-              <label className="flex items-center text-gray-600">
+              <label className="flex items-center text-gray-400">
                 <input
                   type="checkbox"
                   className="mr-2"
@@ -149,7 +148,7 @@ const Login = () => {
               </label>
               <Link
                 href={"/forgot-password"}
-                className="text-cyan-500 text-sm hover:underline"
+                className="text-cyan-400 text-sm hover:underline"
               >
                 Forgot Password?
               </Link>
@@ -160,7 +159,7 @@ const Login = () => {
               type="submit"
               disabled={loginMutation.isPending}
               className="w-full text-lg font-medium cursor-pointer
-                         bg-gradient-to-r from-blue-500 to-indigo-600
+                         bg-gradient-to-r from-blue-600 to-indigo-700
                          hover:from-blue-600 hover:to-indigo-700
                          text-white py-2.5 rounded-xl shadow-md
                          hover:shadow-lg transition-all"
@@ -168,7 +167,7 @@ const Login = () => {
               {loginMutation.isPending ? "Logging in..." : "Login"}
             </button>
             {serverError && (
-              <p className="text-red-500 text-sm mt-2">{serverError}</p>
+              <p className="text-red-400 text-sm mt-2">{serverError}</p>
             )}
           </form>
         </div>

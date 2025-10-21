@@ -37,18 +37,18 @@ const CreateShop = ({
   const countWords = (text: string) => text.trim().split(/\s+/).length;
 
   return (
-    <div>
+    <div className="text-white">
       <form onSubmit={handleSubmit(onSubmit)}>
         <h3 className="text-2xl font-semibold text-center mb-4">
           Setup new Shop
         </h3>
         {/* Name */}
-        <label className="block text-gray-700 mb-1">Name *</label>
+        <label className="block text-gray-300 mb-1">Name *</label>
         <input
           type="text"
           placeholder="Akshay"
-          className="w-full p-3 border border-gray-200 rounded-lg
-                           focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+          className="w-full p-3 border border-gray-700 bg-transparent text-white rounded-lg
+                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                            outline-none transition"
           {...register("name", { required: "Name is required" })}
         />
@@ -57,15 +57,15 @@ const CreateShop = ({
         )}
 
         {/* Bio */}
-        <label className="block text-gray-700 mb-1 mt-3">
+        <label className="block text-gray-300 mb-1 mt-3">
           Bio (Max 100 words) *
         </label>
 
         <input
           type="text"
           placeholder="shp bio.."
-          className="w-full p-3 border border-gray-200 rounded-lg
-                           focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+          className="w-full p-3 border border-gray-700 bg-transparent text-white rounded-lg
+                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                            outline-none transition"
           {...register("bio", {
             required: "bio is required",
@@ -82,12 +82,12 @@ const CreateShop = ({
         )}
 
         {/* Address */}
-        <label className="block text-gray-700 mb-1">Address *</label>
+        <label className="block text-gray-300 mb-1">Address *</label>
         <input
           type="text"
           placeholder="shop location.."
-          className="w-full p-3 border border-gray-200 rounded-lg
-                           focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+          className="w-full p-3 border border-gray-700 bg-transparent text-white rounded-lg
+                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                            outline-none transition"
           {...register("address", { required: "shop Address is required" })}
         />
@@ -98,12 +98,12 @@ const CreateShop = ({
         )}
 
         {/* shop opening address */}
-        <label className="block text-gray-700 mb-1">Opening Hours *</label>
+        <label className="block text-gray-300 mb-1">Opening Hours *</label>
         <input
           type="text"
           placeholder="e.g.,Mon-Fri 9Am-6Am"
-          className="w-full p-3 border border-gray-200 rounded-lg
-                           focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+          className="w-full p-3 border border-gray-700 bg-transparent text-white rounded-lg
+                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                            outline-none transition"
           {...register("opening_hours", {
             required: "opening hours are required",
@@ -116,12 +116,12 @@ const CreateShop = ({
         )}
 
         {/* website address */}
-        <label className="block text-gray-700 mb-1">Website *</label>
+        <label className="block text-gray-300 mb-1">Website *</label>
         <input
           type="text"
           placeholder="https://example.com"
-          className="w-full p-3 border border-gray-200 rounded-lg
-                           focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+          className="w-full p-3 border border-gray-700 bg-transparent text-white rounded-lg
+                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                            outline-none transition"
           {...register("website", {
             pattern: {
@@ -137,16 +137,16 @@ const CreateShop = ({
         )}
 
         {/* categories */}
-        <label className="block text-gray-700 mb-1">Category *</label>
+        <label className="block text-gray-300 mb-1">Category *</label>
         <select
-          className="w-full p-2 border border-gray-200 outline-0 rounded-[4px] mb-1"
+          className="w-full p-2 border border-gray-700 bg-transparent text-white outline-0 rounded-[4px] mb-1"
           {...register("category", {
             required: "Category is required",
           })}
         >
           <option value="">Select a Category</option>
           {shopCategories.map((category) => (
-            <option key={category.value} value={category.value}>
+            <option key={category.value} value={category.value} className="bg-black">
               {category.label}
             </option>
           ))}
@@ -158,7 +158,7 @@ const CreateShop = ({
           </p>
         )}
 
-<button  type={"submit"} className='w-full text-lg bg-blue-600 text-white py-2 rounded-lg mt-4'>
+<button  type={"submit"} className='w-full text-lg bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg mt-4'>
   Create
 
 </button>

@@ -7,10 +7,17 @@ module.exports = {
     "!./{src,pages,components,app}/**/*.{stories,spec}.{ts,tsx,js,jsx,html}",
     // ...createGlobPatternsForDependencies(__dirname)
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
         Poppins: ["var(--font-poppins)"],
+      },
+      colors: {
+        // helpful mid-gray used in codebase
+        gray: {
+          750: '#2a2f3a',
+        },
       },
     },
   },

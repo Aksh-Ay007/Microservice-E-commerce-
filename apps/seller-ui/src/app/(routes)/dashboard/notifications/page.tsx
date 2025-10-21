@@ -156,11 +156,11 @@ export default function SellerNotificationsPage() {
   // Get priority color
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'text-red-600 bg-red-100';
-      case 'high': return 'text-orange-600 bg-orange-100';
-      case 'normal': return 'text-blue-600 bg-blue-100';
-      case 'low': return 'text-gray-600 bg-gray-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'urgent': return 'text-red-300 bg-red-900/30 border border-red-700';
+      case 'high': return 'text-orange-300 bg-orange-900/30 border border-orange-700';
+      case 'normal': return 'text-blue-300 bg-blue-900/30 border border-blue-700';
+      case 'low': return 'text-gray-300 bg-gray-800 border border-gray-700';
+      default: return 'text-gray-300 bg-gray-800 border border-gray-700';
     }
   };
 

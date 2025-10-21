@@ -2,4 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-    
+:root {
+  --background: #0f1117;
+  --foreground: #ffffff;
+  --muted: #9ca3af;
+  --card: #0f1117;
+  --card-contrast: #111827;
+  --border: #1f2937;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+/* Utilities */
+.card-dark {
+  @apply bg-gray-900 border border-gray-800 rounded-lg shadow;
+}
+
+.chip-dark {
+  @apply text-xs px-2 py-1 rounded-full border;
+}
