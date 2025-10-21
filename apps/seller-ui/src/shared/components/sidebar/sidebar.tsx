@@ -12,6 +12,7 @@ import {
   SquarePlus,
   TicketPercent,
   UserCircle,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -26,7 +27,11 @@ import SidebarItem from "./sidebar.item";
 import SidebarMenu from "./sidebar.menu";
 import { Sidebar } from "./sidebar.styles";
 
-const SideBarWrapper = () => {
+interface SideBarWrapperProps {
+  onClose?: () => void;
+}
+
+const SideBarWrapper = ({ onClose }: SideBarWrapperProps) => {
   const { activeSideBar, setActiveSideBar } = useSidebar();
 
   const pathName = usePathname();
@@ -53,7 +58,7 @@ const SideBarWrapper = () => {
       className="sidebar-wrapper"
     >
       <Sidebar.Header>
-        <Box>
+        <Box className="flex items-center justify-between">
           <Link href={"/"} className="flex justify-center text-center gap-2">
             <Logo size={50} fill="#0085ff" />
 
@@ -66,6 +71,16 @@ const SideBarWrapper = () => {
               </h5>
             </Box>
           </Link>
+          
+          {/* Mobile close button */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="lg:hidden text-gray-400 hover:text-white transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          )}
         </Box>
       </Sidebar.Header>
 

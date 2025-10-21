@@ -176,29 +176,30 @@ const Page = () => {
   const handleSaveDraft = () => {};
 
   return (
-    <form
-      className="w-full mx-auto p-8 shadow-md rounded-lg text-white bg-gray-800"
-      onSubmit={handleSubmit(onSubmit)}
-    >
+    <div className="w-full mx-auto p-4 lg:p-8">
       {/* Heading and breadcrumbs */}
+      <div className="mb-6">
+        <h2 className="text-2xl py-2 font-semibold font-Poppins text-white">
+          Create Product
+        </h2>
 
-      <h2 className="text-2xl py-2 font-semibold font-Poppins text-white">
-        Create Product
-      </h2>
-
-      <div className="flex items-center">
-        <Link href="/dashboard" className="text-[#80Deea] cursor-pointer">
-          Dashboard
-        </Link>
-        <ChevronRightIcon size={20} className="opacity-[.8]" />
-        <span>Create Product</span>
+        <div className="flex items-center text-sm text-gray-400">
+          <Link href="/dashboard" className="text-blue-400 hover:text-blue-300 cursor-pointer">
+            Dashboard
+          </Link>
+          <ChevronRightIcon size={20} className="opacity-[.8] mx-2" />
+          <span>Create Product</span>
+        </div>
       </div>
-      {/* content Layout */}
 
-      <div className="py-4 w-full flex gap-6">
+      <form
+        className="w-full shadow-md rounded-lg text-white bg-[#1C1F29] border border-gray-700 p-4 lg:p-6"
+        onSubmit={handleSubmit(onSubmit)}
+      >
+        {/* content Layout */}
+        <div className="py-4 w-full flex flex-col lg:flex-row gap-6">
         {/* Left side-image upload section */}
-
-        <div className="md:w-[35%]">
+        <div className="w-full lg:w-[35%]">
           {images?.length > 0 && (
             <ImagePlaceHolder
               setOpenImageModal={setOpenImageModal}
@@ -232,12 +233,10 @@ const Page = () => {
         </div>
 
         {/* Right side-form inputs*/}
-
-        <div className="md:w-[65%]">
-          <div className="w-full flex gap-6">
+        <div className="w-full lg:w-[65%]">
+          <div className="w-full flex flex-col xl:flex-row gap-6">
             {/* Product title inputs */}
-
-            <div className="w-2/4">
+            <div className="w-full xl:w-1/2">
               <Input
                 label="Product Title *"
                 placeholder="Enter Product Title"
@@ -385,12 +384,12 @@ const Page = () => {
                     required: "Cash on delivery is required",
                   })}
                   defaultValue="yes"
-                  className="w-full border outline-none border-gray-700 bg-transparent text-white p-2 rounded"
+                  className="w-full border outline-none border-gray-600 bg-[#2A2D3A] text-white p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="yes" className="bg-black">
+                  <option value="yes" className="bg-[#2A2D3A]">
                     Yes
                   </option>
-                  <option value="no" className="bg-black">
+                  <option value="no" className="bg-[#2A2D3A]">
                     No
                   </option>
                 </select>
@@ -403,8 +402,7 @@ const Page = () => {
             </div>
 
             {/* category  */}
-
-            <div className="w-2/4">
+            <div className="w-full xl:w-1/2">
               <label className="block font-semibold text-gray-300 mb-1">
                 Category *
               </label>
@@ -421,9 +419,9 @@ const Page = () => {
                   render={({ field }) => (
                     <select
                       {...field}
-                      className="w-full border outline-none border-gray-700 bg-transparent text-white p-2 rounded"
+                      className="w-full border outline-none border-gray-600 bg-[#2A2D3A] text-white p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      <option value="" className="bg-black">
+                      <option value="" className="bg-[#2A2D3A]">
                         Select Category
                       </option>
 
@@ -431,7 +429,7 @@ const Page = () => {
                         <option
                           value={category}
                           key={category}
-                          className="bg-black"
+                          className="bg-[#2A2D3A]"
                         >
                           {category}
                         </option>
@@ -461,9 +459,9 @@ const Page = () => {
                   render={({ field }) => (
                     <select
                       {...field}
-                      className="w-full border outline-none border-gray-700 bg-transparent text-white p-2 rounded"
+                      className="w-full border outline-none border-gray-600 bg-[#2A2D3A] text-white p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      <option value="" className="bg-black">
+                      <option value="" className="bg-[#2A2D3A]">
                         Select SubCategory
                       </option>
 
@@ -471,7 +469,7 @@ const Page = () => {
                         <option
                           value={subcategory}
                           key={subcategory}
-                          className="bg-black"
+                          className="bg-[#2A2D3A]"
                         >
                           {subcategory}
                         </option>
@@ -689,74 +687,75 @@ const Page = () => {
         </div>
       </div>
 
-      {openImageModal && (
-        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-60 z-50">
-          <div className="bg-gray-800 p-6 rounded-lg w-[450px] text-white">
-            <div className="flex justify-between items-center pb-3 mb-4">
-              <h2 className="text-lg font-semibold">Enhance Product Image</h2>
-              <X
-                size={20}
-                className="cursor-pointer"
-                onClick={() => setOpenImageModal(!openImageModal)}
-              />
-            </div>
-
-            <div className="relative w-full h-[250px] rounded-md overflow-hidden border border-gray-600">
-              <Image
-                src={selectedImage}
-                alt="product-image"
-                fill
-                className="object-contain"
-              />
-            </div>
-
-            {selectedImage && (
-              <div className="mt-4 space-y-2">
-                <h3 className="text-white text-sm font-semibold">
-                  AI Enhancement
-                </h3>
-                <div className="grid grid-cols-2 gap-3 max-h-[250px] overflow-y-auto">
-                  {enhancements?.map(({ label, effect }) => (
-                    <button
-                      key={effect}
-                      className={`p-2 rounded-md flex items-center gap-2 ${
-                        activeEffect === effect
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-700 hover:bg-gray-600"
-                      }`}
-                      onClick={() => applyTransformation(effect)}
-                      disabled={processing}
-                    >
-                      <Wand size={18} />
-                      {label}
-                    </button>
-                  ))}
-                </div>
+        {openImageModal && (
+          <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-60 z-50 p-4">
+            <div className="bg-[#1C1F29] p-4 lg:p-6 rounded-lg w-full max-w-[450px] text-white border border-gray-700">
+              <div className="flex justify-between items-center pb-3 mb-4">
+                <h2 className="text-lg font-semibold">Enhance Product Image</h2>
+                <X
+                  size={20}
+                  className="cursor-pointer hover:text-gray-300"
+                  onClick={() => setOpenImageModal(!openImageModal)}
+                />
               </div>
-            )}
-          </div>
-        </div>
-      )}
 
-      <div className="mt-6 flex justify-end gap-3">
-        {isChanged && (
-          <button
-            type="button"
-            onClick={handleSaveDraft}
-            className="px-4 py-2 bg-gray-700 text-white rounded-md"
-          >
-            Save Draft
-          </button>
+              <div className="relative w-full h-[250px] rounded-md overflow-hidden border border-gray-600">
+                <Image
+                  src={selectedImage}
+                  alt="product-image"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+
+              {selectedImage && (
+                <div className="mt-4 space-y-2">
+                  <h3 className="text-white text-sm font-semibold">
+                    AI Enhancement
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3 max-h-[250px] overflow-y-auto">
+                    {enhancements?.map(({ label, effect }) => (
+                      <button
+                        key={effect}
+                        className={`p-2 rounded-md flex items-center gap-2 ${
+                          activeEffect === effect
+                            ? "bg-blue-600 text-white"
+                            : "bg-[#2A2D3A] hover:bg-[#3A3D4A]"
+                        }`}
+                        onClick={() => applyTransformation(effect)}
+                        disabled={processing}
+                      >
+                        <Wand size={18} />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         )}
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md"
-          disabled={loading}
-        >
-          {loading ? "Creating..." : "Create"}
-        </button>
-      </div>
-    </form>
+
+        <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
+          {isChanged && (
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              className="px-4 py-2 bg-[#2A2D3A] text-white rounded-md hover:bg-[#3A3D4A] transition-colors w-full sm:w-auto"
+            >
+              Save Draft
+            </button>
+          )}
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 w-full sm:w-auto"
+            disabled={loading}
+          >
+            {loading ? "Creating..." : "Create"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 
