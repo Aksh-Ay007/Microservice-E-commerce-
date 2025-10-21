@@ -93,18 +93,18 @@ const DeleteDiscountCodeMutation = useMutation({
   };
 
   return (
-    <div className="w-full min-h-screen p-8">
-      <div className="flex justify-between items-center mb-1">
-        <h2 className="text-2xl font-semibold text-white">Discount Codes</h2>
+    <div className="w-full min-h-screen px-4 md:px-6 lg:px-8 py-6 md:py-8 bg-[#0F1117]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+        <h2 className="text-2xl md:text-3xl font-semibold text-white">Discount Codes</h2>
         <button
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 w-full sm:w-auto"
           onClick={() => setShowModal(true)}
         >
           <Plus size={18} /> Create Discount
         </button>
       </div>
       {/* Bread crumbs */}
-      <div className="flex items-center text-white">
+      <div className="flex items-center text-white mb-6">
         <Link href="/dashboard" className="text-[#80Deea] cursor-pointer">
           Dashboard
         </Link>
@@ -114,17 +114,18 @@ const DeleteDiscountCodeMutation = useMutation({
 
       {/* Availble discount codes */}
 
-      <div className="mt-8 bg-gray-900 p-6 rounded-lg shadow-lg">
+      <div className="mt-8 bg-[#1C1F29] border border-gray-700 p-4 md:p-6 rounded-lg shadow-lg">
         <h3 className="text-lg font-semibold text-white mb-4">
           Your Discount Codes
         </h3>
 
         {isLoading ? (
-          <p className="text-gray-400 text-center">Loading discounts..</p>
+          <p className="text-gray-400 text-center py-8">Loading discounts..</p>
         ) : (
-          <table className="w-full text-white">
-            <thead>
-              <tr className="border-b border-gray-800">
+          <div className="overflow-x-auto">
+            <table className="w-full text-white min-w-[640px]">
+              <thead>
+                <tr className="border-b border-gray-700">
                 <th className="p-3 text-left">Title</th>
                 <th className="p-3 text-left">Type</th>
                 <th className="p-3 text-left">Value</th>
@@ -136,7 +137,7 @@ const DeleteDiscountCodeMutation = useMutation({
               {discountCodes.map((discount: any) => (
                 <tr
                   key={discount?.id}
-                  className="border-b border-gray-800 hover:bg-gray-800 transition"
+                  className="border-b border-gray-700 hover:bg-[#222633] transition"
                 >
                   <td className="p-3 ">{discount?.public_name}</td>
 
@@ -167,7 +168,8 @@ const DeleteDiscountCodeMutation = useMutation({
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         )}
         {!isLoading && discountCodes.length === 0 && (
           <p className="text-gray-400 w-full pt-4 block text-center">
@@ -179,8 +181,8 @@ const DeleteDiscountCodeMutation = useMutation({
       {/* Create discount codes */}
 
       {showModal && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-gray-800 p-6 rounded-lg w-[450px] shadow-lg">
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center px-4 z-50">
+          <div className="bg-[#1C1F29] border border-gray-700 p-6 rounded-lg w-full max-w-[450px] shadow-lg">
             <div className="flex justify-between items-center border-b border-gray-700 pb-3">
               <h3 className="text-xl  text-white">Create Discount Code</h3>
               <button

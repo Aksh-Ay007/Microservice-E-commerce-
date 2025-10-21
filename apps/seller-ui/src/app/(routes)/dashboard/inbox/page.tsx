@@ -196,15 +196,18 @@ const Page = () => {
   const getLastMessage = (chat: any) => chat?.lastMessage || "";
 
   return (
-    <div className="w-full min-h-screen p-8 bg-gray-950">
+    <div className="w-full min-h-screen px-4 md:px-6 lg:px-8 py-4 md:py-8 bg-[#0F1117]">
       <div className="max-w-7xl mx-auto">
-        <div className="flex h-[85vh] rounded-lg shadow-2xl overflow-hidden bg-gray-900">
+        <div className="flex flex-col md:flex-row h-[85vh] rounded-lg shadow-2xl overflow-hidden bg-[#1C1F29]">
           {/* Sidebar */}
-          <div className="w-[340px] border-r border-gray-800 bg-gray-900">
-            <div className="p-5 border-b border-gray-800 bg-gray-900">
+          <div className={`
+            ${selectedChat ? 'hidden md:block' : 'block'}
+            w-full md:w-[340px] border-r border-gray-800 bg-[#1C1F29]
+          `}>
+            <div className="p-4 md:p-5 border-b border-gray-800 bg-[#1C1F29]">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
-                  <h1 className="text-2xl font-semibold text-white">
+                  <h1 className="text-xl md:text-2xl font-semibold text-white">
                     Messages
                   </h1>
                   <p className="text-gray-400 text-sm mt-1">
@@ -312,11 +315,23 @@ const Page = () => {
           </div>
 
           {/* Chat Area */}
-          <div className="flex-1 flex flex-col bg-gray-950">
+          <div className={`
+            ${selectedChat ? 'flex' : 'hidden md:flex'}
+            flex-1 flex-col bg-[#0F1117]
+          `}>
             {selectedChat ? (
               <>
                 {/* Chat Header */}
-                <div className="p-5 border-b border-gray-800 bg-gray-900 flex items-center gap-4">
+                <div className="p-4 md:p-5 border-b border-gray-800 bg-[#1C1F29] flex items-center gap-4">
+                  {/* Back Button for Mobile */}
+                  <button
+                    onClick={() => setSelectedChat(null)}
+                    className="md:hidden text-white hover:text-gray-300"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
                   <div className="relative">
                     <Image
                       src={
@@ -353,7 +368,7 @@ const Page = () => {
                 {/* Messages */}
                 <div
                   ref={messageContainerRef}
-                  className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-950"
+                  className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-[#0F1117]"
                 >
                   {messages?.map((msg: any, index: number) => (
                     <div
@@ -363,11 +378,11 @@ const Page = () => {
                       }`}
                     >
                       <div
-                        className={`max-w-[75%] ${
+                        className={`max-w-[85%] md:max-w-[75%] ${
                           msg.senderType === "seller"
                             ? "bg-blue-600 text-white"
-                            : "bg-gray-800 text-white border border-gray-700"
-                        } px-4 py-3 rounded-lg ${
+                            : "bg-[#1C1F29] text-white border border-gray-700"
+                        } px-3 md:px-4 py-2 md:py-3 rounded-lg ${
                           msg.senderType === "seller"
                             ? "rounded-br-sm"
                             : "rounded-bl-sm"

@@ -106,10 +106,10 @@ const OrderTable = () => {
   });
 
   return (
-    <div className="w-full min-h-screen px-6 py-8 bg-[#0F1117]">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="w-full min-h-screen px-4 md:px-6 lg:px-8 py-6 md:py-8 bg-[#0F1117]">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-1">Orders</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">Orders</h2>
           <div className="flex items-center text-sm text-gray-400">
             <Link href="/dashboard" className="hover:text-blue-400">
               Dashboard
@@ -133,13 +133,13 @@ const OrderTable = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-gray-800 bg-[#181B25] shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-gray-700 bg-[#1C1F29] shadow-sm">
         {isLoading ? (
           <p className="text-center py-8 text-gray-400">Loading orders...</p>
         ) : orders?.length === 0 ? (
           <p className="text-center py-8 text-gray-500">No orders found.</p>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[640px]">
             <thead className="bg-[#20232D] border-b border-gray-700">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
@@ -161,7 +161,7 @@ const OrderTable = () => {
               {table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  className="border-b border-gray-800 hover:bg-[#222633] transition"
+                  className="border-b border-gray-700 hover:bg-[#222633] transition"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 text-gray-200">

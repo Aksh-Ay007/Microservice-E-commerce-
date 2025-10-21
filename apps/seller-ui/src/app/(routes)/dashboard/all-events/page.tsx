@@ -288,11 +288,11 @@ const AllEventsPage = () => {
 
   // Main UI
   return (
-    <div className="w-full min-h-screen px-6 py-8 bg-gray-950">
+    <div className="w-full min-h-screen px-4 md:px-6 lg:px-8 py-6 md:py-8 bg-[#0F1117]">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-1">All Events</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">All Events</h2>
           <div className="flex items-center text-sm text-gray-400">
             <Link href="/dashboard" className="hover:text-blue-400">
               Dashboard
@@ -302,7 +302,7 @@ const AllEventsPage = () => {
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={handleExportCSV}
             className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg text-sm transition"
@@ -311,7 +311,7 @@ const AllEventsPage = () => {
           </button>
           <Link
             href="/dashboard/create-event"
-            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm transition"
+            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm transition text-center"
           >
             Create New Event
           </Link>
@@ -319,8 +319,8 @@ const AllEventsPage = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="bg-[#1C1F29] p-4 rounded-lg border border-gray-700">
           <div className="flex items-center">
             <Calendar className="w-8 h-8 text-blue-400" />
             <div className="ml-4">
@@ -329,7 +329,7 @@ const AllEventsPage = () => {
             </div>
           </div>
         </div>
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+        <div className="bg-[#1C1F29] p-4 rounded-lg border border-gray-700">
           <div className="flex items-center">
             <Clock className="w-8 h-8 text-green-400" />
             <div className="ml-4">
@@ -345,7 +345,7 @@ const AllEventsPage = () => {
             </div>
           </div>
         </div>
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+        <div className="bg-[#1C1F29] p-4 rounded-lg border border-gray-700">
           <div className="flex items-center">
             <Calendar className="w-8 h-8 text-blue-400" />
             <div className="ml-4">
@@ -356,7 +356,7 @@ const AllEventsPage = () => {
             </div>
           </div>
         </div>
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+        <div className="bg-[#1C1F29] p-4 rounded-lg border border-gray-700">
           <div className="flex items-center">
             <Clock className="w-8 h-8 text-gray-400" />
             <div className="ml-4">
@@ -370,7 +370,7 @@ const AllEventsPage = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="my-5 flex items-center bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+      <div className="my-5 flex items-center bg-[#1C1F29] border border-gray-700 rounded-lg px-3 py-2">
         <Search size={18} className="text-gray-400 mr-2" />
         <Input
           type="text"
@@ -382,9 +382,9 @@ const AllEventsPage = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-gray-700 bg-gray-800 shadow-sm">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-700 border-b border-gray-600">
+      <div className="overflow-x-auto rounded-xl border border-gray-700 bg-[#1C1F29] shadow-sm">
+        <table className="w-full text-sm min-w-[768px]">
+          <thead className="bg-[#20232D] border-b border-gray-600">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
@@ -405,7 +405,7 @@ const AllEventsPage = () => {
             {table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
-                className="border-b border-gray-700 hover:bg-gray-750 transition"
+                className="border-b border-gray-700 hover:bg-[#222633] transition"
               >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="px-4 py-3 text-gray-200">

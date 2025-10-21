@@ -177,16 +177,16 @@ const Page = () => {
 
   return (
     <form
-      className="w-full mx-auto p-8 shadow-md rounded-lg text-white bg-gray-800"
+      className="w-full mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 shadow-md rounded-lg text-white bg-[#0F1117]"
       onSubmit={handleSubmit(onSubmit)}
     >
       {/* Heading and breadcrumbs */}
 
-      <h2 className="text-2xl py-2 font-semibold font-Poppins text-white">
+      <h2 className="text-2xl md:text-3xl py-2 font-semibold font-Poppins text-white">
         Create Product
       </h2>
 
-      <div className="flex items-center">
+      <div className="flex items-center mb-6">
         <Link href="/dashboard" className="text-[#80Deea] cursor-pointer">
           Dashboard
         </Link>
@@ -195,10 +195,10 @@ const Page = () => {
       </div>
       {/* content Layout */}
 
-      <div className="py-4 w-full flex gap-6">
+      <div className="py-4 w-full flex flex-col lg:flex-row gap-6">
         {/* Left side-image upload section */}
 
-        <div className="md:w-[35%]">
+        <div className="w-full lg:w-[35%]">
           {images?.length > 0 && (
             <ImagePlaceHolder
               setOpenImageModal={setOpenImageModal}
@@ -233,11 +233,11 @@ const Page = () => {
 
         {/* Right side-form inputs*/}
 
-        <div className="md:w-[65%]">
-          <div className="w-full flex gap-6">
+        <div className="w-full lg:w-[65%]">
+          <div className="w-full flex flex-col md:flex-row gap-6">
             {/* Product title inputs */}
 
-            <div className="w-2/4">
+            <div className="w-full md:w-2/4">
               <Input
                 label="Product Title *"
                 placeholder="Enter Product Title"
@@ -404,7 +404,7 @@ const Page = () => {
 
             {/* category  */}
 
-            <div className="w-2/4">
+            <div className="w-full md:w-2/4">
               <label className="block font-semibold text-gray-300 mb-1">
                 Category *
               </label>
