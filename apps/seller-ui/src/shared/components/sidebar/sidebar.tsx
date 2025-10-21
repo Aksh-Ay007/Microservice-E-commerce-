@@ -12,6 +12,7 @@ import {
   SquarePlus,
   TicketPercent,
   UserCircle,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -26,8 +27,8 @@ import SidebarItem from "./sidebar.item";
 import SidebarMenu from "./sidebar.menu";
 import { Sidebar } from "./sidebar.styles";
 
-const SideBarWrapper = () => {
-  const { activeSideBar, setActiveSideBar } = useSidebar();
+const SideBarWrapper = ({ onClose }: { onClose?: () => void }) => {
+  const { activeSideBar, setActiveSideBar, setMobileSidebarOpen } = useSidebar();
 
   const pathName = usePathname();
   const { seller } = useSeller();
@@ -38,6 +39,11 @@ const SideBarWrapper = () => {
 
   const getIconColor = (route: string) =>
     activeSideBar === route ? "#0085ff" : "#969696";
+
+  const handleItemClick = () => {
+    onClose?.();
+    setMobileSidebarOpen(false);
+  };
 
   return (
     <Box
@@ -52,9 +58,19 @@ const SideBarWrapper = () => {
       }}
       className="sidebar-wrapper"
     >
+      {/* Mobile Close Button */}
+      <div className="lg:hidden flex justify-end mb-4">
+        <button
+          onClick={handleItemClick}
+          className="text-gray-400 hover:text-white transition-colors"
+        >
+          <X className="w-6 h-6" />
+        </button>
+      </div>
+
       <Sidebar.Header>
         <Box>
-          <Link href={"/"} className="flex justify-center text-center gap-2">
+          <Link href={"/"} className="flex justify-center text-center gap-2" onClick={handleItemClick}>
             <Logo size={50} fill="#0085ff" />
 
             <Box>
@@ -76,6 +92,7 @@ const SideBarWrapper = () => {
             icon={<Home fill={getIconColor("dashboard")} />}
             isActive={activeSideBar === "/dashboard"}
             href="/dashboard"
+            onClose={handleItemClick}
           />
 
           <div className="mt-2 block">
@@ -90,6 +107,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/profile"}
                 href="/dashboard/profile"
+                onClose={handleItemClick}
               />
               <SidebarItem
                 title="Orders"
@@ -101,6 +119,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/orders"}
                 href="/dashboard/orders"
+                onClose={handleItemClick}
               />
 
               <SidebarItem
@@ -108,6 +127,7 @@ const SideBarWrapper = () => {
                 icon={<Payment fill={getIconColor("/dashboard/payments")} />}
                 isActive={activeSideBar === "/dashboard/payments"}
                 href="/dashboard/payments"
+                onClose={handleItemClick}
               />
             </SidebarMenu>
 
@@ -122,6 +142,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/create-product"}
                 href="/dashboard/create-product"
+                onClose={handleItemClick}
               />
 
               <SidebarItem
@@ -134,6 +155,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/all-products"}
                 href="/dashboard/all-products"
+                onClose={handleItemClick}
               />
             </SidebarMenu>
 
@@ -148,6 +170,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/create-event"}
                 href="/dashboard/create-event"
+                onClose={handleItemClick}
               />
 
               <SidebarItem
@@ -160,6 +183,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/all-events"}
                 href="/dashboard/all-events"
+                onClose={handleItemClick}
               />
             </SidebarMenu>
 
@@ -171,6 +195,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/inbox"}
                 href="/dashboard/inbox"
+                onClose={handleItemClick}
               />
 
               <SidebarItem
@@ -183,6 +208,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/settings"}
                 href="/dashboard/settings"
+                onClose={handleItemClick}
               />
 
               <SidebarItem
@@ -195,6 +221,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/notifications"}
                 href="/dashboard/notifications"
+                onClose={handleItemClick}
               />
             </SidebarMenu>
 
@@ -209,6 +236,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/discount-codes"}
                 href="/dashboard/discount-codes"
+                onClose={handleItemClick}
               />
 
               <SidebarItem
@@ -216,6 +244,7 @@ const SideBarWrapper = () => {
                 icon={<LogOut size={20} color={getIconColor("/logout")} />}
                 isActive={activeSideBar === "/logout"}
                 href="/logout"
+                onClose={handleItemClick}
               />
             </SidebarMenu>
           </div>

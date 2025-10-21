@@ -1,13 +1,12 @@
 "use client"
 
-
-import React from 'react'
 import { useAtom } from 'jotai'
-import { activeSideBarItem } from '../configs/constants';
+import { activeSideBarItem, isMobileSidebarOpen } from '../configs/constants';
 
 const useSidebar = () => {
    const [activeSideBar, setActiveSideBar] = useAtom(activeSideBarItem);
-  return { activeSideBar, setActiveSideBar };
+   const [mobileSidebarOpen, setMobileSidebarOpen] = useAtom(isMobileSidebarOpen);
+  return { activeSideBar, setActiveSideBar, isMobileSidebarOpen: mobileSidebarOpen, setMobileSidebarOpen };
 }
 
 export default useSidebar
