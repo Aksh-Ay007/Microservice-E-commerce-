@@ -106,8 +106,8 @@ const OrderTable = () => {
   });
 
   return (
-    <div className="w-full min-h-screen px-6 py-8 bg-[#0F1117]">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="w-full min-h-screen px-4 md:px-6 py-6 md:py-8 bg-[#0F1117] max-w-screen-xl mx-auto">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold text-white mb-1">Orders</h2>
           <div className="flex items-center text-sm text-gray-400">
