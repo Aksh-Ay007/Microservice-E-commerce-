@@ -429,10 +429,10 @@ const SellerProfilePage = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Profile Settings</h1>
+        <h1 className="text-2xl font-bold text-white">Profile Settings</h1>
         <button
           onClick={() => setIsEditing(!isEditing)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -562,7 +562,7 @@ const SellerProfilePage = () => {
         {/* Compression Info */}
         {compressionInfo && (
           <div className="text-center">
-            <p className="text-sm text-gray-600 bg-gray-100 px-3 py-2 rounded-lg">
+            <p className="text-sm text-gray-300 bg-white/10 px-3 py-2 rounded-lg">
               {compressionInfo}
             </p>
           </div>
@@ -607,7 +607,7 @@ const SellerProfilePage = () => {
         {/* Upload Instructions */}
         {!avatarPreview && !bannerPreview && (
           <div className="text-center max-w-xs">
-            <p className="text-sm text-gray-500 mb-2">
+            <p className="text-sm text-gray-400 mb-2">
               Click the camera icons to upload avatar and banner
             </p>
             <div className="text-xs text-gray-400 space-y-1">
@@ -620,16 +620,16 @@ const SellerProfilePage = () => {
       </div>
 
       {/* Shop Information */}
-      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+      <div className="bg-gray-900 rounded-lg p-6 shadow-sm border border-gray-800">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-gray-800">Shop Information</h3>
+          <h3 className="text-lg font-semibold text-gray-100">Shop Information</h3>
         </div>
 
         {isEditing ? (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <Building className="w-4 h-4" />
                   Shop Name
                 </label>
@@ -637,11 +637,11 @@ const SellerProfilePage = () => {
                   type="text"
                   value={editForm.name}
                   onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-700 bg-transparent text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <Mail className="w-4 h-4" />
                   Email Address
                 </label>
@@ -649,11 +649,11 @@ const SellerProfilePage = () => {
                   type="email"
                   value={editForm.email}
                   onChange={(e) => setEditForm({...editForm, email: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-700 bg-transparent text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <Phone className="w-4 h-4" />
                   Phone Number
                 </label>
@@ -661,11 +661,11 @@ const SellerProfilePage = () => {
                   type="tel"
                   value={editForm.phone_number}
                   onChange={(e) => setEditForm({...editForm, phone_number: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-700 bg-transparent text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <Flag className="w-4 h-4" />
                   Country
                 </label>
@@ -673,11 +673,11 @@ const SellerProfilePage = () => {
                   type="text"
                   value={editForm.country}
                   onChange={(e) => setEditForm({...editForm, country: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-700 bg-transparent text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
                   Address
                 </label>
@@ -685,11 +685,11 @@ const SellerProfilePage = () => {
                   type="text"
                   value={editForm.address}
                   onChange={(e) => setEditForm({...editForm, address: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-700 bg-transparent text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <Clock className="w-4 h-4" />
                   Opening Hours
                 </label>
@@ -697,11 +697,11 @@ const SellerProfilePage = () => {
                   type="text"
                   value={editForm.opening_hours}
                   onChange={(e) => setEditForm({...editForm, opening_hours: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-700 bg-transparent text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <Globe className="w-4 h-4" />
                   Website
                 </label>
@@ -709,11 +709,11 @@ const SellerProfilePage = () => {
                   type="url"
                   value={editForm.website}
                   onChange={(e) => setEditForm({...editForm, website: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-700 bg-transparent text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <Tag className="w-4 h-4" />
                   Category
                 </label>
@@ -721,11 +721,11 @@ const SellerProfilePage = () => {
                   type="text"
                   value={editForm.category}
                   onChange={(e) => setEditForm({...editForm, category: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-700 bg-transparent text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <User className="w-4 h-4" />
                   Bio
                 </label>
@@ -733,7 +733,7 @@ const SellerProfilePage = () => {
                   value={editForm.bio}
                   onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-700 bg-transparent text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Tell us about your shop..."
                 />
               </div>
@@ -758,74 +758,74 @@ const SellerProfilePage = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Building className="w-4 h-4" />
                 Shop Name
               </label>
-              <p className="text-gray-800">{seller?.name}</p>
+              <p className="text-gray-100">{seller?.name}</p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Mail className="w-4 h-4" />
                 Email Address
               </label>
-              <p className="text-gray-800">{seller?.email}</p>
+              <p className="text-gray-100">{seller?.email}</p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Phone className="w-4 h-4" />
                 Phone Number
               </label>
-              <p className="text-gray-800">{seller?.phone_number || "Not provided"}</p>
+              <p className="text-gray-100">{seller?.phone_number || "Not provided"}</p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Flag className="w-4 h-4" />
                 Country
               </label>
-              <p className="text-gray-800">{seller?.country || "Not provided"}</p>
+              <p className="text-gray-100">{seller?.country || "Not provided"}</p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
                 Address
               </label>
-              <p className="text-gray-800">{seller?.shop?.address || "Not provided"}</p>
+              <p className="text-gray-100">{seller?.shop?.address || "Not provided"}</p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 Opening Hours
               </label>
-              <p className="text-gray-800">{seller?.shop?.opening_hours || "Not provided"}</p>
+              <p className="text-gray-100">{seller?.shop?.opening_hours || "Not provided"}</p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Globe className="w-4 h-4" />
                 Website
               </label>
-              <p className="text-gray-800">{seller?.shop?.website || "Not provided"}</p>
+              <p className="text-gray-100">{seller?.shop?.website || "Not provided"}</p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Tag className="w-4 h-4" />
                 Category
               </label>
-              <p className="text-gray-800">{seller?.shop?.category || "Not provided"}</p>
+              <p className="text-gray-100">{seller?.shop?.category || "Not provided"}</p>
             </div>
             <div className="space-y-1 md:col-span-2">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <User className="w-4 h-4" />
                 Bio
               </label>
-              <p className="text-gray-800">{seller?.shop?.bio || "No bio provided"}</p>
+              <p className="text-gray-100">{seller?.shop?.bio || "No bio provided"}</p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 Member Since
               </label>
-              <p className="text-gray-800">
+              <p className="text-gray-100">
                 {new Date(seller?.createdAt).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
@@ -834,13 +834,13 @@ const SellerProfilePage = () => {
               </p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Shield className="w-4 h-4" />
                 Account Status
               </label>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-green-600 font-medium">Active</span>
+                <span className="text-green-400 font-medium">Active</span>
               </div>
             </div>
           </div>
