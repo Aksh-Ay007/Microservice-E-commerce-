@@ -77,11 +77,11 @@ const AllEventsPage = () => {
     const end = new Date(endDate);
 
     if (now < start) {
-      return { status: "Upcoming", color: "text-blue-600 bg-blue-100" };
+      return { status: "Upcoming", color: "text-blue-300 bg-blue-900/30 border border-blue-700" };
     } else if (now >= start && now <= end) {
-      return { status: "Active", color: "text-green-600 bg-green-100" };
+      return { status: "Active", color: "text-green-300 bg-green-900/30 border border-green-700" };
     } else {
-      return { status: "Ended", color: "text-gray-600 bg-gray-100" };
+      return { status: "Ended", color: "text-gray-300 bg-gray-800 border border-gray-700" };
     }
   };
 
