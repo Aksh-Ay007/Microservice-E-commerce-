@@ -129,21 +129,21 @@ const Page = () => {
 
   return (
     <div className="w-full bg-[#f9fafb] pb-10">
+      {/* Mobile Floating Filter Button */}
+      <button
+        onClick={() => setIsFilterOpen(true)}
+        className="md:hidden fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-all"
+      >
+        <Filter size={20} />
+        <span className="font-medium">Filters</span>
+      </button>
+
       <div className="w-[90%] lg:w-[80%] m-auto">
         <div className="pb-[30px]">
           <div className="flex items-center justify-between">
             <h1 className="md:pt-[30px] font-semibold text-[28px] md:text-[44px] mb-[10px] font-jost">
               All Products
             </h1>
-
-            {/* Mobile Filter Toggle */}
-            <button
-              onClick={() => setIsFilterOpen(true)}
-              className="md:hidden flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
-            >
-              <Filter size={18} />
-              Filters
-            </button>
           </div>
 
           <div className="flex items-center text-sm">
@@ -281,15 +281,21 @@ const Page = () => {
 
       {/* Mobile Filter Drawer */}
       {isFilterOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex justify-end">
-          <div className="w-[85%] max-w-[320px] bg-white h-full shadow-lg p-4 overflow-y-auto">
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-40 z-50 flex justify-end"
+          onClick={() => setIsFilterOpen(false)}
+        >
+          <div 
+            className="w-[85%] max-w-[320px] bg-white h-full shadow-lg p-4 overflow-y-auto animate-slide-in-right"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Filters</h3>
               <button
                 onClick={() => setIsFilterOpen(false)}
-                className="text-gray-600 hover:text-black"
+                className="text-gray-600 hover:text-black p-2 hover:bg-gray-100 rounded-full transition"
               >
-                <X />
+                <X size={20} />
               </button>
             </div>
 
