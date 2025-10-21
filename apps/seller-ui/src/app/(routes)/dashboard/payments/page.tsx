@@ -143,17 +143,17 @@ const SellerPayments = () => {
       </div>
 
       {/* 💰 Total Earnings Summary */}
-      <div className="mb-6 grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-        <div className="bg-[#1C1F29] border border-gray-700 rounded-xl p-5 flex flex-col items-start justify-center">
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="bg-[#1C1F29] border border-gray-700 rounded-xl p-4 sm:p-5 flex flex-col items-start justify-center">
           <p className="text-gray-400 text-sm mb-1">Total Earnings</p>
-          <h3 className="text-2xl font-semibold text-green-400">
+          <h3 className="text-xl sm:text-2xl font-semibold text-green-400">
             ${totalEarnings.toFixed(2)}
           </h3>
         </div>
 
-        <div className="bg-[#1C1F29] border border-gray-700 rounded-xl p-5 flex flex-col items-start justify-center">
+        <div className="bg-[#1C1F29] border border-gray-700 rounded-xl p-4 sm:p-5 flex flex-col items-start justify-center">
           <p className="text-gray-400 text-sm mb-1">Total Orders</p>
-          <h3 className="text-2xl font-semibold text-white">{orders.length}</h3>
+          <h3 className="text-xl sm:text-2xl font-semibold text-white">{orders.length}</h3>
         </div>
       </div>
 

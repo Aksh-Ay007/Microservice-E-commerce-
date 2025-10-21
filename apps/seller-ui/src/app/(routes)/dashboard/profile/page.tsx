@@ -429,67 +429,68 @@ const SellerProfilePage = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Profile Settings</h1>
-        <button
-          onClick={() => setIsEditing(!isEditing)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Edit3 className="w-4 h-4" />
-          {isEditing ? "Cancel" : "Edit Profile"}
-        </button>
-      </div>
-
-      {/* Banner Section */}
-      <div className="relative">
-        <div className="h-48 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg overflow-hidden">
-          {getCurrentBannerUrl() ? (
-            <img
-              src={getCurrentBannerUrl()!}
-              alt="Banner"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-white">
-              <ImageIcon className="w-16 h-16 opacity-50" />
-            </div>
-          )}
+    <div className="min-h-screen bg-[#0F1117] p-4 lg:p-8">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <h1 className="text-2xl font-bold text-white">Profile Settings</h1>
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto"
+          >
+            <Edit3 className="w-4 h-4" />
+            {isEditing ? "Cancel" : "Edit Profile"}
+          </button>
         </div>
 
-        {/* Banner Actions */}
-        <div className="absolute top-4 right-4 flex gap-2">
-          <button
-            onClick={() =>
-              document.getElementById("bannerUpload")?.click()
-            }
-            disabled={isUploadingBanner}
-            className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg px-4 py-2 flex items-center gap-2 disabled:opacity-50 transition-all duration-200"
-          >
-            {isUploadingBanner ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+        {/* Banner Section */}
+        <div className="relative">
+          <div className="h-32 sm:h-48 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg overflow-hidden">
+            {getCurrentBannerUrl() ? (
+              <img
+                src={getCurrentBannerUrl()!}
+                alt="Banner"
+                className="w-full h-full object-cover"
+              />
             ) : (
-              <Camera className="w-4 h-4" />
+              <div className="w-full h-full flex items-center justify-center text-white">
+                <ImageIcon className="w-12 h-12 sm:w-16 sm:h-16 opacity-50" />
+              </div>
             )}
-            {bannerPreview ? "Update" : "Add Banner"}
-          </button>
+          </div>
 
-          {getCurrentBannerUrl() && (
+          {/* Banner Actions */}
+          <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex flex-col sm:flex-row gap-2">
             <button
-              onClick={handleBannerDelete}
-              disabled={isDeletingBanner}
-              className="bg-red-500 bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg px-4 py-2 flex items-center gap-2 disabled:opacity-50 transition-all duration-200"
+              onClick={() =>
+                document.getElementById("bannerUpload")?.click()
+              }
+              disabled={isUploadingBanner}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg px-3 py-2 sm:px-4 sm:py-2 flex items-center justify-center gap-2 disabled:opacity-50 transition-all duration-200 text-sm"
             >
-              {isDeletingBanner ? (
+              {isUploadingBanner ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Trash2 className="w-4 h-4" />
+                <Camera className="w-4 h-4" />
               )}
-              Delete
+              <span className="hidden sm:inline">{bannerPreview ? "Update" : "Add Banner"}</span>
             </button>
-          )}
-        </div>
+
+            {getCurrentBannerUrl() && (
+              <button
+                onClick={handleBannerDelete}
+                disabled={isDeletingBanner}
+                className="bg-red-500 bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg px-3 py-2 sm:px-4 sm:py-2 flex items-center justify-center gap-2 disabled:opacity-50 transition-all duration-200 text-sm"
+              >
+                {isDeletingBanner ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+                <span className="hidden sm:inline">Delete</span>
+              </button>
+            )}
+          </div>
 
         {/* Hidden Banner File Input */}
         <input
@@ -501,53 +502,53 @@ const SellerProfilePage = () => {
         />
       </div>
 
-      {/* Avatar Section */}
-      <div className="flex flex-col items-center space-y-4 -mt-16 relative z-10">
-        <div className="relative">
-          <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 shadow-lg border-4 border-white">
-            {getCurrentAvatarUrl() ? (
-              <img
-                src={getCurrentAvatarUrl()!}
-                alt="Avatar"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-500">
-                <User className="w-12 h-12" />
-              </div>
-            )}
-          </div>
-
-          {/* Avatar Actions */}
-          <div className="absolute -bottom-2 -right-2 flex gap-2">
-            <button
-              onClick={() =>
-                document.getElementById("avatarUpload")?.click()
-              }
-              disabled={isUploadingAvatar}
-              className="bg-blue-500 text-white rounded-full p-3 hover:bg-blue-600 disabled:opacity-50 shadow-lg transition-all duration-200 hover:scale-105"
-            >
-              {isUploadingAvatar ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+        {/* Avatar Section */}
+        <div className="flex flex-col items-center space-y-4 -mt-12 sm:-mt-16 relative z-10">
+          <div className="relative">
+            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden bg-gray-700 shadow-lg border-4 border-[#0F1117]">
+              {getCurrentAvatarUrl() ? (
+                <img
+                  src={getCurrentAvatarUrl()!}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
               ) : (
-                <Camera className="w-5 h-5" />
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  <User className="w-8 h-8 sm:w-12 sm:h-12" />
+                </div>
               )}
-            </button>
+            </div>
 
-            {getCurrentAvatarUrl() && (
+            {/* Avatar Actions */}
+            <div className="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 flex flex-col sm:flex-row gap-1 sm:gap-2">
               <button
-                onClick={handleAvatarDelete}
-                disabled={isDeletingAvatar}
-                className="bg-red-500 text-white rounded-full p-3 hover:bg-red-600 disabled:opacity-50 shadow-lg transition-all duration-200 hover:scale-105"
+                onClick={() =>
+                  document.getElementById("avatarUpload")?.click()
+                }
+                disabled={isUploadingAvatar}
+                className="bg-blue-500 text-white rounded-full p-2 sm:p-3 hover:bg-blue-600 disabled:opacity-50 shadow-lg transition-all duration-200 hover:scale-105"
               >
-                {isDeletingAvatar ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                {isUploadingAvatar ? (
+                  <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                 ) : (
-                  <Trash2 className="w-5 h-5" />
+                  <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
                 )}
               </button>
-            )}
-          </div>
+
+              {getCurrentAvatarUrl() && (
+                <button
+                  onClick={handleAvatarDelete}
+                  disabled={isDeletingAvatar}
+                  className="bg-red-500 text-white rounded-full p-2 sm:p-3 hover:bg-red-600 disabled:opacity-50 shadow-lg transition-all duration-200 hover:scale-105"
+                >
+                  {isDeletingAvatar ? (
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                  )}
+                </button>
+              )}
+            </div>
 
           {/* Hidden Avatar File Input */}
           <input
@@ -559,292 +560,294 @@ const SellerProfilePage = () => {
           />
         </div>
 
-        {/* Compression Info */}
-        {compressionInfo && (
-          <div className="text-center">
-            <p className="text-sm text-gray-600 bg-gray-100 px-3 py-2 rounded-lg">
-              {compressionInfo}
-            </p>
-          </div>
-        )}
-
-        {/* Upload Actions */}
-        {(avatarPreview || bannerPreview) && (
-          <div className="flex gap-3">
-            {avatarPreview && (
-              <button
-                onClick={handleAvatarUpload}
-                disabled={isUploadingAvatar}
-                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 transition-colors"
-              >
-                <Upload className="w-4 h-4" />
-                {isUploadingAvatar ? "Uploading..." : "Upload Avatar"}
-              </button>
-            )}
-            {bannerPreview && (
-              <button
-                onClick={handleBannerUpload}
-                disabled={isUploadingBanner}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 transition-colors"
-              >
-                <Upload className="w-4 h-4" />
-                {isUploadingBanner ? "Uploading..." : "Upload Banner"}
-              </button>
-            )}
-            <button
-              onClick={() => {
-                cancelAvatarUpload();
-                cancelBannerUpload();
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 transition-colors"
-            >
-              <X className="w-4 h-4" />
-              Cancel
-            </button>
-          </div>
-        )}
-
-        {/* Upload Instructions */}
-        {!avatarPreview && !bannerPreview && (
-          <div className="text-center max-w-xs">
-            <p className="text-sm text-gray-500 mb-2">
-              Click the camera icons to upload avatar and banner
-            </p>
-            <div className="text-xs text-gray-400 space-y-1">
-              <p>✅ Supports: JPEG, PNG, GIF, WebP</p>
-              <p>✅ Max size: 50MB (auto-compressed)</p>
-              <p>✅ Optimized for web display</p>
+          {/* Compression Info */}
+          {compressionInfo && (
+            <div className="text-center px-4">
+              <p className="text-sm text-gray-300 bg-gray-800 px-3 py-2 rounded-lg">
+                {compressionInfo}
+              </p>
             </div>
-          </div>
-        )}
-      </div>
+          )}
 
-      {/* Shop Information */}
-      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-gray-800">Shop Information</h3>
-        </div>
-
-        {isEditing ? (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <Building className="w-4 h-4" />
-                  Shop Name
-                </label>
-                <input
-                  type="text"
-                  value={editForm.name}
-                  onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  value={editForm.email}
-                  onChange={(e) => setEditForm({...editForm, email: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <Phone className="w-4 h-4" />
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={editForm.phone_number}
-                  onChange={(e) => setEditForm({...editForm, phone_number: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <Flag className="w-4 h-4" />
-                  Country
-                </label>
-                <input
-                  type="text"
-                  value={editForm.country}
-                  onChange={(e) => setEditForm({...editForm, country: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  Address
-                </label>
-                <input
-                  type="text"
-                  value={editForm.address}
-                  onChange={(e) => setEditForm({...editForm, address: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Opening Hours
-                </label>
-                <input
-                  type="text"
-                  value={editForm.opening_hours}
-                  onChange={(e) => setEditForm({...editForm, opening_hours: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <Globe className="w-4 h-4" />
-                  Website
-                </label>
-                <input
-                  type="url"
-                  value={editForm.website}
-                  onChange={(e) => setEditForm({...editForm, website: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <Tag className="w-4 h-4" />
-                  Category
-                </label>
-                <input
-                  type="text"
-                  value={editForm.category}
-                  onChange={(e) => setEditForm({...editForm, category: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  Bio
-                </label>
-                <textarea
-                  value={editForm.bio}
-                  onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Tell us about your shop..."
-                />
-              </div>
-            </div>
-            <div className="flex gap-3">
+          {/* Upload Actions */}
+          {(avatarPreview || bannerPreview) && (
+            <div className="flex flex-col sm:flex-row gap-3 px-4 w-full sm:w-auto">
+              {avatarPreview && (
+                <button
+                  onClick={handleAvatarUpload}
+                  disabled={isUploadingAvatar}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  {isUploadingAvatar ? "Uploading..." : "Upload Avatar"}
+                </button>
+              )}
+              {bannerPreview && (
+                <button
+                  onClick={handleBannerUpload}
+                  disabled={isUploadingBanner}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  {isUploadingBanner ? "Uploading..." : "Upload Banner"}
+                </button>
+              )}
               <button
-                onClick={handleProfileUpdate}
-                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                onClick={() => {
+                  cancelAvatarUpload();
+                  cancelBannerUpload();
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors"
               >
-                <Save className="w-4 h-4" />
-                Save Changes
-              </button>
-              <button
-                onClick={cancelEditing}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-              >
-                <XCircle className="w-4 h-4" />
+                <X className="w-4 h-4" />
                 Cancel
               </button>
             </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Building className="w-4 h-4" />
-                Shop Name
-              </label>
-              <p className="text-gray-800">{seller?.name}</p>
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                Email Address
-              </label>
-              <p className="text-gray-800">{seller?.email}</p>
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Phone className="w-4 h-4" />
-                Phone Number
-              </label>
-              <p className="text-gray-800">{seller?.phone_number || "Not provided"}</p>
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Flag className="w-4 h-4" />
-                Country
-              </label>
-              <p className="text-gray-800">{seller?.country || "Not provided"}</p>
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                Address
-              </label>
-              <p className="text-gray-800">{seller?.shop?.address || "Not provided"}</p>
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                Opening Hours
-              </label>
-              <p className="text-gray-800">{seller?.shop?.opening_hours || "Not provided"}</p>
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Globe className="w-4 h-4" />
-                Website
-              </label>
-              <p className="text-gray-800">{seller?.shop?.website || "Not provided"}</p>
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Tag className="w-4 h-4" />
-                Category
-              </label>
-              <p className="text-gray-800">{seller?.shop?.category || "Not provided"}</p>
-            </div>
-            <div className="space-y-1 md:col-span-2">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <User className="w-4 h-4" />
-                Bio
-              </label>
-              <p className="text-gray-800">{seller?.shop?.bio || "No bio provided"}</p>
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Member Since
-              </label>
-              <p className="text-gray-800">
-                {new Date(seller?.createdAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
+          )}
+
+          {/* Upload Instructions */}
+          {!avatarPreview && !bannerPreview && (
+            <div className="text-center max-w-xs px-4">
+              <p className="text-sm text-gray-400 mb-2">
+                Click the camera icons to upload avatar and banner
               </p>
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Shield className="w-4 h-4" />
-                Account Status
-              </label>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-green-600 font-medium">Active</span>
+              <div className="text-xs text-gray-500 space-y-1">
+                <p>✅ Supports: JPEG, PNG, GIF, WebP</p>
+                <p>✅ Max size: 50MB (auto-compressed)</p>
+                <p>✅ Optimized for web display</p>
               </div>
             </div>
+          )}
+        </div>
+      </div>
+
+        {/* Shop Information */}
+        <div className="bg-gray-900 rounded-lg p-4 sm:p-6 shadow-sm border border-gray-700">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold text-white">Shop Information</h3>
           </div>
-        )}
+
+          {isEditing ? (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                    <Building className="w-4 h-4" />
+                    Shop Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                    <Phone className="w-4 h-4" />
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={editForm.phone_number}
+                    onChange={(e) => setEditForm({...editForm, phone_number: e.target.value})}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                    <Flag className="w-4 h-4" />
+                    Country
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.country}
+                    onChange={(e) => setEditForm({...editForm, country: e.target.value})}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    Address
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.address}
+                    onChange={(e) => setEditForm({...editForm, address: e.target.value})}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    Opening Hours
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.opening_hours}
+                    onChange={(e) => setEditForm({...editForm, opening_hours: e.target.value})}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                    <Globe className="w-4 h-4" />
+                    Website
+                  </label>
+                  <input
+                    type="url"
+                    value={editForm.website}
+                    onChange={(e) => setEditForm({...editForm, website: e.target.value})}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                    <Tag className="w-4 h-4" />
+                    Category
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.category}
+                    onChange={(e) => setEditForm({...editForm, category: e.target.value})}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="space-y-2 lg:col-span-2">
+                  <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Bio
+                  </label>
+                  <textarea
+                    value={editForm.bio}
+                    onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
+                    rows={3}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Tell us about your shop..."
+                  />
+                </div>
+            </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={handleProfileUpdate}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                >
+                  <Save className="w-4 h-4" />
+                  Save Changes
+                </button>
+                <button
+                  onClick={cancelEditing}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  <XCircle className="w-4 h-4" />
+                  Cancel
+                </button>
+              </div>
+          </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                  <Building className="w-4 h-4" />
+                  Shop Name
+                </label>
+                <p className="text-white">{seller?.name}</p>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  Email Address
+                </label>
+                <p className="text-white">{seller?.email}</p>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  Phone Number
+                </label>
+                <p className="text-white">{seller?.phone_number || "Not provided"}</p>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                  <Flag className="w-4 h-4" />
+                  Country
+                </label>
+                <p className="text-white">{seller?.country || "Not provided"}</p>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  Address
+                </label>
+                <p className="text-white">{seller?.shop?.address || "Not provided"}</p>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Opening Hours
+                </label>
+                <p className="text-white">{seller?.shop?.opening_hours || "Not provided"}</p>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
+                  Website
+                </label>
+                <p className="text-white">{seller?.shop?.website || "Not provided"}</p>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                  <Tag className="w-4 h-4" />
+                  Category
+                </label>
+                <p className="text-white">{seller?.shop?.category || "Not provided"}</p>
+              </div>
+              <div className="space-y-1 lg:col-span-2">
+                <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Bio
+                </label>
+                <p className="text-white">{seller?.shop?.bio || "No bio provided"}</p>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Member Since
+                </label>
+                <p className="text-white">
+                  {new Date(seller?.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                  <Shield className="w-4 h-4" />
+                  Account Status
+                </label>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-green-400 font-medium">Active</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

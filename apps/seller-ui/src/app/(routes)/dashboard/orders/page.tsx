@@ -106,10 +106,10 @@ const OrderTable = () => {
   });
 
   return (
-    <div className="w-full min-h-screen px-6 py-8 bg-[#0F1117]">
+    <div className="w-full min-h-screen px-4 sm:px-6 py-6 sm:py-8 bg-[#0F1117]">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-1">Orders</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">Orders</h2>
           <div className="flex items-center text-sm text-gray-400">
             <Link href="/dashboard" className="hover:text-blue-400">
               Dashboard
@@ -121,12 +121,12 @@ const OrderTable = () => {
       </div>
 
       {/* Search */}
-      <div className="my-5 flex items-center bg-[#1C1F29] border border-gray-700 rounded-lg px-3 py-2">
-        <Search size={18} className="text-gray-400 mr-2" />
+      <div className="my-5 flex items-center bg-[#1C1F29] border border-gray-700 rounded-lg px-3 py-3">
+        <Search size={18} className="text-gray-400 mr-2 flex-shrink-0" />
         <Input
           type="text"
           placeholder="Search orders..."
-          className="flex-1 bg-transparent text-white outline-none"
+          className="flex-1 bg-transparent text-white outline-none placeholder-gray-500"
           value={globalFilter}
           onChange={(e: any) => setGlobalFilter(e.target.value)}
         />
@@ -135,46 +135,53 @@ const OrderTable = () => {
       {/* Table */}
       <div className="overflow-x-auto rounded-xl border border-gray-800 bg-[#181B25] shadow-sm">
         {isLoading ? (
-          <p className="text-center py-8 text-gray-400">Loading orders...</p>
+          <div className="text-center py-8">
+            <div className="inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-2"></div>
+            <p className="text-gray-400">Loading orders...</p>
+          </div>
         ) : orders?.length === 0 ? (
-          <p className="text-center py-8 text-gray-500">No orders found.</p>
+          <div className="text-center py-8">
+            <p className="text-gray-500">No orders found.</p>
+          </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-[#20232D] border-b border-gray-700">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      className="text-left px-4 py-3 font-semibold text-gray-300"
-                    >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="border-b border-gray-800 hover:bg-[#222633] transition"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-3 text-gray-200">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="min-w-full">
+            <table className="w-full text-sm">
+              <thead className="bg-[#20232D] border-b border-gray-700">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <th
+                        key={header.id}
+                        className="text-left px-3 sm:px-4 py-3 font-semibold text-gray-300"
+                      >
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {table.getRowModel().rows.map((row) => (
+                  <tr
+                    key={row.id}
+                    className="border-b border-gray-800 hover:bg-[#222633] transition"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="px-3 sm:px-4 py-3 text-gray-200">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

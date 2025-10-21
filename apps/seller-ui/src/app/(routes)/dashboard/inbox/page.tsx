@@ -196,15 +196,15 @@ const Page = () => {
   const getLastMessage = (chat: any) => chat?.lastMessage || "";
 
   return (
-    <div className="w-full min-h-screen p-8 bg-gray-950">
+    <div className="w-full min-h-screen p-2 sm:p-4 lg:p-8 bg-gray-950">
       <div className="max-w-7xl mx-auto">
-        <div className="flex h-[85vh] rounded-lg shadow-2xl overflow-hidden bg-gray-900">
+        <div className="flex flex-col lg:flex-row h-[85vh] rounded-lg shadow-2xl overflow-hidden bg-gray-900">
           {/* Sidebar */}
-          <div className="w-[340px] border-r border-gray-800 bg-gray-900">
-            <div className="p-5 border-b border-gray-800 bg-gray-900">
+          <div className="w-full lg:w-[340px] border-r border-gray-800 bg-gray-900 lg:block">
+            <div className="p-3 sm:p-5 border-b border-gray-800 bg-gray-900">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
-                  <h1 className="text-2xl font-semibold text-white">
+                  <h1 className="text-xl sm:text-2xl font-semibold text-white">
                     Messages
                   </h1>
                   <p className="text-gray-400 text-sm mt-1">
