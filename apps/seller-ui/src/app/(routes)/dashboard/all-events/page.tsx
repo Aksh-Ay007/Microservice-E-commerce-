@@ -288,11 +288,11 @@ const AllEventsPage = () => {
 
   // Main UI
   return (
-    <div className="w-full min-h-screen px-6 py-8 bg-gray-950">
+    <div className="w-full min-h-screen px-4 sm:px-6 py-6 sm:py-8 bg-[#0F1117]">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-1">All Events</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">All Events</h2>
           <div className="flex items-center text-sm text-gray-400">
             <Link href="/dashboard" className="hover:text-blue-400">
               Dashboard
@@ -302,16 +302,16 @@ const AllEventsPage = () => {
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <button
             onClick={handleExportCSV}
-            className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg text-sm transition"
+            className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg text-sm transition w-full sm:w-auto"
           >
             Export CSV
           </button>
           <Link
             href="/dashboard/create-event"
-            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm transition"
+            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm transition w-full sm:w-auto text-center"
           >
             Create New Event
           </Link>
@@ -319,22 +319,22 @@ const AllEventsPage = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="bg-[#1C1F29] p-4 rounded-lg border border-gray-700">
           <div className="flex items-center">
-            <Calendar className="w-8 h-8 text-blue-400" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-400">Total Events</p>
-              <p className="text-2xl font-bold text-white">{allEvents.length}</p>
+            <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" />
+            <div className="ml-3 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-400">Total Events</p>
+              <p className="text-lg sm:text-2xl font-bold text-white">{allEvents.length}</p>
             </div>
           </div>
         </div>
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+        <div className="bg-[#1C1F29] p-4 rounded-lg border border-gray-700">
           <div className="flex items-center">
-            <Clock className="w-8 h-8 text-green-400" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-400">Active</p>
-              <p className="text-2xl font-bold text-white">
+            <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-green-400" />
+            <div className="ml-3 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-400">Active</p>
+              <p className="text-lg sm:text-2xl font-bold text-white">
                 {allEvents.filter((e: any) => {
                   const now = new Date();
                   const start = new Date(e.starting_date);
@@ -345,23 +345,23 @@ const AllEventsPage = () => {
             </div>
           </div>
         </div>
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+        <div className="bg-[#1C1F29] p-4 rounded-lg border border-gray-700">
           <div className="flex items-center">
-            <Calendar className="w-8 h-8 text-blue-400" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-400">Upcoming</p>
-              <p className="text-2xl font-bold text-white">
+            <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" />
+            <div className="ml-3 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-400">Upcoming</p>
+              <p className="text-lg sm:text-2xl font-bold text-white">
                 {allEvents.filter((e: any) => new Date() < new Date(e.starting_date)).length}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+        <div className="bg-[#1C1F29] p-4 rounded-lg border border-gray-700">
           <div className="flex items-center">
-            <Clock className="w-8 h-8 text-gray-400" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-400">Ended</p>
-              <p className="text-2xl font-bold text-white">
+            <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
+            <div className="ml-3 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-400">Ended</p>
+              <p className="text-lg sm:text-2xl font-bold text-white">
                 {allEvents.filter((e: any) => new Date() > new Date(e.ending_date)).length}
               </p>
             </div>
@@ -370,52 +370,146 @@ const AllEventsPage = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="my-5 flex items-center bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+      <div className="my-5 flex items-center bg-[#1C1F29] border border-gray-700 rounded-lg px-3 py-2">
         <Search size={18} className="text-gray-400 mr-2" />
         <Input
           type="text"
           placeholder="Search events..."
-          className="flex-1 bg-transparent text-white outline-none border-none"
+          className="flex-1 bg-transparent text-white outline-none border-none placeholder-gray-400"
           value={globalFilter}
           onChange={(e: any) => setGlobalFilter(e.target.value)}
         />
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-gray-700 bg-gray-800 shadow-sm">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-700 border-b border-gray-600">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="text-left px-4 py-3 font-semibold text-gray-200"
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className="border-b border-gray-700 hover:bg-gray-750 transition"
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-3 text-gray-200">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="overflow-x-auto rounded-xl border border-gray-700 bg-[#1C1F29] shadow-sm">
+        {/* Desktop Table */}
+        <div className="hidden lg:block">
+          <table className="w-full text-sm">
+            <thead className="bg-[#20232D] border-b border-gray-600">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      className="text-left px-4 py-3 font-semibold text-gray-200"
+                    >
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {table.getRowModel().rows.map((row) => (
+                <tr
+                  key={row.id}
+                  className="border-b border-gray-700 hover:bg-[#222633] transition"
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className="px-4 py-3 text-gray-200">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="lg:hidden">
+          {table.getRowModel().rows.map((row) => {
+            const { status, color } = getEventStatus(
+              row.original.starting_date,
+              row.original.ending_date
+            );
+            
+            return (
+              <div key={row.id} className="border-b border-gray-700 p-4 hover:bg-[#222633] transition">
+                <div className="space-y-3">
+                  {/* Event Image and Title */}
+                  <div className="flex items-start gap-3">
+                    <Image
+                      src={row.original.images?.[0]?.url || "/placeholder.png"}
+                      alt={row.original.title}
+                      width={60}
+                      height={60}
+                      className="w-15 h-15 object-cover rounded-lg flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-white truncate text-sm">
+                        {row.original.title}
+                      </h3>
+                      <p className="text-xs text-gray-400 truncate">
+                        {row.original.short_description}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Price and Stock */}
+                  <div className="flex items-center justify-between">
+                    <div className="text-white">
+                      <div className="font-medium text-sm">${row.original.sale_price}</div>
+                      {row.original.regular_price > row.original.sale_price && (
+                        <div className="text-xs text-gray-400 line-through">
+                          ${row.original.regular_price}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <span className={`font-medium text-sm ${
+                        row.original.stock > 0 ? "text-green-400" : "text-red-400"
+                      }`}>
+                        Stock: {row.original.stock}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Event Period and Status */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1 text-xs text-gray-400">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(row.original.starting_date).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-gray-400">
+                      <Clock className="w-3 h-3" />
+                      {new Date(row.original.ending_date).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className={`px-2 py-1 text-xs rounded-full ${color}`}>
+                        {status}
+                      </span>
+                      <span className="text-xs text-gray-300">{row.original.category}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="flex justify-end gap-2">
+                    <Link
+                      href={`${process.env.NEXT_PUBLIC_USER_UI_LINK}/event/${row.original.slug}`}
+                      target="_blank"
+                      className="p-1 text-gray-400 hover:text-blue-400 transition-colors"
+                      title="View Event"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Link>
+                    <button
+                      onClick={() => deleteEvent(row.original.id)}
+                      className="p-1 text-gray-400 hover:text-red-400 transition-colors"
+                      title="Delete Event"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Footer */}

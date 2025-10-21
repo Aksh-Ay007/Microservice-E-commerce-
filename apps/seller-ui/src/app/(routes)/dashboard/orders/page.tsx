@@ -106,10 +106,10 @@ const OrderTable = () => {
   });
 
   return (
-    <div className="w-full min-h-screen px-6 py-8 bg-[#0F1117]">
+    <div className="w-full min-h-screen px-4 sm:px-6 py-6 sm:py-8 bg-[#0F1117]">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-1">Orders</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">Orders</h2>
           <div className="flex items-center text-sm text-gray-400">
             <Link href="/dashboard" className="hover:text-blue-400">
               Dashboard
@@ -126,7 +126,7 @@ const OrderTable = () => {
         <Input
           type="text"
           placeholder="Search orders..."
-          className="flex-1 bg-transparent text-white outline-none"
+          className="flex-1 bg-transparent text-white outline-none placeholder-gray-400"
           value={globalFilter}
           onChange={(e: any) => setGlobalFilter(e.target.value)}
         />
@@ -139,42 +139,96 @@ const OrderTable = () => {
         ) : orders?.length === 0 ? (
           <p className="text-center py-8 text-gray-500">No orders found.</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-[#20232D] border-b border-gray-700">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      className="text-left px-4 py-3 font-semibold text-gray-300"
+          <>
+            {/* Desktop Table */}
+            <div className="hidden lg:block">
+              <table className="w-full text-sm">
+                <thead className="bg-[#20232D] border-b border-gray-700">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <th
+                          key={header.id}
+                          className="text-left px-4 py-3 font-semibold text-gray-300"
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody>
+                  {table.getRowModel().rows.map((row) => (
+                    <tr
+                      key={row.id}
+                      className="border-b border-gray-800 hover:bg-[#222633] transition"
                     >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                    </th>
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id} className="px-4 py-3 text-gray-200">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </td>
+                      ))}
+                    </tr>
                   ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="lg:hidden">
               {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="border-b border-gray-800 hover:bg-[#222633] transition"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-3 text-gray-200">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  ))}
-                </tr>
+                <div key={row.id} className="border-b border-gray-800 p-4 hover:bg-[#222633] transition">
+                  <div className="space-y-3">
+                    {/* Order ID and Status */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-white">
+                        #{row.original.id.slice(-6).toUpperCase()}
+                      </span>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          row.original.status === "Paid"
+                            ? "bg-emerald-600/80 text-white"
+                            : "bg-yellow-500/80 text-white"
+                        }`}
+                      >
+                        {row.original.status}
+                      </span>
+                    </div>
+                    
+                    {/* Customer and Total */}
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-300">
+                        Customer: {row.original.user.name ?? "Guest"}
+                      </p>
+                      <p className="text-sm font-semibold text-green-400">
+                        Total: ${row.original.total.toFixed(2)}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {new Date(row.original.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    
+                    {/* Actions */}
+                    <div className="flex justify-end">
+                      <Link
+                        href={`/order/${row.original.id}`}
+                        className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition text-sm"
+                      >
+                        <Eye size={16} />
+                        View Details
+                      </Link>
+                    </div>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
     </div>

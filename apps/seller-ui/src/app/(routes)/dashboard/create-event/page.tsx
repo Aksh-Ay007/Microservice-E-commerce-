@@ -124,26 +124,26 @@ const EventCreatePage = () => {
   // --- (Render logic) ---
 
   return (
-    <div className="w-full mx-auto p-4 md:p-8 text-gray-900">
-      <div className="flex items-center space-x-2 text-sm text-gray-500 mb-6">
+    <div className="w-full mx-auto p-4 md:p-8 text-white">
+      <div className="flex items-center space-x-2 text-sm text-gray-400 mb-6">
         <Link
-          href="/seller/dashboard"
-          className="hover:text-blue-600 transition-colors"
+          href="/dashboard"
+          className="hover:text-blue-400 transition-colors"
         >
           Dashboard
         </Link>
         <ChevronRightIcon className="w-4 h-4" />
-        <span className="font-medium text-gray-700">Create New Event</span>
+        <span className="font-medium text-gray-300">Create New Event</span>
       </div>
 
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">
+      <h1 className="text-2xl sm:text-3xl font-bold text-white mb-6">
         Create New Event
       </h1>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8">
         {/* --- Core Event Details Section --- */}
-        <div className="bg-white p-6 rounded-lg shadow-md space-y-6">
-          <h2 className="text-xl font-semibold text-gray-800 border-b pb-3">
+        <div className="bg-[#1C1F29] p-4 sm:p-6 rounded-lg shadow-md space-y-4 sm:space-y-6 border border-gray-700">
+          <h2 className="text-lg sm:text-xl font-semibold text-white border-b border-gray-700 pb-3">
             Event Details
           </h2>
 
@@ -153,7 +153,7 @@ const EventCreatePage = () => {
             // 🚫 REMOVED: error={errors.title?.message as string}
           />
           {errors.title && (
-            <p className="mt-1 text-sm text-red-600">
+            <p className="mt-1 text-sm text-red-400">
               {errors.title.message as string}
             </p>
           )}
@@ -165,29 +165,29 @@ const EventCreatePage = () => {
             // 🚫 REMOVED: error={errors.slug?.message as string}
           />
           {errors.slug && (
-            <p className="mt-1 text-sm text-red-600">
+            <p className="mt-1 text-sm text-red-400">
               {errors.slug.message as string}
             </p>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <Controller
               name="starting_date"
               control={control}
               rules={{ required: "Starting date is required" }}
               render={({ field, fieldState }) => (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Event Starting Date
                   </label>
                   {/* ✅ FIX APPLIED: Using standard HTML input for 'datetime-local' */}
                   <input
                     type="datetime-local"
-                    className="w-full border border-gray-300 rounded-lg p-2.5"
+                    className="w-full border border-gray-600 bg-[#0F1117] text-white rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     {...field}
                   />
                   {fieldState.error && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="mt-1 text-sm text-red-400">
                       {fieldState.error.message}
                     </p>
                   )}
@@ -200,17 +200,17 @@ const EventCreatePage = () => {
               rules={{ required: "Ending date is required" }}
               render={({ field, fieldState }) => (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Event Ending Date
                   </label>
                   {/* ✅ FIX APPLIED: Using standard HTML input for 'datetime-local' */}
                   <input
                     type="datetime-local"
-                    className="w-full border border-gray-300 rounded-lg p-2.5"
+                    className="w-full border border-gray-600 bg-[#0F1117] text-white rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     {...field}
                   />
                   {fieldState.error && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="mt-1 text-sm text-red-400">
                       {fieldState.error.message}
                     </p>
                   )}
@@ -225,7 +225,7 @@ const EventCreatePage = () => {
             rules={{ required: "Short description is required" }}
             render={({ field }) => (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   Short Description
                 </label>
                 {/* ⚠️ FIX APPLIED: Only passing field props (value, onChange) */}
@@ -235,7 +235,7 @@ const EventCreatePage = () => {
                   onChange={field.onChange}
                 />
                 {errors.short_description && (
-                  <p className="mt-1 text-sm text-red-600">
+                  <p className="mt-1 text-sm text-red-400">
                     {errors.short_description.message as string}
                   </p>
                 )}
@@ -247,7 +247,7 @@ const EventCreatePage = () => {
             control={control}
             render={({ field }) => (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   Detailed Description (Optional)
                 </label>
                 {/* ⚠️ FIX APPLIED: Only passing field props (value, onChange) */}
@@ -256,7 +256,7 @@ const EventCreatePage = () => {
                   onChange={field.onChange}
                 />
                 {errors.detailed_description && (
-                  <p className="mt-1 text-sm text-red-600">
+                  <p className="mt-1 text-sm text-red-400">
                     {errors.detailed_description.message as string}
                   </p>
                 )}
@@ -270,31 +270,31 @@ const EventCreatePage = () => {
             // 🚫 REMOVED: error={errors.tags?.message as string}
           />
           {errors.tags && (
-            <p className="mt-1 text-sm text-red-600">
+            <p className="mt-1 text-sm text-red-400">
               {errors.tags.message as string}
             </p>
           )}
         </div>
 
         {/* --- Minimal Product Data (Required by the underlying 'products' model) --- */}
-        <div className="bg-white p-6 rounded-lg shadow-md space-y-6">
-          <h2 className="text-xl font-semibold text-gray-800 border-b pb-3">
+        <div className="bg-[#1C1F29] p-4 sm:p-6 rounded-lg shadow-md space-y-4 sm:space-y-6 border border-gray-700">
+          <h2 className="text-lg sm:text-xl font-semibold text-white border-b border-gray-700 pb-3">
             Associated Product Information (Required)
           </h2>
 
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-400">
             Since events use the product data structure, provide minimal
             information for the product associated with this event.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Category
               </label>
               <select
                 {...register("category", { required: "Category is required" })}
-                className="w-full border border-gray-300 rounded-lg p-2.5"
+                className="w-full border border-gray-600 bg-[#0F1117] text-white rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select Category</option>
                 {categoriesLoading ? (
@@ -308,14 +308,14 @@ const EventCreatePage = () => {
                 )}
               </select>
               {errors.category && (
-                <p className="mt-1 text-sm text-red-600">
+                <p className="mt-1 text-sm text-red-400">
                   {errors.category.message as string}
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Sub Category
               </label>
               <select
@@ -323,7 +323,7 @@ const EventCreatePage = () => {
                   required: "Sub Category is required",
                 })}
                 disabled={!selectedCategory || subCategories.length === 0}
-                className="w-full border border-gray-300 rounded-lg p-2.5 disabled:bg-gray-50"
+                className="w-full border border-gray-600 bg-[#0F1117] text-white rounded-lg p-2.5 disabled:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select Sub Category</option>
                 {subCategories.map((sub: string) => (
@@ -333,7 +333,7 @@ const EventCreatePage = () => {
                 ))}
               </select>
               {errors.subCategory && (
-                <p className="mt-1 text-sm text-red-600">
+                <p className="mt-1 text-sm text-red-400">
                   {errors.subCategory.message as string}
                 </p>
               )}
@@ -350,13 +350,13 @@ const EventCreatePage = () => {
               // 🚫 REMOVED: error={errors.stock?.message as string}
             />
             {errors.stock && (
-              <p className="mt-1 text-sm text-red-600">
+              <p className="mt-1 text-sm text-red-400">
                 {errors.stock.message as string}
               </p>
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <Input
               label="Regular Price ($)"
               type="number"
@@ -368,7 +368,7 @@ const EventCreatePage = () => {
               // 🚫 REMOVED: error={errors.regular_price?.message as string}
             />
             {errors.regular_price && (
-              <p className="mt-1 text-sm text-red-600">
+              <p className="mt-1 text-sm text-red-400">
                 {errors.regular_price.message as string}
               </p>
             )}
@@ -386,7 +386,7 @@ const EventCreatePage = () => {
               // 🚫 REMOVED: error={errors.sale_price?.message as string}
             />
             {errors.sale_price && (
-              <p className="mt-1 text-sm text-red-600">
+              <p className="mt-1 text-sm text-red-400">
                 {errors.sale_price.message as string}
               </p>
             )}
@@ -394,10 +394,10 @@ const EventCreatePage = () => {
         </div>
 
         {/* --- Submission Button --- */}
-        <div className="pt-6 border-t flex justify-end">
+        <div className="pt-6 border-t border-gray-700 flex justify-end">
           <button
             type="submit"
-            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150 disabled:bg-gray-400"
+            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150 disabled:bg-gray-400 w-full sm:w-auto"
             disabled={loading}
           >
             {loading ? "Creating Event..." : "Create Event"}

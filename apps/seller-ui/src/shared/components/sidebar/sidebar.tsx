@@ -50,7 +50,7 @@ const SideBarWrapper = () => {
         overflowY: "scroll",
         scrollbarWidth: "none",
       }}
-      className="sidebar-wrapper"
+      className="sidebar-wrapper bg-[#0F1117]"
     >
       <Sidebar.Header>
         <Box>
