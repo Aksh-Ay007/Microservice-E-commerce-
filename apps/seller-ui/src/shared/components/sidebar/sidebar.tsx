@@ -26,7 +26,11 @@ import SidebarItem from "./sidebar.item";
 import SidebarMenu from "./sidebar.menu";
 import { Sidebar } from "./sidebar.styles";
 
-const SideBarWrapper = () => {
+interface SideBarWrapperProps {
+  onNavigate?: () => void;
+}
+
+const SideBarWrapper = ({ onNavigate }: SideBarWrapperProps) => {
   const { activeSideBar, setActiveSideBar } = useSidebar();
 
   const pathName = usePathname();
@@ -76,6 +80,7 @@ const SideBarWrapper = () => {
             icon={<Home fill={getIconColor("dashboard")} />}
             isActive={activeSideBar === "/dashboard"}
             href="/dashboard"
+            onClick={onNavigate}
           />
 
           <div className="mt-2 block">
@@ -90,6 +95,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/profile"}
                 href="/dashboard/profile"
+                onClick={onNavigate}
               />
               <SidebarItem
                 title="Orders"
@@ -101,6 +107,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/orders"}
                 href="/dashboard/orders"
+                onClick={onNavigate}
               />
 
               <SidebarItem
@@ -108,6 +115,7 @@ const SideBarWrapper = () => {
                 icon={<Payment fill={getIconColor("/dashboard/payments")} />}
                 isActive={activeSideBar === "/dashboard/payments"}
                 href="/dashboard/payments"
+                onClick={onNavigate}
               />
             </SidebarMenu>
 
@@ -122,6 +130,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/create-product"}
                 href="/dashboard/create-product"
+                onClick={onNavigate}
               />
 
               <SidebarItem
@@ -134,6 +143,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/all-products"}
                 href="/dashboard/all-products"
+                onClick={onNavigate}
               />
             </SidebarMenu>
 
@@ -148,6 +158,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/create-event"}
                 href="/dashboard/create-event"
+                onClick={onNavigate}
               />
 
               <SidebarItem
@@ -160,6 +171,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/all-events"}
                 href="/dashboard/all-events"
+                onClick={onNavigate}
               />
             </SidebarMenu>
 
@@ -171,6 +183,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/inbox"}
                 href="/dashboard/inbox"
+                onClick={onNavigate}
               />
 
               <SidebarItem
@@ -183,6 +196,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/settings"}
                 href="/dashboard/settings"
+                onClick={onNavigate}
               />
 
               <SidebarItem
@@ -195,6 +209,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/notifications"}
                 href="/dashboard/notifications"
+                onClick={onNavigate}
               />
             </SidebarMenu>
 
@@ -209,6 +224,7 @@ const SideBarWrapper = () => {
                 }
                 isActive={activeSideBar === "/dashboard/discount-codes"}
                 href="/dashboard/discount-codes"
+                onClick={onNavigate}
               />
 
               <SidebarItem
@@ -216,6 +232,7 @@ const SideBarWrapper = () => {
                 icon={<LogOut size={20} color={getIconColor("/logout")} />}
                 isActive={activeSideBar === "/logout"}
                 href="/logout"
+                onClick={onNavigate}
               />
             </SidebarMenu>
           </div>

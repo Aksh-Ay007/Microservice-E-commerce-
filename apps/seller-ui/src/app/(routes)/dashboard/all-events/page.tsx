@@ -26,7 +26,7 @@ import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
 import axiosInstance from "../../../../utils/axiosinstance";
 import toast from "react-hot-toast";
-import Input from '../../../../../../../packages/components/input';
+import Input from "../../../../../../../packages/components/input";
 
 const AllEventsPage = () => {
   const [page, setPage] = useState(1);
@@ -133,9 +133,11 @@ const AllEventsPage = () => {
         accessorKey: "stock",
         header: "Stock",
         cell: ({ row }: any) => (
-          <span className={`font-medium ${
-            row.original.stock > 0 ? "text-green-400" : "text-red-400"
-          }`}>
+          <span
+            className={`font-medium ${
+              row.original.stock > 0 ? "text-green-400" : "text-red-400"
+            }`}
+          >
             {row.original.stock}
           </span>
         ),
@@ -241,7 +243,7 @@ const AllEventsPage = () => {
 
     const csvContent = [headers, ...rows].map((r) => r.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    saveAs(blob, `events_${new Date().toISOString().split('T')[0]}.csv`);
+    saveAs(blob, `events_${new Date().toISOString().split("T")[0]}.csv`);
   };
 
   // Loading State
@@ -257,14 +259,14 @@ const AllEventsPage = () => {
   // No Events Found
   if (!filteredEvents.length) {
     return (
-      <div className="w-full min-h-screen px-6 py-8 bg-gray-950 flex flex-col items-center justify-center text-center">
+      <div className="w-full min-h-screen px-4 md:px-6 py-8 bg-gray-950 flex flex-col items-center justify-center text-center">
         <Calendar className="w-16 h-16 text-gray-600 mb-4" />
         <p className="text-gray-400 text-lg mb-4">
           {allEvents.length === 0
             ? "No events created yet. Create your first event to get started!"
             : "No events found. Try adjusting your search."}
         </p>
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           {allEvents.length === 0 && (
             <Link
               href="/dashboard/create-event"
@@ -288,11 +290,13 @@ const AllEventsPage = () => {
 
   // Main UI
   return (
-    <div className="w-full min-h-screen px-6 py-8 bg-gray-950">
+    <div className="w-full min-h-screen px-4 md:px-6 py-8 bg-gray-950">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-1">All Events</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-1">
+            All Events
+          </h2>
           <div className="flex items-center text-sm text-gray-400">
             <Link href="/dashboard" className="hover:text-blue-400">
               Dashboard
@@ -302,7 +306,7 @@ const AllEventsPage = () => {
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
           <button
             onClick={handleExportCSV}
             className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg text-sm transition"
@@ -311,7 +315,7 @@ const AllEventsPage = () => {
           </button>
           <Link
             href="/dashboard/create-event"
-            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm transition"
+            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm transition text-center"
           >
             Create New Event
           </Link>
@@ -319,13 +323,15 @@ const AllEventsPage = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
           <div className="flex items-center">
             <Calendar className="w-8 h-8 text-blue-400" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-400">Total Events</p>
-              <p className="text-2xl font-bold text-white">{allEvents.length}</p>
+              <p className="text-2xl font-bold text-white">
+                {allEvents.length}
+              </p>
             </div>
           </div>
         </div>
@@ -335,12 +341,14 @@ const AllEventsPage = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-400">Active</p>
               <p className="text-2xl font-bold text-white">
-                {allEvents.filter((e: any) => {
-                  const now = new Date();
-                  const start = new Date(e.starting_date);
-                  const end = new Date(e.ending_date);
-                  return now >= start && now <= end;
-                }).length}
+                {
+                  allEvents.filter((e: any) => {
+                    const now = new Date();
+                    const start = new Date(e.starting_date);
+                    const end = new Date(e.ending_date);
+                    return now >= start && now <= end;
+                  }).length
+                }
               </p>
             </div>
           </div>
@@ -351,7 +359,11 @@ const AllEventsPage = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-400">Upcoming</p>
               <p className="text-2xl font-bold text-white">
-                {allEvents.filter((e: any) => new Date() < new Date(e.starting_date)).length}
+                {
+                  allEvents.filter(
+                    (e: any) => new Date() < new Date(e.starting_date)
+                  ).length
+                }
               </p>
             </div>
           </div>
@@ -362,7 +374,11 @@ const AllEventsPage = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-400">Ended</p>
               <p className="text-2xl font-bold text-white">
-                {allEvents.filter((e: any) => new Date() > new Date(e.ending_date)).length}
+                {
+                  allEvents.filter(
+                    (e: any) => new Date() > new Date(e.ending_date)
+                  ).length
+                }
               </p>
             </div>
           </div>
@@ -419,7 +435,7 @@ const AllEventsPage = () => {
       </div>
 
       {/* Footer */}
-      <div className="mt-6 flex justify-between items-center text-gray-400">
+      <div className="mt-6 flex flex-col sm:flex-row justify-between items-center text-gray-400 gap-4">
         <p className="text-sm">
           Showing {filteredEvents.length} of {allEvents.length} events
         </p>

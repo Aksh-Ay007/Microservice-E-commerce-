@@ -39,8 +39,12 @@ const SellerProfilePage = () => {
   const [isDeletingBanner, setIsDeletingBanner] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
-  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
-  const [selectedBannerFile, setSelectedBannerFile] = useState<File | null>(null);
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(
+    null
+  );
+  const [selectedBannerFile, setSelectedBannerFile] = useState<File | null>(
+    null
+  );
   const [compressionInfo, setCompressionInfo] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -84,10 +88,14 @@ const SellerProfilePage = () => {
   }, [seller]);
 
   // Smart image compression function
-  const compressImage = (file: File, maxWidth: number = 400, quality: number = 0.85): Promise<File> => {
+  const compressImage = (
+    file: File,
+    maxWidth: number = 400,
+    quality: number = 0.85
+  ): Promise<File> => {
     return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
       const img = new window.Image();
 
       img.onload = () => {
@@ -101,22 +109,26 @@ const SellerProfilePage = () => {
         ctx?.drawImage(img, 0, 0, newWidth, newHeight);
 
         const tryCompress = (q: number) => {
-          canvas.toBlob((blob) => {
-            if (blob) {
-              if (blob.size > 2 * 1024 * 1024 && q > 0.3) {
-                tryCompress(q - 0.1);
-                return;
-              }
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                if (blob.size > 2 * 1024 * 1024 && q > 0.3) {
+                  tryCompress(q - 0.1);
+                  return;
+                }
 
-              const compressedFile = new File([blob], file.name, {
-                type: 'image/jpeg',
-                lastModified: Date.now()
-              });
-              resolve(compressedFile);
-            } else {
-              resolve(file);
-            }
-          }, 'image/jpeg', q);
+                const compressedFile = new File([blob], file.name, {
+                  type: "image/jpeg",
+                  lastModified: Date.now(),
+                });
+                resolve(compressedFile);
+              } else {
+                resolve(file);
+              }
+            },
+            "image/jpeg",
+            q
+          );
         };
 
         tryCompress(quality);
@@ -138,15 +150,17 @@ const SellerProfilePage = () => {
 
   // Format file size for display
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   // Handle avatar file selection
-  const handleAvatarFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarFileSelect = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -161,7 +175,9 @@ const SellerProfilePage = () => {
     }
 
     if (file.size > 50 * 1024 * 1024) {
-      toast.error("Image size must be less than 50MB. Please choose a smaller image.");
+      toast.error(
+        "Image size must be less than 50MB. Please choose a smaller image."
+      );
       return;
     }
 
@@ -175,9 +191,13 @@ const SellerProfilePage = () => {
       const compressedFile = await compressImage(file, 400, 0.85);
       setSelectedAvatarFile(compressedFile);
 
-      const compressionRatio = Math.round((1 - compressedFile.size / file.size) * 100);
+      const compressionRatio = Math.round(
+        (1 - compressedFile.size / file.size) * 100
+      );
       setCompressionInfo(
-        `Compressed: ${formatFileSize(file.size)} → ${formatFileSize(compressedFile.size)} (${compressionRatio}% smaller)`
+        `Compressed: ${formatFileSize(file.size)} → ${formatFileSize(
+          compressedFile.size
+        )} (${compressionRatio}% smaller)`
       );
 
       if (compressionRatio > 50) {
@@ -185,7 +205,6 @@ const SellerProfilePage = () => {
       } else if (compressionRatio > 20) {
         toast.success(`Image compressed by ${compressionRatio}%`);
       }
-
     } catch (error) {
       console.error("Error processing image:", error);
       toast.error("Error processing image. Please try again.");
@@ -193,7 +212,9 @@ const SellerProfilePage = () => {
   };
 
   // Handle banner file selection
-  const handleBannerFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBannerFileSelect = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -208,7 +229,9 @@ const SellerProfilePage = () => {
     }
 
     if (file.size > 50 * 1024 * 1024) {
-      toast.error("Image size must be less than 50MB. Please choose a smaller image.");
+      toast.error(
+        "Image size must be less than 50MB. Please choose a smaller image."
+      );
       return;
     }
 
@@ -222,9 +245,13 @@ const SellerProfilePage = () => {
       const compressedFile = await compressImage(file, 800, 0.85);
       setSelectedBannerFile(compressedFile);
 
-      const compressionRatio = Math.round((1 - compressedFile.size / file.size) * 100);
+      const compressionRatio = Math.round(
+        (1 - compressedFile.size / file.size) * 100
+      );
       setCompressionInfo(
-        `Compressed: ${formatFileSize(file.size)} → ${formatFileSize(compressedFile.size)} (${compressionRatio}% smaller)`
+        `Compressed: ${formatFileSize(file.size)} → ${formatFileSize(
+          compressedFile.size
+        )} (${compressionRatio}% smaller)`
       );
 
       if (compressionRatio > 50) {
@@ -232,7 +259,6 @@ const SellerProfilePage = () => {
       } else if (compressionRatio > 20) {
         toast.success(`Image compressed by ${compressionRatio}%`);
       }
-
     } catch (error) {
       console.error("Error processing image:", error);
       toast.error("Error processing image. Please try again.");
@@ -263,15 +289,17 @@ const SellerProfilePage = () => {
       setSelectedAvatarFile(null);
       setCompressionInfo(null);
 
-      const fileInput = document.getElementById("avatarUpload") as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
-
+      const fileInput = document.getElementById(
+        "avatarUpload"
+      ) as HTMLInputElement;
+      if (fileInput) fileInput.value = "";
     } catch (error: any) {
       console.error("❌ Upload error:", error);
-      const errorMessage = error.response?.data?.message ||
-                          error.response?.data?.error ||
-                          error.message ||
-                          "Upload failed";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Upload failed";
       toast.error(errorMessage);
     } finally {
       setIsUploadingAvatar(false);
@@ -302,15 +330,17 @@ const SellerProfilePage = () => {
       setSelectedBannerFile(null);
       setCompressionInfo(null);
 
-      const fileInput = document.getElementById("bannerUpload") as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
-
+      const fileInput = document.getElementById(
+        "bannerUpload"
+      ) as HTMLInputElement;
+      if (fileInput) fileInput.value = "";
     } catch (error: any) {
       console.error("❌ Upload error:", error);
-      const errorMessage = error.response?.data?.message ||
-                          error.response?.data?.error ||
-                          error.message ||
-                          "Upload failed";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Upload failed";
       toast.error(errorMessage);
     } finally {
       setIsUploadingBanner(false);
@@ -329,10 +359,11 @@ const SellerProfilePage = () => {
       await queryClient.invalidateQueries({ queryKey: ["seller"] });
     } catch (error: any) {
       console.error("❌ Delete error:", error);
-      const errorMessage = error.response?.data?.message ||
-                          error.response?.data?.error ||
-                          error.message ||
-                          "Delete failed";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Delete failed";
       toast.error(errorMessage);
     } finally {
       setIsDeletingAvatar(false);
@@ -351,10 +382,11 @@ const SellerProfilePage = () => {
       await queryClient.invalidateQueries({ queryKey: ["seller"] });
     } catch (error: any) {
       console.error("❌ Delete error:", error);
-      const errorMessage = error.response?.data?.message ||
-                          error.response?.data?.error ||
-                          error.message ||
-                          "Delete failed";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Delete failed";
       toast.error(errorMessage);
     } finally {
       setIsDeletingBanner(false);
@@ -366,16 +398,20 @@ const SellerProfilePage = () => {
     setAvatarPreview(null);
     setSelectedAvatarFile(null);
     setCompressionInfo(null);
-    const fileInput = document.getElementById("avatarUpload") as HTMLInputElement;
-    if (fileInput) fileInput.value = '';
+    const fileInput = document.getElementById(
+      "avatarUpload"
+    ) as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
   };
 
   const cancelBannerUpload = () => {
     setBannerPreview(null);
     setSelectedBannerFile(null);
     setCompressionInfo(null);
-    const fileInput = document.getElementById("bannerUpload") as HTMLInputElement;
-    if (fileInput) fileInput.value = '';
+    const fileInput = document.getElementById(
+      "bannerUpload"
+    ) as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
   };
 
   // Get current avatar URL
@@ -395,7 +431,10 @@ const SellerProfilePage = () => {
   // Handle profile update
   const handleProfileUpdate = async () => {
     try {
-      const response = await axiosInstance.put("/seller/api/update-profile", editForm);
+      const response = await axiosInstance.put(
+        "/seller/api/update-profile",
+        editForm
+      );
       toast.success("Profile updated successfully!");
       await queryClient.invalidateQueries({ queryKey: ["seller"] });
       setIsEditing(false);
@@ -429,13 +468,13 @@ const SellerProfilePage = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Profile Settings</h1>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h1 className="text-2xl font-bold text-white">Profile Settings</h1>
         <button
           onClick={() => setIsEditing(!isEditing)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto"
         >
           <Edit3 className="w-4 h-4" />
           {isEditing ? "Cancel" : "Edit Profile"}
@@ -444,7 +483,7 @@ const SellerProfilePage = () => {
 
       {/* Banner Section */}
       <div className="relative">
-        <div className="h-48 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg overflow-hidden">
+        <div className="h-32 sm:h-48 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg overflow-hidden">
           {getCurrentBannerUrl() ? (
             <img
               src={getCurrentBannerUrl()!}
@@ -459,13 +498,11 @@ const SellerProfilePage = () => {
         </div>
 
         {/* Banner Actions */}
-        <div className="absolute top-4 right-4 flex gap-2">
+        <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex flex-col sm:flex-row gap-2">
           <button
-            onClick={() =>
-              document.getElementById("bannerUpload")?.click()
-            }
+            onClick={() => document.getElementById("bannerUpload")?.click()}
             disabled={isUploadingBanner}
-            className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg px-4 py-2 flex items-center gap-2 disabled:opacity-50 transition-all duration-200"
+            className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 flex items-center gap-2 disabled:opacity-50 transition-all duration-200 text-sm"
           >
             {isUploadingBanner ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -479,7 +516,7 @@ const SellerProfilePage = () => {
             <button
               onClick={handleBannerDelete}
               disabled={isDeletingBanner}
-              className="bg-red-500 bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg px-4 py-2 flex items-center gap-2 disabled:opacity-50 transition-all duration-200"
+              className="bg-red-500 bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 flex items-center gap-2 disabled:opacity-50 transition-all duration-200 text-sm"
             >
               {isDeletingBanner ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -502,9 +539,9 @@ const SellerProfilePage = () => {
       </div>
 
       {/* Avatar Section */}
-      <div className="flex flex-col items-center space-y-4 -mt-16 relative z-10">
+      <div className="flex flex-col items-center space-y-4 -mt-12 sm:-mt-16 relative z-10">
         <div className="relative">
-          <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 shadow-lg border-4 border-white">
+          <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden bg-gray-700 shadow-lg border-4 border-gray-800">
             {getCurrentAvatarUrl() ? (
               <img
                 src={getCurrentAvatarUrl()!}
@@ -521,9 +558,7 @@ const SellerProfilePage = () => {
           {/* Avatar Actions */}
           <div className="absolute -bottom-2 -right-2 flex gap-2">
             <button
-              onClick={() =>
-                document.getElementById("avatarUpload")?.click()
-              }
+              onClick={() => document.getElementById("avatarUpload")?.click()}
               disabled={isUploadingAvatar}
               className="bg-blue-500 text-white rounded-full p-3 hover:bg-blue-600 disabled:opacity-50 shadow-lg transition-all duration-200 hover:scale-105"
             >
@@ -562,7 +597,7 @@ const SellerProfilePage = () => {
         {/* Compression Info */}
         {compressionInfo && (
           <div className="text-center">
-            <p className="text-sm text-gray-600 bg-gray-100 px-3 py-2 rounded-lg">
+            <p className="text-sm text-gray-300 bg-gray-800 px-3 py-2 rounded-lg">
               {compressionInfo}
             </p>
           </div>
@@ -570,12 +605,12 @@ const SellerProfilePage = () => {
 
         {/* Upload Actions */}
         {(avatarPreview || bannerPreview) && (
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             {avatarPreview && (
               <button
                 onClick={handleAvatarUpload}
                 disabled={isUploadingAvatar}
-                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 transition-colors"
               >
                 <Upload className="w-4 h-4" />
                 {isUploadingAvatar ? "Uploading..." : "Upload Avatar"}
@@ -585,7 +620,7 @@ const SellerProfilePage = () => {
               <button
                 onClick={handleBannerUpload}
                 disabled={isUploadingBanner}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 transition-colors"
               >
                 <Upload className="w-4 h-4" />
                 {isUploadingBanner ? "Uploading..." : "Upload Banner"}
@@ -596,7 +631,7 @@ const SellerProfilePage = () => {
                 cancelAvatarUpload();
                 cancelBannerUpload();
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 transition-colors"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors"
             >
               <X className="w-4 h-4" />
               Cancel
@@ -606,11 +641,11 @@ const SellerProfilePage = () => {
 
         {/* Upload Instructions */}
         {!avatarPreview && !bannerPreview && (
-          <div className="text-center max-w-xs">
-            <p className="text-sm text-gray-500 mb-2">
+          <div className="text-center max-w-xs px-4">
+            <p className="text-sm text-gray-400 mb-2">
               Click the camera icons to upload avatar and banner
             </p>
-            <div className="text-xs text-gray-400 space-y-1">
+            <div className="text-xs text-gray-500 space-y-1">
               <p>✅ Supports: JPEG, PNG, GIF, WebP</p>
               <p>✅ Max size: 50MB (auto-compressed)</p>
               <p>✅ Optimized for web display</p>
@@ -620,135 +655,153 @@ const SellerProfilePage = () => {
       </div>
 
       {/* Shop Information */}
-      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+      <div className="bg-gray-900 rounded-lg p-4 sm:p-6 shadow-lg border border-gray-800">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-gray-800">Shop Information</h3>
+          <h3 className="text-lg font-semibold text-white">Shop Information</h3>
         </div>
 
         {isEditing ? (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <Building className="w-4 h-4" />
                   Shop Name
                 </label>
                 <input
                   type="text"
                   value={editForm.name}
-                  onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, name: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <Mail className="w-4 h-4" />
                   Email Address
                 </label>
                 <input
                   type="email"
                   value={editForm.email}
-                  onChange={(e) => setEditForm({...editForm, email: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, email: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <Phone className="w-4 h-4" />
                   Phone Number
                 </label>
                 <input
                   type="tel"
                   value={editForm.phone_number}
-                  onChange={(e) => setEditForm({...editForm, phone_number: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, phone_number: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <Flag className="w-4 h-4" />
                   Country
                 </label>
                 <input
                   type="text"
                   value={editForm.country}
-                  onChange={(e) => setEditForm({...editForm, country: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, country: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
                   Address
                 </label>
                 <input
                   type="text"
                   value={editForm.address}
-                  onChange={(e) => setEditForm({...editForm, address: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, address: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <Clock className="w-4 h-4" />
                   Opening Hours
                 </label>
                 <input
                   type="text"
                   value={editForm.opening_hours}
-                  onChange={(e) => setEditForm({...editForm, opening_hours: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, opening_hours: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <Globe className="w-4 h-4" />
                   Website
                 </label>
                 <input
                   type="url"
                   value={editForm.website}
-                  onChange={(e) => setEditForm({...editForm, website: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, website: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <Tag className="w-4 h-4" />
                   Category
                 </label>
                 <input
                   type="text"
                   value={editForm.category}
-                  onChange={(e) => setEditForm({...editForm, category: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, category: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <User className="w-4 h-4" />
                   Bio
                 </label>
                 <textarea
                   value={editForm.bio}
-                  onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, bio: e.target.value })
+                  }
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Tell us about your shop..."
                 />
               </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={handleProfileUpdate}
-                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
               >
                 <Save className="w-4 h-4" />
                 Save Changes
               </button>
               <button
                 onClick={cancelEditing}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
               >
                 <XCircle className="w-4 h-4" />
                 Cancel
@@ -758,83 +811,95 @@ const SellerProfilePage = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Building className="w-4 h-4" />
                 Shop Name
               </label>
-              <p className="text-gray-800">{seller?.name}</p>
+              <p className="text-white">{seller?.name}</p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Mail className="w-4 h-4" />
                 Email Address
               </label>
-              <p className="text-gray-800">{seller?.email}</p>
+              <p className="text-white">{seller?.email}</p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Phone className="w-4 h-4" />
                 Phone Number
               </label>
-              <p className="text-gray-800">{seller?.phone_number || "Not provided"}</p>
+              <p className="text-white">
+                {seller?.phone_number || "Not provided"}
+              </p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Flag className="w-4 h-4" />
                 Country
               </label>
-              <p className="text-gray-800">{seller?.country || "Not provided"}</p>
+              <p className="text-white">{seller?.country || "Not provided"}</p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
                 Address
               </label>
-              <p className="text-gray-800">{seller?.shop?.address || "Not provided"}</p>
+              <p className="text-white">
+                {seller?.shop?.address || "Not provided"}
+              </p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 Opening Hours
               </label>
-              <p className="text-gray-800">{seller?.shop?.opening_hours || "Not provided"}</p>
+              <p className="text-white">
+                {seller?.shop?.opening_hours || "Not provided"}
+              </p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Globe className="w-4 h-4" />
                 Website
               </label>
-              <p className="text-gray-800">{seller?.shop?.website || "Not provided"}</p>
+              <p className="text-white">
+                {seller?.shop?.website || "Not provided"}
+              </p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Tag className="w-4 h-4" />
                 Category
               </label>
-              <p className="text-gray-800">{seller?.shop?.category || "Not provided"}</p>
+              <p className="text-white">
+                {seller?.shop?.category || "Not provided"}
+              </p>
             </div>
             <div className="space-y-1 md:col-span-2">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <User className="w-4 h-4" />
                 Bio
               </label>
-              <p className="text-gray-800">{seller?.shop?.bio || "No bio provided"}</p>
+              <p className="text-white">
+                {seller?.shop?.bio || "No bio provided"}
+              </p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 Member Since
               </label>
-              <p className="text-gray-800">
-                {new Date(seller?.createdAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
+              <p className="text-white">
+                {new Date(seller?.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
                 })}
               </p>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <Shield className="w-4 h-4" />
                 Account Status
               </label>

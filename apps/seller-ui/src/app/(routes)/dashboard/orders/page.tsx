@@ -106,10 +106,12 @@ const OrderTable = () => {
   });
 
   return (
-    <div className="w-full min-h-screen px-6 py-8 bg-[#0F1117]">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="w-full min-h-screen px-4 md:px-6 py-8 bg-[#0F1117]">
+      <div className="mb-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-1">Orders</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-1">
+            Orders
+          </h2>
           <div className="flex items-center text-sm text-gray-400">
             <Link href="/dashboard" className="hover:text-blue-400">
               Dashboard

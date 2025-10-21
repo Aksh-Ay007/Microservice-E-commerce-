@@ -196,15 +196,15 @@ const Page = () => {
   const getLastMessage = (chat: any) => chat?.lastMessage || "";
 
   return (
-    <div className="w-full min-h-screen p-8 bg-gray-950">
+    <div className="w-full min-h-screen p-4 md:p-8 bg-gray-950">
       <div className="max-w-7xl mx-auto">
-        <div className="flex h-[85vh] rounded-lg shadow-2xl overflow-hidden bg-gray-900">
+        <div className="flex flex-col lg:flex-row h-auto lg:h-[85vh] rounded-lg shadow-2xl overflow-hidden bg-gray-900">
           {/* Sidebar */}
-          <div className="w-[340px] border-r border-gray-800 bg-gray-900">
-            <div className="p-5 border-b border-gray-800 bg-gray-900">
+          <div className="w-full lg:w-[340px] border-b lg:border-b-0 lg:border-r border-gray-800 bg-gray-900">
+            <div className="p-4 md:p-5 border-b border-gray-800 bg-gray-900">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
-                  <h1 className="text-2xl font-semibold text-white">
+                  <h1 className="text-xl md:text-2xl font-semibold text-white">
                     Messages
                   </h1>
                   <p className="text-gray-400 text-sm mt-1">
@@ -225,7 +225,7 @@ const Page = () => {
               </div>
             </div>
 
-            <div className="divide-y divide-gray-800">
+            <div className="divide-y divide-gray-800 max-h-[300px] lg:max-h-none overflow-y-auto">
               {isLoading ? (
                 <div className="p-6 text-center">
                   <div className="inline-block w-6 h-6 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -266,14 +266,14 @@ const Page = () => {
                     <button
                       key={chat.conversationId}
                       onClick={() => handleChatSelect(chat)}
-                      className={`w-full text-left px-5 py-4 transition-all duration-200 ${
+                      className={`w-full text-left px-4 md:px-5 py-4 transition-all duration-200 ${
                         isActive
                           ? "bg-gray-800 border-l-4 border-blue-600"
                           : "hover:bg-gray-800/50 border-l-4 border-transparent"
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="relative">
+                        <div className="relative flex-shrink-0">
                           <Image
                             src={
                               chat.user?.avatar.url ||
@@ -312,15 +312,15 @@ const Page = () => {
           </div>
 
           {/* Chat Area */}
-          <div className="flex-1 flex flex-col bg-gray-950">
+          <div className="flex-1 flex flex-col bg-gray-950 min-h-[500px] lg:min-h-0">
             {selectedChat ? (
               <>
                 {/* Chat Header */}
-                <div className="p-5 border-b border-gray-800 bg-gray-900 flex items-center gap-4">
-                  <div className="relative">
+                <div className="p-4 md:p-5 border-b border-gray-800 bg-gray-900 flex items-center gap-4">
+                  <div className="relative flex-shrink-0">
                     <Image
                       src={
-                        selectedChat. user?.avatar.url ||
+                        selectedChat.user?.avatar.url ||
                         "https://ik.imagekit.io/AkshayMicroMart/photo/useravatar.jpg?updatedAt=1760470134415"
                       }
                       alt={selectedChat.user?.name}
@@ -353,7 +353,7 @@ const Page = () => {
                 {/* Messages */}
                 <div
                   ref={messageContainerRef}
-                  className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-950"
+                  className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-gray-950"
                 >
                   {messages?.map((msg: any, index: number) => (
                     <div
@@ -363,7 +363,7 @@ const Page = () => {
                       }`}
                     >
                       <div
-                        className={`max-w-[75%] ${
+                        className={`max-w-[85%] md:max-w-[75%] ${
                           msg.senderType === "seller"
                             ? "bg-blue-600 text-white"
                             : "bg-gray-800 text-white border border-gray-700"
@@ -401,7 +401,7 @@ const Page = () => {
                 />
               </>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
+              <div className="flex-1 flex flex-col items-center justify-center text-gray-400 p-4">
                 <div className="w-24 h-24 mb-6 rounded-full bg-gray-800 flex items-center justify-center">
                   <svg
                     className="w-12 h-12 text-gray-600"
@@ -417,10 +417,10 @@ const Page = () => {
                     />
                   </svg>
                 </div>
-                <h3 className="text-gray-300 font-semibold text-lg mb-2">
+                <h3 className="text-gray-300 font-semibold text-lg mb-2 text-center">
                   Select a conversation
                 </h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 text-center">
                   Choose a chat from the sidebar to start messaging
                 </p>
               </div>

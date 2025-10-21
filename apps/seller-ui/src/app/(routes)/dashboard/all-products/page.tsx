@@ -78,7 +78,6 @@ const ProductList = () => {
         accessorKey: "images",
         header: "Images",
         cell: ({ row }: any) => {
-
           return (
             <Image
               src={row.original.images[0]?.url}
@@ -147,7 +146,7 @@ const ProductList = () => {
         accessorKey: "actions",
         header: "Actions",
         cell: ({ row }: any) => (
-          <div className="flex  gap-3">
+          <div className="flex gap-3">
             <Link
               href={`/product/${row.original.id}`}
               className="text-blue-400 hover:text-blue-300 transition"
@@ -194,13 +193,15 @@ const ProductList = () => {
   };
 
   return (
-    <div className="w-full min-h-screen p-8">
+    <div className="w-full min-h-screen p-4 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-1">
-        <h2 className="text-2xl text-white font-semibold">All Products</h2>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-1 gap-4">
+        <h2 className="text-xl md:text-2xl text-white font-semibold">
+          All Products
+        </h2>
         <Link
           href={"/dashboard/create-product"}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
         >
           <Plus size={16} />
           Add New Product
@@ -208,7 +209,7 @@ const ProductList = () => {
       </div>
       {/* BreadCrumbs */}
 
-      <div className="flex items-center  mb-4">
+      <div className="flex items-center mb-4 text-sm">
         <Link href={"/dashboard"} className="text-blue-400 cursor-pointer">
           Dashboard
         </Link>
@@ -217,20 +218,20 @@ const ProductList = () => {
       </div>
 
       {/* search bar */}
-      <div className="mb-4 flex items-center bg-gray-900 p-2 rounded-md flex-1">
+      <div className="mb-4 flex items-center bg-gray-900 p-2 rounded-md flex-1 border border-gray-800">
         <Search className="text-gray-400 mr-2" size={18} />
 
         <input
           type="text"
           placeholder="Search products..."
-          className="w-full bg-transparent  text-white outline-none "
+          className="w-full bg-transparent text-white outline-none"
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
         />
       </div>
       {/* Table */}
 
-      <div className="overflow-x-auto bg-gray-900 rounded-lg p-4">
+      <div className="overflow-x-auto bg-gray-900 rounded-lg p-4 border border-gray-800">
         {isLoading ? (
           <p className="text-center text-white">Loading products...</p>
         ) : (
@@ -239,7 +240,10 @@ const ProductList = () => {
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id} className="border-b border-gray-800">
                   {headerGroup.headers.map((header) => (
-                    <th key={header.id} className="text-left p-3">
+                    <th
+                      key={header.id}
+                      className="text-left p-3 text-sm md:text-base"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -256,10 +260,10 @@ const ProductList = () => {
               {table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  className="border-b border-gray-800 hover:bg-gray-900 transition"
+                  className="border-b border-gray-800 hover:bg-gray-800 transition"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="p-3">
+                    <td key={cell.id} className="p-3 text-sm md:text-base">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

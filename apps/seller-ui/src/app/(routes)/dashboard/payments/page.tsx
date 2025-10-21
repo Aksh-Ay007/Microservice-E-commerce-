@@ -128,10 +128,12 @@ const SellerPayments = () => {
   });
 
   return (
-    <div className="w-full min-h-screen px-6 py-8 bg-[#0F1117]">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="w-full min-h-screen px-4 md:px-6 py-8 bg-[#0F1117]">
+      <div className="mb-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-1">Payments</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-1">
+            Payments
+          </h2>
           <div className="flex items-center text-sm text-gray-400">
             <Link href="/dashboard" className="hover:text-blue-400">
               Dashboard
@@ -143,7 +145,7 @@ const SellerPayments = () => {
       </div>
 
       {/* 💰 Total Earnings Summary */}
-      <div className="mb-6 grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-[#1C1F29] border border-gray-700 rounded-xl p-5 flex flex-col items-start justify-center">
           <p className="text-gray-400 text-sm mb-1">Total Earnings</p>
           <h3 className="text-2xl font-semibold text-green-400">

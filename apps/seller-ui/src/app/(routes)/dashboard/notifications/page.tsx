@@ -1,19 +1,29 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Bell, Search, Filter, Trash2, Eye, EyeOff, AlertCircle, Info, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import axiosInstance from '../../../../utils/axiosinstance';
-import useSeller from '../../../../hooks/useSeller';
-import toast from 'react-hot-toast';
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  AlertCircle,
+  Bell,
+  CheckCircle,
+  Eye,
+  EyeOff,
+  Info,
+  RefreshCw,
+  Search,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
+import toast from "react-hot-toast";
+import useSeller from "../../../../hooks/useSeller";
+import axiosInstance from "../../../../utils/axiosinstance";
 
 interface Notification {
   id: string;
   title: string;
   message: string;
-  status: 'Read' | 'Unread';
-  type: 'order' | 'product' | 'system' | 'general';
-  priority: 'low' | 'normal' | 'high' | 'urgent';
+  status: "Read" | "Unread";
+  type: "order" | "product" | "system" | "general";
+  priority: "low" | "normal" | "high" | "urgent";
   createdAt: string;
   creator: {
     id: string;
@@ -35,31 +45,41 @@ export default function SellerNotificationsPage() {
   const { seller } = useSeller();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState({
-    status: '',
-    type: '',
-    priority: '',
-    search: ''
+    status: "",
+    type: "",
+    priority: "",
+    search: "",
   });
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
     total: 0,
-    pages: 0
+    pages: 0,
   });
 
   // Fetch notifications
-  const { data: notificationsData, isLoading, refetch } = useQuery({
-    queryKey: ['seller-notifications', seller?.id, pagination.page, filters],
+  const {
+    data: notificationsData,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["seller-notifications", seller?.id, pagination.page, filters],
     queryFn: async () => {
-      if (!seller?.id) return { notifications: [], pagination: { page: 1, limit: 10, total: 0, pages: 0 } };
+      if (!seller?.id)
+        return {
+          notifications: [],
+          pagination: { page: 1, limit: 10, total: 0, pages: 0 },
+        };
 
       const params = new URLSearchParams({
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
-        ...filters
+        ...filters,
       });
 
-      const response = await axiosInstance.get(`/seller/api/seller-notifications?${params}`);
+      const response = await axiosInstance.get(
+        `/seller/api/seller-notifications?${params}`
+      );
       return response.data;
     },
     enabled: !!seller?.id,
@@ -67,11 +87,13 @@ export default function SellerNotificationsPage() {
 
   // Fetch stats
   const { data: stats } = useQuery({
-    queryKey: ['seller-notification-stats', seller?.id],
+    queryKey: ["seller-notification-stats", seller?.id],
     queryFn: async () => {
       if (!seller?.id) return null;
 
-      const response = await axiosInstance.get('/seller/api/seller-notifications/stats');
+      const response = await axiosInstance.get(
+        "/seller/api/seller-notifications/stats"
+      );
       return response.data;
     },
     enabled: !!seller?.id,
@@ -87,21 +109,24 @@ export default function SellerNotificationsPage() {
 
       // Update cache
       queryClient.setQueryData(
-        ['seller-notifications', seller?.id, pagination.page, filters],
+        ["seller-notifications", seller?.id, pagination.page, filters],
         (old: any) => ({
           ...old,
-          notifications: old?.notifications?.map((notif: Notification) =>
-            notif.id === id ? { ...notif, status: 'Read' } : notif
-          ) || []
+          notifications:
+            old?.notifications?.map((notif: Notification) =>
+              notif.id === id ? { ...notif, status: "Read" } : notif
+            ) || [],
         })
       );
 
       // Refetch stats
-      queryClient.invalidateQueries({ queryKey: ['seller-notification-stats'] });
-      toast.success('Notification marked as read');
+      queryClient.invalidateQueries({
+        queryKey: ["seller-notification-stats"],
+      });
+      toast.success("Notification marked as read");
     } catch (error) {
-      console.error('Error marking as read:', error);
-      toast.error('Failed to mark notification as read');
+      console.error("Error marking as read:", error);
+      toast.error("Failed to mark notification as read");
     }
   };
 
@@ -112,82 +137,109 @@ export default function SellerNotificationsPage() {
 
       // Update cache
       queryClient.setQueryData(
-        ['seller-notifications', seller?.id, pagination.page, filters],
+        ["seller-notifications", seller?.id, pagination.page, filters],
         (old: any) => ({
           ...old,
-          notifications: old?.notifications?.filter((notif: Notification) => notif.id !== id) || []
+          notifications:
+            old?.notifications?.filter(
+              (notif: Notification) => notif.id !== id
+            ) || [],
         })
       );
 
       // Refetch stats
-      queryClient.invalidateQueries({ queryKey: ['seller-notification-stats'] });
-      toast.success('Notification deleted');
+      queryClient.invalidateQueries({
+        queryKey: ["seller-notification-stats"],
+      });
+      toast.success("Notification deleted");
     } catch (error) {
-      console.error('Error deleting notification:', error);
-      toast.error('Failed to delete notification');
+      console.error("Error deleting notification:", error);
+      toast.error("Failed to delete notification");
     }
   };
 
   // Mark all as read
   const markAllAsRead = async () => {
     try {
-      await axiosInstance.put('/seller/api/seller-notifications/mark-all-read', {
-        receiverId: seller?.id
-      });
+      await axiosInstance.put(
+        "/seller/api/seller-notifications/mark-all-read",
+        {
+          receiverId: seller?.id,
+        }
+      );
 
       // Update cache
       queryClient.setQueryData(
-        ['seller-notifications', seller?.id, pagination.page, filters],
+        ["seller-notifications", seller?.id, pagination.page, filters],
         (old: any) => ({
           ...old,
-          notifications: old?.notifications?.map((notif: Notification) => ({ ...notif, status: 'Read' })) || []
+          notifications:
+            old?.notifications?.map((notif: Notification) => ({
+              ...notif,
+              status: "Read",
+            })) || [],
         })
       );
 
       // Refetch stats
-      queryClient.invalidateQueries({ queryKey: ['seller-notification-stats'] });
-      toast.success('All notifications marked as read');
+      queryClient.invalidateQueries({
+        queryKey: ["seller-notification-stats"],
+      });
+      toast.success("All notifications marked as read");
     } catch (error) {
-      console.error('Error marking all as read:', error);
-      toast.error('Failed to mark all notifications as read');
+      console.error("Error marking all as read:", error);
+      toast.error("Failed to mark all notifications as read");
     }
   };
 
   // Get priority color
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'text-red-600 bg-red-100';
-      case 'high': return 'text-orange-600 bg-orange-100';
-      case 'normal': return 'text-blue-600 bg-blue-100';
-      case 'low': return 'text-gray-600 bg-gray-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case "urgent":
+        return "text-red-600 bg-red-100";
+      case "high":
+        return "text-orange-600 bg-orange-100";
+      case "normal":
+        return "text-blue-600 bg-blue-100";
+      case "low":
+        return "text-gray-600 bg-gray-100";
+      default:
+        return "text-gray-600 bg-gray-100";
     }
   };
 
   // Get type icon
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'order': return <CheckCircle className="w-4 h-4" />;
-      case 'product': return <Info className="w-4 h-4" />;
-      case 'system': return <AlertCircle className="w-4 h-4" />;
-      default: return <Bell className="w-4 h-4" />;
+      case "order":
+        return <CheckCircle className="w-4 h-4" />;
+      case "product":
+        return <Info className="w-4 h-4" />;
+      case "system":
+        return <AlertCircle className="w-4 h-4" />;
+      default:
+        return <Bell className="w-4 h-4" />;
     }
   };
 
   const handlePageChange = (newPage: number) => {
-    setPagination(prev => ({ ...prev, page: newPage }));
+    setPagination((prev) => ({ ...prev, page: newPage }));
   };
 
   return (
-    <div className="p-6 bg-gray-950 min-h-screen text-white">
+    <div className="p-4 md:p-6 bg-gray-950 min-h-screen text-white">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Notifications</h1>
-        <p className="text-gray-400">Manage your notifications and stay updated</p>
+        <h1 className="text-xl md:text-2xl font-bold text-white">
+          Notifications
+        </h1>
+        <p className="text-gray-400 text-sm md:text-base">
+          Manage your notifications and stay updated
+        </p>
       </div>
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-gray-800 p-4 rounded-lg shadow border border-gray-700">
             <div className="flex items-center">
               <Bell className="w-8 h-8 text-blue-400" />
@@ -211,7 +263,9 @@ export default function SellerNotificationsPage() {
               <Eye className="w-8 h-8 text-green-400" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-400">Read</p>
-                <p className="text-2xl font-bold text-white">{stats.total - stats.unread}</p>
+                <p className="text-2xl font-bold text-white">
+                  {stats.total - stats.unread}
+                </p>
               </div>
             </div>
           </div>
@@ -220,7 +274,9 @@ export default function SellerNotificationsPage() {
               <AlertCircle className="w-8 h-8 text-red-400" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-400">Urgent</p>
-                <p className="text-2xl font-bold text-white">{stats.byPriority?.urgent || 0}</p>
+                <p className="text-2xl font-bold text-white">
+                  {stats.byPriority?.urgent || 0}
+                </p>
               </div>
             </div>
           </div>
@@ -229,25 +285,33 @@ export default function SellerNotificationsPage() {
 
       {/* Filters */}
       <div className="bg-gray-800 p-4 rounded-lg shadow mb-6 border border-gray-700">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Search</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Search
+            </label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-4 h-4" />
               <input
                 type="text"
                 placeholder="Search notifications..."
                 value={filters.search}
-                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, search: e.target.value }))
+                }
                 className="w-full pl-10 pr-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Status</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Status
+            </label>
             <select
               value={filters.status}
-              onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+              onChange={(e) =>
+                setFilters((prev) => ({ ...prev, status: e.target.value }))
+              }
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
             >
               <option value="">All Status</option>
@@ -256,10 +320,14 @@ export default function SellerNotificationsPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Type</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Type
+            </label>
             <select
               value={filters.type}
-              onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
+              onChange={(e) =>
+                setFilters((prev) => ({ ...prev, type: e.target.value }))
+              }
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
             >
               <option value="">All Types</option>
@@ -270,10 +338,14 @@ export default function SellerNotificationsPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Priority</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Priority
+            </label>
             <select
               value={filters.priority}
-              onChange={(e) => setFilters(prev => ({ ...prev, priority: e.target.value }))}
+              onChange={(e) =>
+                setFilters((prev) => ({ ...prev, priority: e.target.value }))
+              }
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
             >
               <option value="">All Priorities</option>
@@ -287,17 +359,17 @@ export default function SellerNotificationsPage() {
       </div>
 
       {/* Actions */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <button
             onClick={markAllAsRead}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
             Mark All as Read
           </button>
           <button
             onClick={() => refetch()}
-            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors flex items-center gap-2"
+            className="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
           >
             <RefreshCw className="w-4 h-4" />
             Refresh
@@ -326,30 +398,45 @@ export default function SellerNotificationsPage() {
               <div
                 key={notification.id}
                 className={`p-4 hover:bg-gray-750 transition-colors ${
-                  notification.status === 'Unread' ? 'bg-gray-750 border-l-4 border-blue-500' : ''
+                  notification.status === "Unread"
+                    ? "bg-gray-750 border-l-4 border-blue-500"
+                    : ""
                 }`}
               >
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
                       {getTypeIcon(notification.type)}
-                      <h3 className="font-medium text-white">{notification.title}</h3>
-                      <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(notification.priority)}`}>
+                      <h3 className="font-medium text-white">
+                        {notification.title}
+                      </h3>
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(
+                          notification.priority
+                        )}`}
+                      >
                         {notification.priority}
                       </span>
-                      {notification.status === 'Unread' && (
+                      {notification.status === "Unread" && (
                         <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
                       )}
                     </div>
-                    <p className="text-gray-300 text-sm mb-2">{notification.message}</p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span>By: {notification.creator.name} ({notification.creator.role})</span>
+                    <p className="text-gray-300 text-sm mb-2">
+                      {notification.message}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                      <span>
+                        By: {notification.creator.name} (
+                        {notification.creator.role})
+                      </span>
                       <span>•</span>
-                      <span>{new Date(notification.createdAt).toLocaleString()}</span>
+                      <span>
+                        {new Date(notification.createdAt).toLocaleString()}
+                      </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 ml-4">
-                    {notification.status === 'Unread' && (
+                  <div className="flex items-center gap-2">
+                    {notification.status === "Unread" && (
                       <button
                         onClick={() => markAsRead(notification.id)}
                         className="p-1 text-gray-500 hover:text-blue-400 transition-colors"
@@ -376,20 +463,22 @@ export default function SellerNotificationsPage() {
       {/* Pagination */}
       {paginationData.pages > 1 && (
         <div className="mt-6 flex justify-center">
-          <div className="flex gap-2">
-            {Array.from({ length: paginationData.pages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                className={`px-3 py-2 rounded-md text-sm ${
-                  page === paginationData.page
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
+          <div className="flex gap-2 flex-wrap">
+            {Array.from({ length: paginationData.pages }, (_, i) => i + 1).map(
+              (page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-3 py-2 rounded-md text-sm ${
+                    page === paginationData.page
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600"
+                  }`}
+                >
+                  {page}
+                </button>
+              )
+            )}
           </div>
         </div>
       )}

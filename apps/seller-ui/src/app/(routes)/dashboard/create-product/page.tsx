@@ -177,16 +177,16 @@ const Page = () => {
 
   return (
     <form
-      className="w-full mx-auto p-8 shadow-md rounded-lg text-white bg-gray-800"
+      className="w-full mx-auto p-4 md:p-8 shadow-md rounded-lg text-white bg-gray-900"
       onSubmit={handleSubmit(onSubmit)}
     >
       {/* Heading and breadcrumbs */}
 
-      <h2 className="text-2xl py-2 font-semibold font-Poppins text-white">
+      <h2 className="text-xl md:text-2xl py-2 font-semibold font-Poppins text-white">
         Create Product
       </h2>
 
-      <div className="flex items-center">
+      <div className="flex items-center text-sm">
         <Link href="/dashboard" className="text-[#80Deea] cursor-pointer">
           Dashboard
         </Link>
@@ -195,10 +195,10 @@ const Page = () => {
       </div>
       {/* content Layout */}
 
-      <div className="py-4 w-full flex gap-6">
+      <div className="py-4 w-full flex flex-col lg:flex-row gap-6">
         {/* Left side-image upload section */}
 
-        <div className="md:w-[35%]">
+        <div className="w-full lg:w-[35%]">
           {images?.length > 0 && (
             <ImagePlaceHolder
               setOpenImageModal={setOpenImageModal}
@@ -233,11 +233,11 @@ const Page = () => {
 
         {/* Right side-form inputs*/}
 
-        <div className="md:w-[65%]">
-          <div className="w-full flex gap-6">
+        <div className="w-full lg:w-[65%]">
+          <div className="w-full flex flex-col lg:flex-row gap-6">
             {/* Product title inputs */}
 
-            <div className="w-2/4">
+            <div className="w-full lg:w-2/4">
               <Input
                 label="Product Title *"
                 placeholder="Enter Product Title"
@@ -404,7 +404,7 @@ const Page = () => {
 
             {/* category  */}
 
-            <div className="w-2/4">
+            <div className="w-full lg:w-2/4">
               <label className="block font-semibold text-gray-300 mb-1">
                 Category *
               </label>
@@ -691,7 +691,7 @@ const Page = () => {
 
       {openImageModal && (
         <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-60 z-50">
-          <div className="bg-gray-800 p-6 rounded-lg w-[450px] text-white">
+          <div className="bg-gray-800 p-6 rounded-lg w-[90%] max-w-[450px] text-white">
             <div className="flex justify-between items-center pb-3 mb-4">
               <h2 className="text-lg font-semibold">Enhance Product Image</h2>
               <X
@@ -738,19 +738,19 @@ const Page = () => {
         </div>
       )}
 
-      <div className="mt-6 flex justify-end gap-3">
+      <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
         {isChanged && (
           <button
             type="button"
             onClick={handleSaveDraft}
-            className="px-4 py-2 bg-gray-700 text-white rounded-md"
+            className="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition-colors"
           >
             Save Draft
           </button>
         )}
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           disabled={loading}
         >
           {loading ? "Creating..." : "Create"}
