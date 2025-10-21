@@ -6,11 +6,12 @@ interface Props {
   icon: React.ReactNode;
   isActive: boolean;
   href: string;
+  onClose?: () => void;
 }
 
-const SidebarItem = ({ icon, title, isActive, href }: Props) => {
+const SidebarItem = ({ icon, title, isActive, href, onClose }: Props) => {
   return (
-    <Link href={href} className="my-2 block">
+    <Link href={href} className="my-2 block" onClick={onClose}>
       <div
         className={`flex gap-2 w-full min-h-12 h-full items-center px-[13px] rounded-lg cursor-pointer transition
     hover:bg-[#2b2f31]

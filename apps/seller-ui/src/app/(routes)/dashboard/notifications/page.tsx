@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Bell, Search, Filter, Trash2, Eye, EyeOff, AlertCircle, Info, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bell, Search, Trash2, Eye, EyeOff, AlertCircle, Info, CheckCircle, RefreshCw } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '../../../../utils/axiosinstance';
 import useSeller from '../../../../hooks/useSeller';
@@ -24,12 +24,12 @@ interface Notification {
   redirect_link?: string;
 }
 
-interface NotificationStats {
-  total: number;
-  unread: number;
-  byType: Record<string, number>;
-  byPriority: Record<string, number>;
-}
+// interface NotificationStats {
+//   total: number;
+//   unread: number;
+//   byType: Record<string, number>;
+//   byPriority: Record<string, number>;
+// }
 
 export default function SellerNotificationsPage() {
   const { seller } = useSeller();

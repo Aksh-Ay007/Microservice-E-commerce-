@@ -2,20 +2,15 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { saveAs } from "file-saver";
 import {
-  ChevronLeft,
-  ChevronRight,
   ChevronRightIcon,
-  Edit,
   Eye,
   Loader2,
-  MoreHorizontal,
   Search,
   Trash2,
   Calendar,
@@ -27,17 +22,16 @@ import { useDeferredValue, useMemo, useState } from "react";
 import axiosInstance from "../../../../utils/axiosinstance";
 import toast from "react-hot-toast";
 import Input from '../../../../../../../packages/components/input';
+import ResponsiveTable from '../../../../shared/components/responsive-table';
 
 const AllEventsPage = () => {
-  const [page, setPage] = useState(1);
   const [globalFilter, setGlobalFilter] = useState("");
   const deferredGlobalFilter = useDeferredValue(globalFilter);
   const queryClient = useQueryClient();
-  const limit = 10;
 
   // Fetch events data
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["seller-events", page],
+    queryKey: ["seller-events"],
     queryFn: async () => {
       const res = await axiosInstance.get(`/product/api/get-shop-events`);
       return res.data;
@@ -288,11 +282,11 @@ const AllEventsPage = () => {
 
   // Main UI
   return (
-    <div className="w-full min-h-screen px-6 py-8 bg-gray-950">
+    <div className="w-full min-h-screen px-4 sm:px-6 py-4 sm:py-8 bg-gray-950">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-1">All Events</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">All Events</h2>
           <div className="flex items-center text-sm text-gray-400">
             <Link href="/dashboard" className="hover:text-blue-400">
               Dashboard
@@ -302,16 +296,16 @@ const AllEventsPage = () => {
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={handleExportCSV}
-            className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg text-sm transition"
+            className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg text-sm transition w-full sm:w-auto"
           >
             Export CSV
           </button>
           <Link
             href="/dashboard/create-event"
-            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm transition"
+            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm transition w-full sm:w-auto text-center"
           >
             Create New Event
           </Link>
@@ -319,22 +313,22 @@ const AllEventsPage = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <div className="bg-gray-800 p-3 sm:p-4 rounded-lg border border-gray-700">
           <div className="flex items-center">
-            <Calendar className="w-8 h-8 text-blue-400" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-400">Total Events</p>
-              <p className="text-2xl font-bold text-white">{allEvents.length}</p>
+            <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" />
+            <div className="ml-2 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-400">Total Events</p>
+              <p className="text-lg sm:text-2xl font-bold text-white">{allEvents.length}</p>
             </div>
           </div>
         </div>
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+        <div className="bg-gray-800 p-3 sm:p-4 rounded-lg border border-gray-700">
           <div className="flex items-center">
-            <Clock className="w-8 h-8 text-green-400" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-400">Active</p>
-              <p className="text-2xl font-bold text-white">
+            <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-green-400" />
+            <div className="ml-2 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-400">Active</p>
+              <p className="text-lg sm:text-2xl font-bold text-white">
                 {allEvents.filter((e: any) => {
                   const now = new Date();
                   const start = new Date(e.starting_date);
@@ -345,23 +339,23 @@ const AllEventsPage = () => {
             </div>
           </div>
         </div>
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+        <div className="bg-gray-800 p-3 sm:p-4 rounded-lg border border-gray-700">
           <div className="flex items-center">
-            <Calendar className="w-8 h-8 text-blue-400" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-400">Upcoming</p>
-              <p className="text-2xl font-bold text-white">
+            <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" />
+            <div className="ml-2 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-400">Upcoming</p>
+              <p className="text-lg sm:text-2xl font-bold text-white">
                 {allEvents.filter((e: any) => new Date() < new Date(e.starting_date)).length}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+        <div className="bg-gray-800 p-3 sm:p-4 rounded-lg border border-gray-700">
           <div className="flex items-center">
-            <Clock className="w-8 h-8 text-gray-400" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-400">Ended</p>
-              <p className="text-2xl font-bold text-white">
+            <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
+            <div className="ml-2 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-400">Ended</p>
+              <p className="text-lg sm:text-2xl font-bold text-white">
                 {allEvents.filter((e: any) => new Date() > new Date(e.ending_date)).length}
               </p>
             </div>
@@ -371,51 +365,19 @@ const AllEventsPage = () => {
 
       {/* Search Bar */}
       <div className="my-5 flex items-center bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
-        <Search size={18} className="text-gray-400 mr-2" />
+        <Search size={18} className="text-gray-400 mr-2 flex-shrink-0" />
         <Input
           type="text"
           placeholder="Search events..."
-          className="flex-1 bg-transparent text-white outline-none border-none"
+          className="flex-1 bg-transparent text-white outline-none border-none text-sm sm:text-base"
           value={globalFilter}
           onChange={(e: any) => setGlobalFilter(e.target.value)}
         />
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-gray-700 bg-gray-800 shadow-sm">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-700 border-b border-gray-600">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="text-left px-4 py-3 font-semibold text-gray-200"
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className="border-b border-gray-700 hover:bg-gray-750 transition"
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-3 text-gray-200">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="rounded-xl border border-gray-700 bg-gray-800 shadow-sm">
+        <ResponsiveTable table={table} />
       </div>
 
       {/* Footer */}

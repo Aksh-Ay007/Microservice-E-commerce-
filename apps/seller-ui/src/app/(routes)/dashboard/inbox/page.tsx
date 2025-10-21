@@ -13,7 +13,7 @@ const Page = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const messageContainerRef = useRef<HTMLDivElement | null>(null);
-  const { seller, isLoading: userLoading } = useSeller();
+  const { seller } = useSeller();
   const conversationId = searchParams.get("conversationId");
   const { ws } = useWebSocket();
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
@@ -196,11 +196,11 @@ const Page = () => {
   const getLastMessage = (chat: any) => chat?.lastMessage || "";
 
   return (
-    <div className="w-full min-h-screen p-8 bg-gray-950">
+    <div className="w-full min-h-screen p-4 sm:p-8 bg-gray-950">
       <div className="max-w-7xl mx-auto">
-        <div className="flex h-[85vh] rounded-lg shadow-2xl overflow-hidden bg-gray-900">
+        <div className="flex flex-col lg:flex-row h-[85vh] rounded-lg shadow-2xl overflow-hidden bg-gray-900">
           {/* Sidebar */}
-          <div className="w-[340px] border-r border-gray-800 bg-gray-900">
+          <div className="w-full lg:w-[340px] border-r border-gray-800 bg-gray-900 flex-shrink-0">
             <div className="p-5 border-b border-gray-800 bg-gray-900">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
@@ -312,11 +312,11 @@ const Page = () => {
           </div>
 
           {/* Chat Area */}
-          <div className="flex-1 flex flex-col bg-gray-950">
+          <div className="flex-1 flex flex-col bg-gray-950 min-h-0">
             {selectedChat ? (
               <>
                 {/* Chat Header */}
-                <div className="p-5 border-b border-gray-800 bg-gray-900 flex items-center gap-4">
+                <div className="p-3 sm:p-5 border-b border-gray-800 bg-gray-900 flex items-center gap-3 sm:gap-4">
                   <div className="relative">
                     <Image
                       src={
@@ -324,17 +324,17 @@ const Page = () => {
                         "https://ik.imagekit.io/AkshayMicroMart/photo/useravatar.jpg?updatedAt=1760470134415"
                       }
                       alt={selectedChat.user?.name}
-                      width={48}
-                      height={48}
-                      className="rounded-full w-[48px] h-[48px] object-cover ring-2 ring-gray-700"
+                      width={40}
+                      height={40}
+                      className="rounded-full w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] object-cover ring-2 ring-gray-700"
                     />
                     {selectedChat.user?.isOnline && (
-                      <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-green-500 ring-2 ring-gray-900" />
+                      <span className="absolute bottom-0 right-0 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-green-500 ring-2 ring-gray-900" />
                     )}
                   </div>
 
-                  <div>
-                    <h2 className="text-white font-semibold text-base">
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-white font-semibold text-sm sm:text-base truncate">
                       {selectedChat.user?.name}
                     </h2>
                     <p className="text-xs text-gray-400 flex items-center gap-1.5">
@@ -353,7 +353,7 @@ const Page = () => {
                 {/* Messages */}
                 <div
                   ref={messageContainerRef}
-                  className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-950"
+                  className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 bg-gray-950"
                 >
                   {messages?.map((msg: any, index: number) => (
                     <div
@@ -363,17 +363,17 @@ const Page = () => {
                       }`}
                     >
                       <div
-                        className={`max-w-[75%] ${
+                        className={`max-w-[85%] sm:max-w-[75%] ${
                           msg.senderType === "seller"
                             ? "bg-blue-600 text-white"
                             : "bg-gray-800 text-white border border-gray-700"
-                        } px-4 py-3 rounded-lg ${
+                        } px-3 py-2 sm:px-4 sm:py-3 rounded-lg ${
                           msg.senderType === "seller"
                             ? "rounded-br-sm"
                             : "rounded-bl-sm"
                         }`}
                       >
-                        <p className="text-sm leading-relaxed">
+                        <p className="text-xs sm:text-sm leading-relaxed break-words">
                           {msg.text || msg.content}
                         </p>
                       </div>
