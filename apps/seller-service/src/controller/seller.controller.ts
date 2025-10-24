@@ -1109,3 +1109,113 @@ export const markAllSellerNotificationsAsRead = async (
 
   }
 };
+
+// ------------------------------------------------------------
+// Seller Dashboard Overview (analytics for the seller's shop)
+// ------------------------------------------------------------
+export const getSellerDashboardOverview = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const sellerId = req.seller?.id as string;
+    if (!sellerId) {
+      return next(new AuthError("Unauthorized access"));
+    }
+
+    const shop = await prisma.shops.findUnique({
+      where: { sellerId },
+      select: { id: true },
+    });
+
+    if (!shop?.id) {
+      return next(new NotFoundError("Shop not found for this seller"));
+    }
+
+    // Revenue by month for last 12 months
+    const now = new Date();
+    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+
+    const [ordersLastYear, allOrdersAggregate, totalOrders] = await Promise.all([
+      prisma.orders.findMany({
+        where: { shopId: shop.id, createdAt: { gte: twelveMonthsAgo } },
+        select: { total: true, createdAt: true },
+        orderBy: { createdAt: "asc" },
+      }),
+      prisma.orders.aggregate({
+        where: { shopId: shop.id },
+        _sum: { total: true },
+      }),
+      prisma.orders.count({ where: { shopId: shop.id } }),
+    ]);
+
+    const categories: string[] = [];
+    const monthlyRevenueMap = new Map<string, number>();
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(twelveMonthsAgo.getFullYear(), twelveMonthsAgo.getMonth() + i, 1);
+      const label = d.toLocaleString("en-US", { month: "short" });
+      categories.push(label);
+      monthlyRevenueMap.set(`${d.getFullYear()}-${d.getMonth()}`, 0);
+    }
+    let totalRevenue12M = 0;
+    for (const o of ordersLastYear) {
+      totalRevenue12M += o.total || 0;
+      const key = `${o.createdAt.getFullYear()}-${o.createdAt.getMonth()}`;
+      monthlyRevenueMap.set(key, (monthlyRevenueMap.get(key) || 0) + (o.total || 0));
+    }
+    const seriesData: number[] = [];
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(twelveMonthsAgo.getFullYear(), twelveMonthsAgo.getMonth() + i, 1);
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      seriesData.push(Number((monthlyRevenueMap.get(key) || 0).toFixed(2)));
+    }
+
+    // Product analytics totals for this shop
+    const analytics = await prisma.productAnalytics.findMany({
+      where: { shopId: shop.id },
+      select: { views: true, cartAdds: true, wishListAdds: true, purchases: true },
+    });
+    const totals = analytics.reduce(
+      (acc, a) => {
+        acc.totalViews += a.views || 0;
+        acc.totalCartAdds += a.cartAdds || 0;
+        acc.totalWishListAdds += a.wishListAdds || 0;
+        acc.totalPurchases += a.purchases || 0;
+        return acc;
+      },
+      { totalViews: 0, totalCartAdds: 0, totalWishListAdds: 0, totalPurchases: 0 }
+    );
+
+    // Recent orders
+    const recentOrdersRaw = await prisma.orders.findMany({
+      where: { shopId: shop.id },
+      take: 8,
+      orderBy: { createdAt: "desc" },
+      include: { user: { select: { id: true, name: true, email: true } } },
+    });
+    const recentOrders = recentOrdersRaw.map((o) => ({
+      id: o.id,
+      total: o.total,
+      status: o.status,
+      createdAt: o.createdAt,
+      user: o.user,
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totals: {
+          totalRevenue12M: Number(totalRevenue12M.toFixed(2)),
+          totalRevenueAllTime: Number((allOrdersAggregate._sum.total || 0).toFixed(2)),
+          totalOrders,
+          ...totals,
+        },
+        revenueByMonth: { categories, series: seriesData },
+        recentOrders,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};

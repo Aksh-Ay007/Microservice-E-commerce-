@@ -5,6 +5,7 @@ import { isSellerAuthenticated } from "../../../../packages/middleware/sellerAut
 import {
   createShop,
   createStripeConnectLink,
+  getSellerDashboardOverview,
   deleteSellerNotification,
   followShop,
   getSeller,
@@ -103,6 +104,14 @@ router.put(
   isSellerAuthenticated,
   isSeller,
   markAllSellerNotificationsAsRead
+);
+
+// Seller Dashboard Overview
+router.get(
+  "/dashboard/overview",
+  isSellerAuthenticated,
+  isSeller,
+  getSellerDashboardOverview
 );
 
 export default router;
