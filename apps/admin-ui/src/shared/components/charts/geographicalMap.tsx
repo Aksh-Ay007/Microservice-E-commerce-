@@ -9,7 +9,9 @@ import { feature } from "topojson-client";
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-const countryData = [
+type CountryDatum = { name: string; users: number; sellers: number };
+
+const defaultCountryData: CountryDatum[] = [
   { name: "United States of America", users: 120, sellers: 30 },
   { name: "India", users: 100, sellers: 20 },
   { name: "United Kingdom", users: 85, sellers: 15 },
@@ -17,8 +19,8 @@ const countryData = [
   { name: "Canada", users: 60, sellers: 5 },
 ];
 
-const getColor = (countryName: string) => {
-  const country = countryData.find((c) => c.name === countryName);
+const getColor = (countryName: string, data: CountryDatum[]) => {
+  const country = data.find((c) => c.name === countryName);
   if (!country) return "#1e293b";
   const total = country.users + country.sellers;
   if (total > 100) return "#22c55e";
@@ -26,10 +28,13 @@ const getColor = (countryName: string) => {
   return "#1e293b";
 };
 
-const GeographicalMap = () => {
+type GeographicalMapProps = { data?: CountryDatum[] };
+
+const GeographicalMap = ({ data }: GeographicalMapProps) => {
   const [geographies, setGeographies] = useState<any[]>([]);
   const [hovered, setHovered] = useState<any>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const countryData = Array.isArray(data) && data.length > 0 ? data : defaultCountryData;
 
   // Fetch & convert topojson
   useEffect(() => {
@@ -68,7 +73,7 @@ const GeographicalMap = () => {
             geographies.map((geo: any) => {
               const countryName = geo.properties.name;
               const match = countryData.find((c) => c.name === countryName);
-              const baseColor = getColor(countryName);
+              const baseColor = getColor(countryName, countryData);
 
               return (
                 <Geography

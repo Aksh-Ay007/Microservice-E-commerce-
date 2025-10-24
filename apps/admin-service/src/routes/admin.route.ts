@@ -6,6 +6,7 @@ import {
   addCategory,
   addNewAdmin,
   addSubCategory,
+  getDashboardOverview,
   createNotification,
   deleteNotification,
   getAllAdmins,
@@ -28,6 +29,12 @@ const router: Router = express.Router();
 router.get("/get-all-products", isAuthenticated, isAdmin, getAllProducts);
 router.get("/get-all-events", isAuthenticated, isAdmin, getAllEvents);
 router.get("/get-all-admins", isAuthenticated, isAdmin, getAllAdmins);
+router.get(
+  "/dashboard/overview",
+  isAuthenticated,
+  isAdmin,
+  getDashboardOverview
+);
 router.put("/add-new-admin", isAuthenticated, isAdmin, addNewAdmin);
 router.get("/get-all-users", isAuthenticated, isAdmin, getAllUsers);
 router.get("/get-all-sellers", isAuthenticated, isAdmin, getAllSellers);

@@ -3,6 +3,158 @@ import { NextFunction, Request, Response } from "express";
 import { ValidationError } from "../../../../packages/error-handler";
 import { imagekit } from "../../../../packages/libs/imagekit";
 
+// ------------------------------------------------------------
+// Admin Dashboard Overview (aggregated analytics)
+// ------------------------------------------------------------
+export const getDashboardOverview = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // 1) Totals
+    const [totalUsers, totalSellers, totalProducts, recentOrders] =
+      await Promise.all([
+        prisma.users.count(),
+        prisma.sellers.count(),
+        prisma.products.count(),
+        prisma.orders.findMany({
+          take: 6,
+          orderBy: { createdAt: "desc" },
+          include: {
+            user: { select: { id: true, name: true } },
+            shop: { select: { id: true, name: true } },
+          },
+        }),
+      ]);
+
+    // 2) Revenue by month (last 12 months)
+    const now = new Date();
+    const twelveMonthsAgo = new Date(
+      now.getFullYear(),
+      now.getMonth() - 11,
+      1
+    );
+
+    const ordersLastYear = await prisma.orders.findMany({
+      where: {
+        createdAt: { gte: twelveMonthsAgo },
+      },
+      select: { total: true, createdAt: true },
+      orderBy: { createdAt: "asc" },
+    });
+
+    const categories: string[] = [];
+    const monthlyRevenueMap = new Map<string, number>();
+
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(twelveMonthsAgo.getFullYear(), twelveMonthsAgo.getMonth() + i, 1);
+      const label = d.toLocaleString("en-US", { month: "short" });
+      categories.push(label);
+      monthlyRevenueMap.set(`${d.getFullYear()}-${d.getMonth()}`, 0);
+    }
+
+    let totalRevenue = 0;
+    for (const o of ordersLastYear) {
+      totalRevenue += o.total || 0;
+      const key = `${o.createdAt.getFullYear()}-${o.createdAt.getMonth()}`;
+      monthlyRevenueMap.set(key, (monthlyRevenueMap.get(key) || 0) + (o.total || 0));
+    }
+
+    const seriesData: number[] = [];
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(twelveMonthsAgo.getFullYear(), twelveMonthsAgo.getMonth() + i, 1);
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      seriesData.push(Number((monthlyRevenueMap.get(key) || 0).toFixed(2)));
+    }
+
+    // 3) Device stats from userAnalytics (classify into Phone/Tablet/Computer)
+    const analytics = await prisma.userAnalytics.findMany({
+      select: { device: true },
+    });
+    let phone = 0,
+      tablet = 0,
+      computer = 0;
+    for (const a of analytics) {
+      const d = (a.device || "").toString().toLowerCase();
+      if (d.includes("tablet") || d.includes("ipad")) tablet++;
+      else if (d.includes("mobile") || d.includes("phone")) phone++;
+      else computer++;
+    }
+    const deviceStats = [
+      { name: "Phone", value: phone },
+      { name: "Tablet", value: tablet },
+      { name: "Computer", value: computer },
+    ];
+
+    // 4) Country stats (users from userAnalytics.country, sellers from sellers.country)
+    const [userAnalyticCountries, sellersCountries] = await Promise.all([
+      prisma.userAnalytics.findMany({ select: { country: true } }),
+      prisma.sellers.findMany({ select: { country: true } }),
+    ]);
+
+    const usersByCountry = new Map<string, number>();
+    for (const u of userAnalyticCountries) {
+      const c = (u.country || "Unknown").toString();
+      usersByCountry.set(c, (usersByCountry.get(c) || 0) + 1);
+    }
+
+    const sellersByCountry = new Map<string, number>();
+    for (const s of sellersCountries) {
+      const c = (s.country || "Unknown").toString();
+      sellersByCountry.set(c, (sellersByCountry.get(c) || 0) + 1);
+    }
+
+    // Merge to array format for map component
+    const countrySet = new Set<string>([
+      ...Array.from(usersByCountry.keys()),
+      ...Array.from(sellersByCountry.keys()),
+    ]);
+    const countryStats: Array<{ name: string; users: number; sellers: number }> = [];
+    for (const c of countrySet) {
+      countryStats.push({
+        name: c,
+        users: usersByCountry.get(c) || 0,
+        sellers: sellersByCountry.get(c) || 0,
+      });
+    }
+    countryStats.sort((a, b) => b.users + b.sellers - (a.users + a.sellers));
+
+    // 5) Format recent orders for dashboard table
+    const recentOrdersFormatted = recentOrders.map((o) => ({
+      id: o.id,
+      customer: o.user?.name || "Guest",
+      amount: o.total,
+      status: o.status,
+      createdAt: o.createdAt,
+      shopName: o.shop?.name || "",
+    }));
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        totals: {
+          totalUsers,
+          totalSellers,
+          totalProducts,
+          totalOrders: await prisma.orders.count(),
+          totalRevenue: Number(totalRevenue.toFixed(2)),
+        },
+        revenueByMonth: {
+          categories,
+          series: seriesData,
+        },
+        deviceStats,
+        countryStats,
+        recentOrders: recentOrdersFormatted,
+      },
+    });
+  } catch (error) {
+    console.error("Admin getDashboardOverview error:", error);
+    next(error);
+  }
+};
+
 export const getAllProducts = async (
   req: Request,
   res: Response,
