@@ -90,9 +90,9 @@ const Login = () => {
             <input
               type="email"
               placeholder="support@micromart.com"
-              className="w-full p-3 border border-gray-200 rounded-lg
+              className="w-full p-3 border border-gray-200 rounded-lg text-gray-900
                          focus:ring-2 focus:ring-blue-400 focus:border-blue-400
-                         outline-none transition"
+                         outline-none transition placeholder:text-gray-400"
               {...register("email", {
                 required: "Email is required",
                 pattern: {
@@ -111,9 +111,9 @@ const Login = () => {
               <input
                 type={passwordVisible ? "text" : "password"}
                 placeholder="Min 6 characters"
-                className="w-full p-3 border border-gray-200 rounded-lg
+                className="w-full p-3 pr-12 border border-gray-200 rounded-lg text-gray-900
                            focus:ring-2 focus:ring-blue-400 focus:border-blue-400
-                           outline-none transition"
+                           outline-none transition placeholder:text-gray-400"
                 {...register("password", {
                   required: "Password is required",
                   minLength: {
@@ -125,9 +125,9 @@ const Login = () => {
               <button
                 type="button"
                 onClick={() => setPasswordVisible(!passwordVisible)}
-                className="absolute inset-y-0 right-3 flex items-center text-gray-400"
+                className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
               >
-                {passwordVisible ? <Eye /> : <EyeOff />}
+                {passwordVisible ? <Eye size={20} /> : <EyeOff size={20} />}
               </button>
             </div>
             {errors.password && (
@@ -163,7 +163,8 @@ const Login = () => {
                          bg-gradient-to-r from-blue-500 to-indigo-600
                          hover:from-blue-600 hover:to-indigo-700
                          text-white py-2.5 rounded-xl shadow-md
-                         hover:shadow-lg transition-all"
+                         hover:shadow-lg transition-all disabled:opacity-50
+                         disabled:cursor-not-allowed"
             >
               {loginMutation.isPending ? "Logging in..." : "Login"}
             </button>

@@ -227,13 +227,13 @@ const SideBarWrapper = ({ onNavigate }: SideBarWrapperProps) => {
                 onClick={onNavigate}
               />
 
-              <SidebarItem
+              {/* <SidebarItem
                 title="Logout"
                 icon={<LogOut size={20} color={getIconColor("/logout")} />}
                 isActive={activeSideBar === "/logout"}
                 href="/logout"
                 onClick={onNavigate}
-              />
+              /> */}
             </SidebarMenu>
           </div>
         </Sidebar.Body>

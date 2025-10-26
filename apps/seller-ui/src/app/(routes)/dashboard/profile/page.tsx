@@ -31,6 +31,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import axiosInstance from "../../../../utils/axiosinstance";
+import { useRouter } from 'next/navigation';
 
 const SellerProfilePage = () => {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -59,6 +60,9 @@ const SellerProfilePage = () => {
     category: "",
   });
 
+    const router = useRouter();
+
+
   const queryClient = useQueryClient();
 
   // Fetch seller data
@@ -69,6 +73,15 @@ const SellerProfilePage = () => {
       return res.data.seller;
     },
   });
+
+
+
+const logOutHandler = async () => {
+  await axiosInstance.post("/seller/api/logout-seller").then(() => {
+    queryClient.invalidateQueries({ queryKey: ["seller"] });
+    router.push("/seller/api/login-seller");
+  });
+};
 
   // Initialize edit form when seller data loads
   useEffect(() => {
@@ -470,15 +483,25 @@ const SellerProfilePage = () => {
   return (
     <div className="space-y-6 p-4 md:p-6 lg:p-8">
       {/* Header */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h1 className="text-2xl font-bold text-white">Profile Settings</h1>
-        <button
-          onClick={() => setIsEditing(!isEditing)}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto"
-        >
-          <Edit3 className="w-4 h-4" />
-          {isEditing ? "Cancel" : "Edit Profile"}
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Edit3 className="w-4 h-4" />
+            {isEditing ? "Cancel" : "Edit Profile"}
+          </button>
+          <button
+            onClick={logOutHandler}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            <XCircle className="w-4 h-4" />
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Banner Section */}

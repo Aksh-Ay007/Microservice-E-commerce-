@@ -1110,11 +1110,19 @@ export const markAllSellerNotificationsAsRead = async (
   }
 };
 
+
+
+
+
+
 // ========================================
 // SELLER DASHBOARD ANALYTICS ENDPOINTS
 // ========================================
 
-// Get seller dashboard statistics
+/**
+ * Get seller dashboard statistics
+ * Provides comprehensive analytics for the seller's shop
+ */
 export const getSellerDashboardStats = async (
   req: any,
   res: Response,
@@ -1122,6 +1130,8 @@ export const getSellerDashboardStats = async (
 ) => {
   try {
     const sellerId = req.seller.id;
+
+    // Get seller's shop
     const shop = await prisma.shops.findFirst({
       where: { sellerId },
     });
@@ -1143,7 +1153,7 @@ export const getSellerDashboardStats = async (
     last30Days.setDate(last30Days.getDate() - 30);
     const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // Execute all queries in parallel
+    // Execute all queries in parallel for better performance
     const [
       totalProducts,
       activeProducts,
@@ -1165,7 +1175,9 @@ export const getSellerDashboardStats = async (
     ] = await Promise.all([
       // Product counts
       prisma.products.count({ where: { shopId, isDeleted: false } }),
-      prisma.products.count({ where: { shopId, isDeleted: false, status: "Active" } }),
+      prisma.products.count({
+        where: { shopId, isDeleted: false, status: "Active" }
+      }),
 
       // Order counts and revenue
       prisma.orders.count({ where: { shopId } }),
@@ -1236,7 +1248,7 @@ export const getSellerDashboardStats = async (
         _count: { status: true },
       }),
 
-      // Recent orders
+      // Recent orders with customer info
       prisma.orders.findMany({
         where: { shopId },
         take: 5,
@@ -1277,7 +1289,7 @@ export const getSellerDashboardStats = async (
 
     const revenueChange =
       (yesterdayRevenue._sum.total || 0) > 0
-        ? ((todayRevenue._sum.total - (yesterdayRevenue._sum.total || 0)) /
+        ? (((todayRevenue._sum.total || 0) - (yesterdayRevenue._sum.total || 0)) /
             (yesterdayRevenue._sum.total || 0)) *
           100
         : (todayRevenue._sum.total || 0) > 0
@@ -1340,7 +1352,10 @@ export const getSellerDashboardStats = async (
   }
 };
 
-// Get seller sales analytics
+/**
+ * Get seller sales analytics
+ * Provides time-series data for sales charts
+ */
 export const getSellerSalesAnalytics = async (
   req: any,
   res: Response,
@@ -1348,6 +1363,8 @@ export const getSellerSalesAnalytics = async (
 ) => {
   try {
     const sellerId = req.seller.id;
+
+    // Get seller's shop
     const shop = await prisma.shops.findFirst({
       where: { sellerId },
     });
@@ -1360,6 +1377,7 @@ export const getSellerSalesAnalytics = async (
     const now = new Date();
     let startDate: Date;
 
+    // Determine date range based on period
     switch (period) {
       case "7d":
         startDate = new Date();
@@ -1391,9 +1409,10 @@ export const getSellerSalesAnalytics = async (
       },
     });
 
-    // Group by date
+    // Group orders by date and calculate metrics
     const salesByDate = orders.reduce((acc, order) => {
       const date = order.createdAt.toISOString().split("T")[0];
+
       if (!acc[date]) {
         acc[date] = {
           date,
@@ -1404,18 +1423,23 @@ export const getSellerSalesAnalytics = async (
           failed: 0,
         };
       }
+
       acc[date].revenue += order.total;
       acc[date].orders += 1;
+
+      // Categorize by status
       if (order.status === "Paid" || order.status === "Delivered") {
         acc[date].paid += 1;
-      } else if (order.status === "Pending") {
+      } else if (order.status === "Pending" || order.status === "Cash on Delivery") {
         acc[date].pending += 1;
       } else {
         acc[date].failed += 1;
       }
+
       return acc;
     }, {} as Record<string, any>);
 
+    // Convert to array and sort by date
     const salesData = Object.values(salesByDate).sort((a: any, b: any) =>
       a.date.localeCompare(b.date)
     );
@@ -1426,6 +1450,193 @@ export const getSellerSalesAnalytics = async (
     });
   } catch (error) {
     console.error("Error fetching seller sales analytics:", error);
+    next(error);
+  }
+};
+
+/**
+ * Get seller product analytics
+ * Additional endpoint for detailed product insights
+ */
+export const getSellerProductAnalytics = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const sellerId = req.seller.id;
+
+    const shop = await prisma.shops.findFirst({
+      where: { sellerId },
+    });
+
+    if (!shop) {
+      return next(new NotFoundError("Shop not found"));
+    }
+
+    const [
+      productsByCategory,
+      lowStockProducts,
+      outOfStockProducts,
+      topViewedProducts,
+    ] = await Promise.all([
+      // Products by category
+      prisma.products.groupBy({
+        by: ["category"],
+        where: { shopId: shop.id, isDeleted: false },
+        _count: { category: true },
+      }),
+
+      // Low stock products (less than 10)
+      prisma.products.findMany({
+        where: {
+          shopId: shop.id,
+          isDeleted: false,
+          stock: { gt: 0, lt: 10 },
+        },
+        select: {
+          id: true,
+          title: true,
+          stock: true,
+          images: { select: { url: true }, take: 1 },
+        },
+        take: 5,
+      }),
+
+      // Out of stock products
+      prisma.products.count({
+        where: {
+          shopId: shop.id,
+          isDeleted: false,
+          stock: 0,
+        },
+      }),
+
+      // Top viewed products
+      prisma.productAnalytics.findMany({
+        where: { shopId: shop.id },
+        orderBy: { views: "desc" },
+        take: 5,
+        select: {
+          productId: true,
+          views: true,
+          cartAdds: true,
+          purchases: true,
+        },
+      }),
+    ]);
+
+    // Get product details for top viewed
+    const productIds = topViewedProducts.map((p) => p.productId);
+    const products = await prisma.products.findMany({
+      where: { id: { in: productIds } },
+      select: {
+        id: true,
+        title: true,
+        images: { select: { url: true }, take: 1 },
+      },
+    });
+
+    const topViewedWithDetails = topViewedProducts.map((analytics) => {
+      const product = products.find((p) => p.id === analytics.productId);
+      return {
+        ...analytics,
+        title: product?.title,
+        image: product?.images?.[0]?.url,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        productsByCategory: productsByCategory.map((item) => ({
+          category: item.category,
+          count: item._count.category,
+        })),
+        lowStockProducts,
+        outOfStockProducts,
+        topViewedProducts: topViewedWithDetails,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching seller product analytics:", error);
+    next(error);
+  }
+};
+
+/**
+ * Get seller order analytics
+ * Detailed order insights and trends
+ */
+export const getSellerOrderAnalytics = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const sellerId = req.seller.id;
+
+    const shop = await prisma.shops.findFirst({
+      where: { sellerId },
+    });
+
+    if (!shop) {
+      return next(new NotFoundError("Shop not found"));
+    }
+
+    const [
+      ordersByDeliveryStatus,
+      averageOrderValue,
+      totalCustomers,
+      repeatCustomers,
+    ] = await Promise.all([
+      // Orders by delivery status
+      prisma.orders.groupBy({
+        by: ["deliveryStatus"],
+        where: { shopId: shop.id },
+        _count: { deliveryStatus: true },
+      }),
+
+      // Average order value
+      prisma.orders.aggregate({
+        where: { shopId: shop.id },
+        _avg: { total: true },
+      }),
+
+      // Total unique customers
+      prisma.orders.groupBy({
+        by: ["userId"],
+        where: { shopId: shop.id },
+      }),
+
+      // Repeat customers (more than 1 order)
+      prisma.orders.groupBy({
+        by: ["userId"],
+        where: { shopId: shop.id },
+        having: {
+          userId: { _count: { gt: 1 } },
+        },
+      }),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        ordersByDeliveryStatus: ordersByDeliveryStatus.reduce((acc, item) => {
+          acc[item.deliveryStatus] = item._count.deliveryStatus;
+          return acc;
+        }, {} as Record<string, number>),
+        averageOrderValue: averageOrderValue._avg.total || 0,
+        totalCustomers: totalCustomers.length,
+        repeatCustomers: repeatCustomers.length,
+        repeatCustomerRate:
+          totalCustomers.length > 0
+            ? ((repeatCustomers.length / totalCustomers.length) * 100).toFixed(2)
+            : 0,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching seller order analytics:", error);
     next(error);
   }
 };

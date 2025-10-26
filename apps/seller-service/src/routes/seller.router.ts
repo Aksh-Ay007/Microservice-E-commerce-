@@ -27,6 +27,8 @@ import {
   verifySeller,
   getSellerDashboardStats,
   getSellerSalesAnalytics,
+  getSellerProductAnalytics,
+  getSellerOrderAnalytics,
 } from "../controller/seller.controller";
 
 const router: Router = express.Router();
@@ -114,11 +116,26 @@ router.get(
   isSeller,
   getSellerDashboardStats
 );
+
 router.get(
   "/dashboard/sales-analytics",
   isSellerAuthenticated,
   isSeller,
   getSellerSalesAnalytics
+);
+
+router.get(
+  "/dashboard/product-analytics",
+  isSellerAuthenticated,
+  isSeller,
+  getSellerProductAnalytics
+);
+
+router.get(
+  "/dashboard/order-analytics",
+  isSellerAuthenticated,
+  isSeller,
+  getSellerOrderAnalytics
 );
 
 export default router;
