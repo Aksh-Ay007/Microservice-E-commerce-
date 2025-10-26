@@ -2,16 +2,11 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "out-tsc/auth-services",
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "rootDir": "../../",
     "tsBuildInfoFile": "out-tsc/auth-services/tsconfig.app.tsbuildinfo"
   },
-  "include": [
-    "src/**/*.ts",
-    "../../packages/**/*.ts"
-  ],
+  "include": ["src/**/*.ts", "../../packages/**/*.ts"],
   "exclude": [
     "out-tsc",
     "dist",
