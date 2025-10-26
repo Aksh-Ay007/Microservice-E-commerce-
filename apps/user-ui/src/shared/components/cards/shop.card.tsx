@@ -32,11 +32,11 @@ interface ShopCardProps {
 const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
   // ✅ Fix: Get avatar and banner URLs with proper fallbacks
   const getAvatarUrl = () => {
-    return shop?.avatarUrl || shop?.avatar?.url || "https://ik.imagekit.io/AkshayMicroMart/photo/3d-cartoon-portrait-person-practicing-law-related-profession%20(1).jpg?updatedAt=1759855179824";
+    return  shop?.avatar?.url || "https://ik.imagekit.io/AkshayMicroMart/photo/3d-cartoon-portrait-person-practicing-law-related-profession%20(1).jpg?updatedAt=1759855179824";
   };
 
   const getBannerUrl = () => {
-    return shop?.bannerUrl || shop?.coverBanner?.url || "https://ik.imagekit.io/AkshayMicroMart/photo/ChatGPT%20Image%20Oct%207,%202025,%2008_19_51%20PM.png?updatedAt=1759854033660";
+    return  shop?.coverBanner?.url || "https://ik.imagekit.io/AkshayMicroMart/photo/ChatGPT%20Image%20Oct%207,%202025,%2008_19_51%20PM.png?updatedAt=1759854033660";
   };
 
   return (
@@ -98,7 +98,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
 
         <div className="mt-3">
           <Link
-            href={`/shops/${shop.id}`}
+            href={`/shop/${shop.id}`}
             className="inline-flex items-center text-xs sm:text-sm text-blue-600 font-medium hover:underline"
           >
             Visit Shop

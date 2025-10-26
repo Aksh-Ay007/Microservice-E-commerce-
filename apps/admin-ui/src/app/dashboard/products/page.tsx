@@ -44,7 +44,7 @@ const AdminProductsPage = () => {
         `"${p.sale_price}"`,
         `"${p.stock}"`,
         `"${p.category}"`,
-        `"${p.ratings}"`,
+        `"${typeof p.ratings === 'number' ? p.ratings : p.ratings?.average || 0}"`,
         `"${p.Shop?.name || "-"}"`,
         `"${new Date(p.createdAt).toLocaleDateString("en-US")}"`,
       ].join(",")
@@ -140,7 +140,7 @@ const AdminProductsPage = () => {
                 <td className="p-3 text-center">
                   <div className="flex items-center justify-center gap-1">
                     <span>⭐</span>
-                    <span>{product.ratings || 0}</span>
+                    <span>{typeof product.ratings === 'number' ? product.ratings : product.ratings?.average || 0}</span>
                   </div>
                 </td>
 

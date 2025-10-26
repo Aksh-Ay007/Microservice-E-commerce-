@@ -9,13 +9,9 @@ import {
 } from "@tanstack/react-table";
 import { saveAs } from "file-saver";
 import {
-  ChevronLeft,
-  ChevronRight,
   ChevronRightIcon,
-  Edit,
   Eye,
   Loader2,
-  MoreHorizontal,
   Search,
   Trash2,
   Calendar,
@@ -27,13 +23,15 @@ import { useDeferredValue, useMemo, useState } from "react";
 import axiosInstance from "../../../../utils/axiosinstance";
 import toast from "react-hot-toast";
 import Input from "../../../../../../../packages/components/input";
-
+import DeleteEventModal from "../../../../shared/components/modals/delete.event.modal";
 const AllEventsPage = () => {
-  const [page, setPage] = useState(1);
+  const [page] = useState(1);
   const [globalFilter, setGlobalFilter] = useState("");
-  const deferredGlobalFilter = useDeferredValue(globalFilter);
+  const deferredGlobalFilter = useDeferredValue(应聘Filter);
   const queryClient = useQueryClient();
-  const limit = 10;
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch events data
   const { data, isLoading, refetch } = useQuery({
@@ -55,18 +53,37 @@ const AllEventsPage = () => {
     });
   }, [allEvents, deferredGlobalFilter]);
 
-  // Delete event function
-  const deleteEvent = async (eventId: string) => {
-    if (!confirm("Are you sure you want to delete this event?")) return;
+  // Open delete modal
+  const openDeleteModal = (event: any) => {
+    setSelectedEvent(event);
+    setShowDeleteModal(true);
+  };
 
+  // Close delete modal
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setSelectedEvent(null);
+    setIsDeleting(false);
+  };
+
+  // Delete event function
+  const deleteEvent = async () => {
+    if (!selectedEvent) return;
+
+    setIsDeleting(true);
     try {
-      await axiosInstance.delete(`/product/api/delete-event/${eventId}`);
+      await axiosInstance.delete(
+        `/product/api/delete-event/${selectedEvent.id}`
+      );
       toast.success("Event deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["seller-events"] });
       refetch();
+      closeDeleteModal();
     } catch (error: any) {
       console.error("Error deleting event:", error);
       toast.error(error?.response?.data?.message || "Failed to delete event");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -188,7 +205,7 @@ const AllEventsPage = () => {
               <Eye className="w-4 h-4" />
             </Link>
             <button
-              onClick={() => deleteEvent(row.original.id)}
+              onClick={() => openDeleteModal(row.original)}
               className="p-1 text-gray-400 hover:text-red-400 transition-colors"
               title="Delete Event"
             >
@@ -448,6 +465,15 @@ const AllEventsPage = () => {
           </button>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteEventModal
+        isOpen={showDeleteModal}
+        onClose={closeDeleteModal}
+        onConfirm={deleteEvent}
+        isDeleting={isDeleting}
+        eventName={selectedEvent?.title || "this event"}
+      />
     </div>
   );
 };

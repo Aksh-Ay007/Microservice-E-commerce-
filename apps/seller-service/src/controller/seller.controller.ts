@@ -7,14 +7,14 @@ import {
   NotFoundError,
   ValidationError,
 } from "../../../../packages/error-handler";
-import { setCookie } from "../utills/cookies/setCookie";
+import { setCookie } from "../utils/cookies/setCookie";
 import {
   checkOtpRegistration,
   sendOtp,
   trackOtpRequests,
   validateRegistrationData,
   varifyOtp,
-} from "./../utills/sellerAuth.helper";
+} from "../utils/sellerAuth.helper";
 
 import { NextFunction, Request, Response } from "express";
 import { imagekit } from "../../../../packages/libs/imagekit";

@@ -1103,12 +1103,13 @@ export const getShopEvents = async (
       return next(new AuthError("Unauthorized access. Shop not found."));
     }
 
-    // Filters: Get products from the shop that have both dates defined
+    // Filters: Get products from the shop that have both dates defined and are not deleted
     const events = await prisma.products.findMany({
       where: {
         shopId: req.seller.shop.id,
         starting_date: { not: null },
         ending_date: { not: null },
+        isDeleted: false, // Only get non-deleted events
       },
       include: { images: true },
     });
@@ -1123,7 +1124,8 @@ export const getShopEvents = async (
 };
 
 // ----------------------------------------------------------------------
-// DELETE EVENT (marks product as deleted and verifies it's an event)
+// DELETE EVENT 
+// Marks event as deleted (removes from UI immediately, deletes from DB in 24h or when end date passes)
 // ----------------------------------------------------------------------
 export const deleteEvent = async (
   req: EventRequest,
@@ -1141,7 +1143,7 @@ export const deleteEvent = async (
         shopId: true,
         isDeleted: true,
         starting_date: true,
-        ending_date: true, // Used to verify it's an event
+        ending_date: true,
       },
     });
 
@@ -1150,25 +1152,30 @@ export const deleteEvent = async (
       return next(new NotFoundError("Event not found or invalid type."));
     }
 
-    // 2. Authorization: Check shop ownership
+    // 2. Check if already deleted
+    if (event.isDeleted) {
+      return next(new ValidationError("Event is already deleted."));
+    }
+
+    // 3. Authorization: Check shop ownership
     if (event.shopId !== shopId) {
       return next(
         new AuthError("Unauthorized access! Event belongs to a different shop.")
       );
     }
 
-    // 3. Soft Delete
+    // 4. Soft Delete - Event will be removed from UI immediately and deleted from DB in 24 hours
     const deletedEvent = await prisma.products.update({
       where: { id: eventId },
       data: {
         isDeleted: true,
-        deletedAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        deletedAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
       },
     });
 
     res.status(200).json({
       success: true,
-      message: "Event is scheduled for deletion in 24 hours.",
+      message: "Event deleted successfully. Will be permanently removed in 24 hours.",
       deletedAt: deletedEvent.deletedAt,
     });
   } catch (error) {

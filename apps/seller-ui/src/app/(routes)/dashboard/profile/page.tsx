@@ -3,19 +3,14 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Camera,
-  CheckCircle,
   Edit3,
   Loader2,
   Save,
-  Star,
   Trash2,
   Upload,
   User,
   X,
   XCircle,
-  Award,
-  DollarSign,
-  CreditCard,
   Shield,
   Mail,
   Calendar,
@@ -291,7 +286,7 @@ const logOutHandler = async () => {
 
     try {
       const fileName = await convertFileToBase64(selectedAvatarFile);
-      const response = await axiosInstance.post("/seller/api/update-avatar", {
+      await axiosInstance.post("/seller/api/update-avatar", {
         fileName: fileName,
       });
 
@@ -332,7 +327,7 @@ const logOutHandler = async () => {
 
     try {
       const fileName = await convertFileToBase64(selectedBannerFile);
-      const response = await axiosInstance.post("/seller/api/update-banner", {
+       await axiosInstance.post("/seller/api/update-banner", {
         fileName: fileName,
       });
 
@@ -444,7 +439,7 @@ const logOutHandler = async () => {
   // Handle profile update
   const handleProfileUpdate = async () => {
     try {
-      const response = await axiosInstance.put(
+       await axiosInstance.put(
         "/seller/api/update-profile",
         editForm
       );
@@ -668,11 +663,7 @@ const logOutHandler = async () => {
             <p className="text-sm text-gray-400 mb-2">
               Click the camera icons to upload avatar and banner
             </p>
-            <div className="text-xs text-gray-500 space-y-1">
-              <p>✅ Supports: JPEG, PNG, GIF, WebP</p>
-              <p>✅ Max size: 50MB (auto-compressed)</p>
-              <p>✅ Optimized for web display</p>
-            </div>
+
           </div>
         )}
       </div>

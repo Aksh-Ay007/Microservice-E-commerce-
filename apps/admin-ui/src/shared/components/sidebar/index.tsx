@@ -73,7 +73,7 @@ const SidebarWrapper = () => {
             title="Dashboard"
             icon={<Home fill={getIconColor("/dashboard")} />}
             isActive={activeSidebar === "/dashboard"}
-            href='"/dashboard"'
+            href="/dashboard"
           />
 
           <div className="mt-2 block">

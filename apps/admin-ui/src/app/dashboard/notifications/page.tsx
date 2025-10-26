@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Bell, Search, Filter, Trash2, Eye, EyeOff, AlertCircle, Info, CheckCircle, XCircle } from 'lucide-react';
+import { Bell, Search, Trash2, Eye, EyeOff, AlertCircle, Info, CheckCircle } from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -153,11 +153,11 @@ export default function NotificationsPage() {
   // Get priority color
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'text-red-600 bg-red-100';
-      case 'high': return 'text-orange-600 bg-orange-100';
-      case 'normal': return 'text-blue-600 bg-blue-100';
-      case 'low': return 'text-gray-600 bg-gray-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'urgent': return 'text-red-400 bg-red-900/30 border border-red-800';
+      case 'high': return 'text-orange-400 bg-orange-900/30 border border-orange-800';
+      case 'normal': return 'text-blue-400 bg-blue-900/30 border border-blue-800';
+      case 'low': return 'text-slate-400 bg-slate-700/50 border border-slate-600';
+      default: return 'text-slate-400 bg-slate-700/50 border border-slate-600';
     }
   };
 
@@ -174,46 +174,46 @@ export default function NotificationsPage() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-        <p className="text-gray-600">Manage and monitor system notifications</p>
+        <h1 className="text-2xl font-bold text-white">Notifications</h1>
+        <p className="text-slate-400">Manage and monitor system notifications</p>
       </div>
 
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-slate-800 p-4 rounded-lg shadow border border-slate-700">
             <div className="flex items-center">
-              <Bell className="w-8 h-8 text-blue-600" />
+              <Bell className="w-8 h-8 text-blue-400" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-sm font-medium text-slate-400">Total</p>
+                <p className="text-2xl font-bold text-white">{stats.total}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-slate-800 p-4 rounded-lg shadow border border-slate-700">
             <div className="flex items-center">
-              <EyeOff className="w-8 h-8 text-orange-600" />
+              <EyeOff className="w-8 h-8 text-orange-400" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Unread</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.unread}</p>
+                <p className="text-sm font-medium text-slate-400">Unread</p>
+                <p className="text-2xl font-bold text-white">{stats.unread}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-slate-800 p-4 rounded-lg shadow border border-slate-700">
             <div className="flex items-center">
-              <Eye className="w-8 h-8 text-green-600" />
+              <Eye className="w-8 h-8 text-green-400" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Read</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total - stats.unread}</p>
+                <p className="text-sm font-medium text-slate-400">Read</p>
+                <p className="text-2xl font-bold text-white">{stats.total - stats.unread}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
+          <div className="bg-slate-800 p-4 rounded-lg shadow border border-slate-700">
             <div className="flex items-center">
-              <AlertCircle className="w-8 h-8 text-red-600" />
+              <AlertCircle className="w-8 h-8 text-red-400" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Urgent</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.byPriority.urgent || 0}</p>
+                <p className="text-sm font-medium text-slate-400">Urgent</p>
+                <p className="text-2xl font-bold text-white">{stats.byPriority.urgent || 0}</p>
               </div>
             </div>
           </div>
@@ -221,27 +221,27 @@ export default function NotificationsPage() {
       )}
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow mb-6">
+      <div className="bg-slate-800 border border-slate-700 p-4 rounded-lg shadow mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Search</label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
               <input
                 type="text"
                 placeholder="Search notifications..."
                 value={filters.search}
                 onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Status</label>
             <select
               value={filters.status}
               onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Status</option>
               <option value="Unread">Unread</option>
@@ -249,11 +249,11 @@ export default function NotificationsPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Type</label>
             <select
               value={filters.type}
               onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Types</option>
               <option value="order">Order</option>
@@ -263,11 +263,11 @@ export default function NotificationsPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Priority</label>
             <select
               value={filters.priority}
               onChange={(e) => setFilters(prev => ({ ...prev, priority: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Priorities</option>
               <option value="low">Low</option>
@@ -287,46 +287,46 @@ export default function NotificationsPage() {
         >
           Mark All as Read
         </button>
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-slate-400">
           Showing {notifications.length} of {pagination.total} notifications
         </div>
       </div>
 
       {/* Notifications List */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-slate-800 border border-slate-700 rounded-lg shadow">
         {loading ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Loading notifications...</p>
+            <p className="mt-2 text-slate-400">Loading notifications...</p>
           </div>
         ) : notifications.length === 0 ? (
           <div className="p-8 text-center">
-            <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No notifications found</p>
+            <Bell className="w-12 h-12 text-slate-500 mx-auto mb-4" />
+            <p className="text-slate-400">No notifications found</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-slate-700">
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`p-4 hover:bg-gray-50 transition-colors ${
-                  notification.status === 'Unread' ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                className={`p-4 hover:bg-slate-900 transition-colors ${
+                  notification.status === 'Unread' ? 'bg-slate-900 border-l-4 border-blue-500' : ''
                 }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       {getTypeIcon(notification.type)}
-                      <h3 className="font-medium text-gray-900">{notification.title}</h3>
+                      <h3 className="font-medium text-white">{notification.title}</h3>
                       <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(notification.priority)}`}>
                         {notification.priority}
                       </span>
                       {notification.status === 'Unread' && (
-                        <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                       )}
                     </div>
-                    <p className="text-gray-600 text-sm mb-2">{notification.message}</p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <p className="text-slate-300 text-sm mb-2">{notification.message}</p>
+                    <div className="flex items-center gap-4 text-xs text-slate-400">
                       <span>By: {notification.creator.name} ({notification.creator.role})</span>
                       <span>•</span>
                       <span>{new Date(notification.createdAt).toLocaleString()}</span>
@@ -336,7 +336,7 @@ export default function NotificationsPage() {
                     {notification.status === 'Unread' && (
                       <button
                         onClick={() => markAsRead(notification.id)}
-                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                        className="p-1 text-slate-400 hover:text-blue-400 transition-colors"
                         title="Mark as read"
                       >
                         <Eye className="w-4 h-4" />
@@ -344,7 +344,7 @@ export default function NotificationsPage() {
                     )}
                     <button
                       onClick={() => deleteNotification(notification.id)}
-                      className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                      className="p-1 text-slate-400 hover:text-red-400 transition-colors"
                       title="Delete notification"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -368,7 +368,7 @@ export default function NotificationsPage() {
                 className={`px-3 py-2 rounded-md text-sm ${
                   page === pagination.page
                     ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    : 'bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700'
                 }`}
               >
                 {page}

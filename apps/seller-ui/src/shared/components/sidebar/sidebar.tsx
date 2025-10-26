@@ -5,10 +5,8 @@ import {
   BellRing,
   CalendarPlus,
   ListOrdered,
-  LogOut,
   Mail,
   PackageSearch,
-  Settings,
   SquarePlus,
   TicketPercent,
   UserCircle,
@@ -186,7 +184,7 @@ const SideBarWrapper = ({ onNavigate }: SideBarWrapperProps) => {
                 onClick={onNavigate}
               />
 
-              <SidebarItem
+              {/* <SidebarItem
                 title="Settings"
                 icon={
                   <Settings
@@ -197,7 +195,7 @@ const SideBarWrapper = ({ onNavigate }: SideBarWrapperProps) => {
                 isActive={activeSideBar === "/dashboard/settings"}
                 href="/dashboard/settings"
                 onClick={onNavigate}
-              />
+              /> */}
 
               <SidebarItem
                 title="Notifications"
