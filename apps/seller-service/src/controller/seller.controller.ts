@@ -1109,3 +1109,323 @@ export const markAllSellerNotificationsAsRead = async (
 
   }
 };
+
+// ========================================
+// SELLER DASHBOARD ANALYTICS ENDPOINTS
+// ========================================
+
+// Get seller dashboard statistics
+export const getSellerDashboardStats = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const sellerId = req.seller.id;
+    const shop = await prisma.shops.findFirst({
+      where: { sellerId },
+    });
+
+    if (!shop) {
+      return next(new NotFoundError("Shop not found"));
+    }
+
+    const shopId = shop.id;
+
+    // Get current date and date ranges
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const last7Days = new Date(today);
+    last7Days.setDate(last7Days.getDate() - 7);
+    const last30Days = new Date(today);
+    last30Days.setDate(last30Days.getDate() - 30);
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Execute all queries in parallel
+    const [
+      totalProducts,
+      activeProducts,
+      totalOrders,
+      totalRevenue,
+      todayOrders,
+      yesterdayOrders,
+      todayRevenue,
+      yesterdayRevenue,
+      last7DaysOrders,
+      last7DaysRevenue,
+      last30DaysOrders,
+      last30DaysRevenue,
+      thisMonthOrders,
+      thisMonthRevenue,
+      ordersByStatus,
+      recentOrders,
+      topProducts,
+    ] = await Promise.all([
+      // Product counts
+      prisma.products.count({ where: { shopId, isDeleted: false } }),
+      prisma.products.count({ where: { shopId, isDeleted: false, status: "Active" } }),
+
+      // Order counts and revenue
+      prisma.orders.count({ where: { shopId } }),
+      prisma.orders.aggregate({
+        where: { shopId },
+        _sum: { total: true },
+      }),
+
+      // Today stats
+      prisma.orders.count({
+        where: { shopId, createdAt: { gte: today } },
+      }),
+      prisma.orders.count({
+        where: {
+          shopId,
+          createdAt: {
+            gte: yesterday,
+            lt: today,
+          },
+        },
+      }),
+      prisma.orders.aggregate({
+        where: { shopId, createdAt: { gte: today } },
+        _sum: { total: true },
+      }),
+      prisma.orders.aggregate({
+        where: {
+          shopId,
+          createdAt: {
+            gte: yesterday,
+            lt: today,
+          },
+        },
+        _sum: { total: true },
+      }),
+
+      // Last 7 days stats
+      prisma.orders.count({
+        where: { shopId, createdAt: { gte: last7Days } },
+      }),
+      prisma.orders.aggregate({
+        where: { shopId, createdAt: { gte: last7Days } },
+        _sum: { total: true },
+      }),
+
+      // Last 30 days stats
+      prisma.orders.count({
+        where: { shopId, createdAt: { gte: last30Days } },
+      }),
+      prisma.orders.aggregate({
+        where: { shopId, createdAt: { gte: last30Days } },
+        _sum: { total: true },
+      }),
+
+      // This month stats
+      prisma.orders.count({
+        where: { shopId, createdAt: { gte: thisMonthStart } },
+      }),
+      prisma.orders.aggregate({
+        where: { shopId, createdAt: { gte: thisMonthStart } },
+        _sum: { total: true },
+      }),
+
+      // Orders by status
+      prisma.orders.groupBy({
+        by: ["status"],
+        where: { shopId },
+        _count: { status: true },
+      }),
+
+      // Recent orders
+      prisma.orders.findMany({
+        where: { shopId },
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        include: {
+          user: {
+            select: { name: true, email: true },
+          },
+        },
+      }),
+
+      // Top products by sales
+      prisma.products.findMany({
+        where: { shopId, isDeleted: false },
+        take: 10,
+        orderBy: { totalSales: "desc" },
+        select: {
+          id: true,
+          title: true,
+          totalSales: true,
+          sale_price: true,
+          stock: true,
+          images: {
+            select: { url: true },
+            take: 1,
+          },
+        },
+      }),
+    ]);
+
+    // Calculate percentage changes
+    const ordersChange =
+      yesterdayOrders > 0
+        ? ((todayOrders - yesterdayOrders) / yesterdayOrders) * 100
+        : todayOrders > 0
+        ? 100
+        : 0;
+
+    const revenueChange =
+      (yesterdayRevenue._sum.total || 0) > 0
+        ? ((todayRevenue._sum.total - (yesterdayRevenue._sum.total || 0)) /
+            (yesterdayRevenue._sum.total || 0)) *
+          100
+        : (todayRevenue._sum.total || 0) > 0
+        ? 100
+        : 0;
+
+    // Prepare response
+    const response = {
+      success: true,
+      data: {
+        overview: {
+          totalProducts,
+          activeProducts,
+          totalOrders,
+          totalRevenue: totalRevenue._sum.total || 0,
+        },
+        today: {
+          orders: todayOrders,
+          revenue: todayRevenue._sum.total || 0,
+        },
+        yesterday: {
+          orders: yesterdayOrders,
+          revenue: yesterdayRevenue._sum.total || 0,
+        },
+        changes: {
+          ordersChange: parseFloat(ordersChange.toFixed(2)),
+          revenueChange: parseFloat(revenueChange.toFixed(2)),
+        },
+        last7Days: {
+          orders: last7DaysOrders,
+          revenue: last7DaysRevenue._sum.total || 0,
+        },
+        last30Days: {
+          orders: last30DaysOrders,
+          revenue: last30DaysRevenue._sum.total || 0,
+        },
+        thisMonth: {
+          orders: thisMonthOrders,
+          revenue: thisMonthRevenue._sum.total || 0,
+        },
+        ordersByStatus: ordersByStatus.reduce((acc, item) => {
+          acc[item.status] = item._count.status;
+          return acc;
+        }, {} as Record<string, number>),
+        recentOrders: recentOrders.map((order) => ({
+          id: order.id,
+          customer: order.user.name,
+          total: order.total,
+          status: order.status,
+          createdAt: order.createdAt,
+        })),
+        topProducts,
+      },
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error fetching seller dashboard stats:", error);
+    next(error);
+  }
+};
+
+// Get seller sales analytics
+export const getSellerSalesAnalytics = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const sellerId = req.seller.id;
+    const shop = await prisma.shops.findFirst({
+      where: { sellerId },
+    });
+
+    if (!shop) {
+      return next(new NotFoundError("Shop not found"));
+    }
+
+    const { period = "7d" } = req.query;
+    const now = new Date();
+    let startDate: Date;
+
+    switch (period) {
+      case "7d":
+        startDate = new Date();
+        startDate.setDate(startDate.getDate() - 7);
+        break;
+      case "30d":
+        startDate = new Date();
+        startDate.setDate(startDate.getDate() - 30);
+        break;
+      case "1y":
+        startDate = new Date();
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        break;
+      default:
+        startDate = new Date();
+        startDate.setDate(startDate.getDate() - 7);
+    }
+
+    // Get orders for the period
+    const orders = await prisma.orders.findMany({
+      where: {
+        shopId: shop.id,
+        createdAt: { gte: startDate },
+      },
+      select: {
+        total: true,
+        createdAt: true,
+        status: true,
+      },
+    });
+
+    // Group by date
+    const salesByDate = orders.reduce((acc, order) => {
+      const date = order.createdAt.toISOString().split("T")[0];
+      if (!acc[date]) {
+        acc[date] = {
+          date,
+          revenue: 0,
+          orders: 0,
+          paid: 0,
+          pending: 0,
+          failed: 0,
+        };
+      }
+      acc[date].revenue += order.total;
+      acc[date].orders += 1;
+      if (order.status === "Paid" || order.status === "Delivered") {
+        acc[date].paid += 1;
+      } else if (order.status === "Pending") {
+        acc[date].pending += 1;
+      } else {
+        acc[date].failed += 1;
+      }
+      return acc;
+    }, {} as Record<string, any>);
+
+    const salesData = Object.values(salesByDate).sort((a: any, b: any) =>
+      a.date.localeCompare(b.date)
+    );
+
+    res.status(200).json({
+      success: true,
+      data: salesData,
+    });
+  } catch (error) {
+    console.error("Error fetching seller sales analytics:", error);
+    next(error);
+  }
+};

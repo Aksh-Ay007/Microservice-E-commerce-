@@ -213,7 +213,13 @@ export const createOrder = async (
         rawBody,
         stripeSignature,
         process.env.STRIPE_WEBHOOK_SECRET!
+
+
       );
+console.log(
+  "Using webhook secret:",
+  process.env.STRIPE_WEBHOOK_SECRET?.substring(0, 20) + "..."
+);
     } catch (err: any) {
       console.error("Webhook signature verification failed:", err.message);
       return res.status(400).send(`Webhook Error: ${err.message}`);

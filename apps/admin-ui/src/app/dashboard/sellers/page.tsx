@@ -112,7 +112,11 @@ const SellersPage = () => {
           <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
             {row.original.shop?.avatar ? (
               // Assuming 'shop.avatar' is a URL, you would use an Image component here
-              <img src={row.original.shop.avatar} alt="Avatar" className="w-full h-full object-cover" />
+              <img
+                src={row.original.shop.avatar?.url}
+                alt="Avatar"
+                className="w-full h-full object-cover"
+              />
             ) : (
               // Fallback for no avatar
               <span className="text-sm text-white">{row.original.name[0]}</span>

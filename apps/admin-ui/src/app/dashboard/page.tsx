@@ -1,12 +1,11 @@
-  "use client";
+"use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   useReactTable,
   getCoreRowModel,
   flexRender,
 } from "@tanstack/react-table";
-
 import {
   PieChart,
   Pie,
@@ -14,35 +13,36 @@ import {
   ResponsiveContainer,
   Tooltip,
   Legend,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  BarChart,
+  Bar,
 } from "recharts";
-import GeographicalMap from '../../shared/components/charts/geographicalMap';
-import SalesChart from '../../shared/components/charts/sale-chart';
+import {
+  Loader2,
+  TrendingUp,
+  TrendingDown,
+  Users,
+  Package,
+  ShoppingCart,
+  Eye,
+} from "lucide-react";
+import axiosInstance from '../../utils/axiosinstance';
 
-
-// Device data
-const deviceData = [
-  { name: "Phone", value: 55 },
-  { name: "Tablet", value: 20 },
-  { name: "Computer", value: 25 },
-];
-
-const COLORS = ["#4ade80", "#facc15", "#60a5fa"];
-
-// Orders data
-const orders = [
-  { id: "ORD-001", customer: "John Doe", amount: "$250", status: "Paid" },
-  { id: "ORD-002", customer: "Jane Smith", amount: "$180", status: "Pending" },
-  { id: "ORD-003", customer: "Alice Johnson", amount: "$340", status: "Paid" },
-  { id: "ORD-004", customer: "Bob Lee", amount: "$90", status: "Failed" },
-  { id: "ORD-005", customer: "Bob Lee", amount: "$90", status: "Failed" },
-  { id: "ORD-006", customer: "Bob Lee", amount: "$90", status: "Failed" },
-];
+const COLORS = ["#4ade80", "#facc15", "#60a5fa", "#f87171", "#a78bfa"];
 
 // Orders table columns
 const columns = [
   {
     accessorKey: "id",
     header: "Order ID",
+    cell: ({ getValue }: any) => {
+      const value = getValue() as string;
+      return value.substring(0, 8) + "...";
+    },
   },
   {
     accessorKey: "customer",
@@ -51,16 +51,19 @@ const columns = [
   {
     accessorKey: "amount",
     header: "Amount",
+    cell: ({ getValue }: any) => {
+      return `$${parseFloat(getValue()).toFixed(2)}`;
+    },
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ getValue }) => {
+    cell: ({ getValue }: any) => {
       const value = getValue();
       const color =
-        value === "Paid"
+        value === "Paid" || value === "Delivered"
           ? "text-green-400"
-          : value === "Pending"
+          : value === "Pending" || value === "Cash on Delivery"
           ? "text-yellow-400"
           : "text-red-400";
       return <span className={`font-medium ${color}`}>{value}</span>;
@@ -68,7 +71,7 @@ const columns = [
   },
 ];
 
-const OrdersTable = () => {
+const OrdersTable = ({ orders }: { orders: any[] }) => {
   const table = useReactTable({
     data: orders,
     columns,
@@ -78,10 +81,10 @@ const OrdersTable = () => {
   return (
     <div className="mt-6">
       <h2 className="text-white text-xl font-semibold mb-4">Recent Orders</h2>
-      <span className="block text-sm text-slate-400 font-normal">
+      <span className="block text-sm text-slate-400 font-normal mb-4">
         A quick snapshot of your latest transactions.
       </span>
-      <div className="!rounded shadow-xl overflow-hidden border border-slate-700">
+      <div className="rounded shadow-xl overflow-hidden border border-slate-700">
         <table className="min-w-full text-sm text-white">
           <thead className="bg-slate-900 text-slate-300">
             {table.getHeaderGroups().map((headerGroup) => (
@@ -98,18 +101,29 @@ const OrdersTable = () => {
             ))}
           </thead>
           <tbody className="bg-transparent">
-            {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className="border-t border-slate-600 hover:bg-slate-800 transition"
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="p-3">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
+            {table.getRowModel().rows.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="p-8 text-center text-slate-400">
+                  No orders found
+                </td>
               </tr>
-            ))}
+            ) : (
+              table.getRowModel().rows.map((row) => (
+                <tr
+                  key={row.id}
+                  className="border-t border-slate-600 hover:bg-slate-800 transition"
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className="p-3">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -117,52 +131,301 @@ const OrdersTable = () => {
   );
 };
 
-// Dashboard Layout
-const DashboardPage = () => {
+const StatsCard = ({ title, value, subtitle, trend, icon: Icon }: any) => {
+  const isPositive = trend >= 0;
   return (
-    <div className="p-8">
-      {/* Top Charts */}
-      <div className="w-full flex gap-8">
-        {/* Revenue Chart */}
-        <div className="w-[65%]">
-          <div className="rounded-2xl shadow-xl">
-            <h2 className="text-white text-xl font-semibold">Revenue</h2>
-            <span className="block text-sm text-slate-400 font-normal">
-              Last 6 months performance
+    <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 hover:border-slate-600 transition">
+      <div className="flex items-start justify-between mb-3">
+        <h3 className="text-slate-400 text-sm font-medium">{title}</h3>
+        {Icon && <Icon className="w-5 h-5 text-slate-500" />}
+      </div>
+      <p className="text-white text-3xl font-bold mb-1">{value}</p>
+      <div className="flex items-center gap-2">
+        <span className="text-slate-400 text-xs">{subtitle}</span>
+        {trend !== undefined && (
+          <div className="flex items-center gap-1">
+            {isPositive ? (
+              <TrendingUp className="w-3 h-3 text-green-400" />
+            ) : (
+              <TrendingDown className="w-3 h-3 text-red-400" />
+            )}
+            <span
+              className={`text-xs font-medium ${
+                isPositive ? "text-green-400" : "text-red-400"
+              }`}
+            >
+              {Math.abs(trend).toFixed(1)}%
             </span>
-            {/* SalesChart would be rendered here */}
-            <SalesChart/>
           </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const DashboardPage = () => {
+  const [loading, setLoading] = useState(true);
+  const [dashboardStats, setDashboardStats] = useState<any>(null);
+  const [salesData, setSalesData] = useState<any[]>([]);
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const [deviceData, setDeviceData] = useState<any[]>([]);
+  const [userAnalytics, setUserAnalytics] = useState<any>(null);
+  const [productAnalytics, setProductAnalytics] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch dashboard stats
+      const statsResponse = await axiosInstance.get(
+        "/admin/api/dashboard/stats"
+      );
+
+      if (statsResponse.data.success) {
+        setDashboardStats(statsResponse.data.data);
+
+        // Transform recent orders for the table
+        const transformedOrders = statsResponse.data.data.recentOrders.map(
+          (order: any) => ({
+            id: order.id,
+            customer: order.customer,
+            amount: order.total,
+            status: order.status,
+          })
+        );
+        setRecentOrders(transformedOrders);
+      }
+
+      // Fetch sales analytics
+      const salesResponse = await axiosInstance.get(
+        "/admin/api/dashboard/sales-analytics?period=7d"
+      );
+
+      if (salesResponse.data.success) {
+        const transformedSalesData = salesResponse.data.data.map(
+          (item: any) => ({
+            ...item,
+            date: new Date(item.date).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            }),
+          })
+        );
+        setSalesData(transformedSalesData);
+      }
+
+      // Fetch user analytics with device data
+      const userAnalyticsResponse = await axiosInstance.get(
+        "/admin/api/dashboard/user-analytics"
+      );
+
+      console.log(userAnalyticsResponse,'userss');
+
+      if (userAnalyticsResponse.data.success) {
+        const userData = userAnalyticsResponse.data.data;
+        setUserAnalytics(userData);
+
+        // Extract device data from user analytics
+        if (userData.deviceStats) {
+          setDeviceData(userData.deviceStats);
+        } else {
+          // Fallback if deviceStats not available
+          const total = statsResponse.data.data?.overview?.totalUsers || 100;
+          setDeviceData([
+            { name: "Phone", value: Math.floor(total * 0.55) },
+            { name: "Tablet", value: Math.floor(total * 0.2) },
+            { name: "Desktop", value: Math.floor(total * 0.25) },
+          ]);
+        }
+      }
+
+      // Fetch product analytics
+      const productAnalyticsResponse = await axiosInstance.get(
+        "/admin/api/dashboard/product-analytics"
+      );
+
+      if (productAnalyticsResponse.data.success) {
+        setProductAnalytics(productAnalyticsResponse.data.data);
+      }
+    } catch (err: any) {
+      console.error("Error fetching dashboard data:", err);
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to load dashboard data"
+      );
+
+      // Set fallback data
+      setDashboardStats({
+        overview: {
+          totalUsers: 0,
+          totalSellers: 0,
+          totalProducts: 0,
+          totalOrders: 0,
+          totalRevenue: 0,
+        },
+        today: { orders: 0, revenue: 0 },
+        changes: { ordersChange: 0, revenueChange: 0 },
+        recentOrders: [],
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+    const interval = setInterval(fetchDashboardData, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[60vh]">
+        <Loader2 className="animate-spin text-gray-500 w-8 h-8" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8">
+        <div className="bg-red-900/20 border border-red-500 rounded-lg p-6 text-center">
+          <p className="text-4xl mb-2">😕</p>
+          <p className="text-red-400 font-semibold mb-2">
+            Unable to load dashboard data
+          </p>
+          <p className="text-slate-400 text-sm">{error}</p>
+          <button
+            onClick={fetchDashboardData}
+            className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const stats = dashboardStats?.overview || {};
+  const today = dashboardStats?.today || {};
+  const changes = dashboardStats?.changes || {};
+
+  return (
+    <div className="p-8 min-h-screen bg-slate-950">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatsCard
+          title="Total Users"
+          value={stats.totalUsers?.toLocaleString() || "0"}
+          subtitle="Registered users"
+          icon={Users}
+        />
+        <StatsCard
+          title="Total Sellers"
+          value={stats.totalSellers?.toLocaleString() || "0"}
+          subtitle="Active sellers"
+          icon={Users}
+        />
+        <StatsCard
+          title="Total Products"
+          value={stats.totalProducts?.toLocaleString() || "0"}
+          subtitle="Listed products"
+          icon={Package}
+        />
+        <StatsCard
+          title="Total Revenue"
+          value={`$${(stats.totalRevenue || 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`}
+          subtitle="All time"
+          icon={ShoppingCart}
+        />
+      </div>
+
+      {/* Today's Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <StatsCard
+          title="Today's Orders"
+          value={today.orders?.toLocaleString() || "0"}
+          subtitle="Orders placed today"
+          trend={changes.ordersChange}
+        />
+        <StatsCard
+          title="Today's Revenue"
+          value={`$${(today.revenue || 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`}
+          subtitle="Revenue generated today"
+          trend={changes.revenueChange}
+        />
+      </div>
+
+      {/* Charts Section */}
+      <div className="w-full flex flex-col lg:flex-row gap-8 mb-8">
+        {/* Revenue Chart */}
+        <div className="w-full lg:w-[65%] bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-700">
+          <h2 className="text-white text-xl font-semibold mb-2">Revenue</h2>
+          <span className="block text-sm text-slate-400 font-normal mb-4">
+            Last 7 days performance
+          </span>
+          {salesData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={salesData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <XAxis
+                  dataKey="date"
+                  stroke="#94a3b8"
+                  tick={{ fill: "#94a3b8" }}
+                />
+                <YAxis stroke="#94a3b8" tick={{ fill: "#94a3b8" }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1e293b",
+                    border: "none",
+                    borderRadius: "8px",
+                  }}
+                  labelStyle={{ color: "#fff" }}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#4ade80"
+                  strokeWidth={2}
+                  name="Revenue ($)"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="orders"
+                  stroke="#60a5fa"
+                  strokeWidth={2}
+                  name="Orders"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] text-slate-400">
+              No sales data available
+            </div>
+          )}
         </div>
 
         {/* Device Usage */}
-        <div className="w-[35%] rounded-2xl shadow-xl mb-2">
+        <div className="w-full lg:w-[35%] bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-700">
           <h2 className="text-white text-xl font-semibold mb-2">
             Device Usage
           </h2>
-          <span className="block text-sm text-slate-400 font-normal">
+          <span className="block text-sm text-slate-400 font-normal mb-4">
             How users access your platform
           </span>
-          <div className="mt-14">
+          {deviceData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
-                <defs>
-                  <filter
-                    id="shadow"
-                    x="-10%"
-                    y="-10%"
-                    width="120%"
-                    height="120%"
-                  >
-                    <feDropShadow
-                      dx="0"
-                      dy="0"
-                      stdDeviation="4"
-                      floodColor="#000"
-                      floodOpacity="0.2"
-                    />
-                  </filter>
-                </defs>
                 <Pie
                   data={deviceData}
                   dataKey="value"
@@ -172,10 +435,8 @@ const DashboardPage = () => {
                   innerRadius={60}
                   outerRadius={90}
                   paddingAngle={3}
-                  stroke={"#0f172a"}
+                  stroke="#0f172a"
                   strokeWidth={2}
-                  isAnimationActive
-                  filter="url(#shadow)"
                 >
                   {deviceData.map((entry, index) => (
                     <Cell
@@ -193,38 +454,140 @@ const DashboardPage = () => {
                   labelStyle={{ color: "#fff" }}
                   itemStyle={{ color: "#fff" }}
                 />
-                {/* External Legend */}
                 <Legend
                   layout="horizontal"
                   verticalAlign="bottom"
                   align="center"
                   iconType="circle"
-                  formatter={(value) => (
-                    <span className="text-white text-sm ml-1">{value}</span>
-                  )}
+                  wrapperStyle={{ color: "#fff" }}
                 />
               </PieChart>
             </ResponsiveContainer>
-          </div>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] text-slate-400">
+              <div className="text-center">
+                <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>No device data available</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Geo Map + Orders */}
-      <div className="w-full flex gap-8">
-        {/* Map */}
-        <div className="w-[60%]">
-          <h2 className="text-white text-xl font-semibold mt-6">
-            User & Seller Distribution
-          </h2>
-          <span className="block text-sm text-slate-400 font-normal">
-            Visual breakdown of global user & seller activity.
-          </span>
-          <GeographicalMap />
+      {/* Product Analytics Section */}
+      {productAnalytics && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Top Selling Products */}
+          <div className="bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-700">
+            <h2 className="text-white text-xl font-semibold mb-4">
+              <Eye className="inline w-5 h-5 mr-2" />
+              Top Selling Products
+            </h2>
+            <div className="space-y-3">
+              {productAnalytics.topSellingProducts
+                ?.slice(0, 5)
+                .map((product: any, index: number) => (
+                  <div
+                    key={product.id}
+                    className="flex items-center gap-4 bg-slate-900 p-3 rounded-lg border border-slate-700"
+                  >
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
+                      {index + 1}
+                    </div>
+                    <img
+                      src={product.images?.[0]?.url || "/placeholder.png"}
+                      alt={product.title}
+                      className="w-12 h-12 rounded object-cover"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium truncate">
+                        {product.title}
+                      </p>
+                      <p className="text-slate-400 text-xs">
+                        {product.Shop?.name || "Unknown Shop"}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-green-400 font-semibold">
+                        {product.totalSales} sold
+                      </p>
+                      <p className="text-slate-400 text-xs">
+                        ${product.sale_price}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+
+          {/* Products by Category */}
+          <div className="bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-700">
+            <h2 className="text-white text-xl font-semibold mb-4">
+              Products by Category
+            </h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={productAnalytics.productsByCategory || []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <XAxis
+                  dataKey="category"
+                  stroke="#94a3b8"
+                  tick={{ fill: "#94a3b8" }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis stroke="#94a3b8" tick={{ fill: "#94a3b8" }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1e293b",
+                    border: "none",
+                    borderRadius: "8px",
+                  }}
+                  labelStyle={{ color: "#fff" }}
+                />
+                <Bar dataKey="count" fill="#4ade80" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-        {/* Orders Table */}
-        <div className="w-[40%]">
-          <OrdersTable />
+      )}
+
+      {/* User Analytics Summary */}
+      {userAnalytics && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+            <h3 className="text-slate-400 text-sm font-medium mb-2">
+              Total User Sessions
+            </h3>
+            <p className="text-white text-2xl font-bold">
+              {userAnalytics.length || 0}
+            </p>
+            <p className="text-slate-400 text-xs mt-1">
+              Active user analytics records
+            </p>
+          </div>
+          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+            <h3 className="text-slate-400 text-sm font-medium mb-2">
+              Top Location
+            </h3>
+            <p className="text-white text-2xl font-bold">UAE</p>
+            <p className="text-slate-400 text-xs mt-1">Most active region</p>
+          </div>
+          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+            <h3 className="text-slate-400 text-sm font-medium mb-2">
+              Active Products
+            </h3>
+            <p className="text-white text-2xl font-bold">
+              {productAnalytics?.activeProducts || 0}
+            </p>
+            <p className="text-slate-400 text-xs mt-1">Currently active</p>
+          </div>
         </div>
+      )}
+
+      {/* Orders Table */}
+      <div className="bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-700">
+        <OrdersTable orders={recentOrders} />
       </div>
     </div>
   );

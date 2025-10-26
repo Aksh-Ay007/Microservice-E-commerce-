@@ -1,7 +1,7 @@
 import prisma from "@packages/libs/prisma";
-import { NextFunction, Request, Response } from "express";
 import { ValidationError } from "../../../../packages/error-handler";
 import { imagekit } from "../../../../packages/libs/imagekit";
+import { NextFunction, Request, Response } from 'express';
 
 export const getAllProducts = async (
   req: Request,
@@ -61,7 +61,7 @@ export const getAllProducts = async (
     });
   } catch (error) {
     console.error("Admin getAllProducts error:", error);
-    next(error);
+     next(error);
   }
 };
 
@@ -703,5 +703,484 @@ export const createNotification = async (req: Request, res: Response) => {
     res
       .status(500)
       .json({ success: false, message: "Failed to create notification" });
+  }
+};
+
+// ========================================
+// DASHBOARD ANALYTICS ENDPOINTS
+// ========================================
+
+// Get dashboard statistics for Admin
+export const getDashboardStats = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // Get current date and date ranges
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const last7Days = new Date(today);
+    last7Days.setDate(last7Days.getDate() - 7);
+    const last30Days = new Date(today);
+    last30Days.setDate(last30Days.getDate() - 30);
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    // Execute all queries in parallel
+    const [
+      totalUsers,
+      totalSellers,
+      totalProducts,
+      totalEvents,
+      totalOrders,
+      totalRevenue,
+      todayOrders,
+      yesterdayOrders,
+      todayRevenue,
+      yesterdayRevenue,
+      last7DaysOrders,
+      last7DaysRevenue,
+      last30DaysOrders,
+      last30DaysRevenue,
+      thisMonthOrders,
+      thisMonthRevenue,
+      lastMonthOrders,
+      lastMonthRevenue,
+      ordersByStatus,
+      recentOrders,
+      topProducts,
+    ] = await Promise.all([
+      // Total counts
+      prisma.users.count({ where: { role: "user" } }),
+      prisma.sellers.count({ where: { isDeleted: false } }),
+      prisma.products.count({ where: { isDeleted: false } }),
+      prisma.products.count({
+        where: { starting_date: { not: null }, isDeleted: false },
+      }),
+      prisma.orders.count(),
+      prisma.orders.aggregate({
+        _sum: { total: true },
+      }),
+
+      // Today stats
+      prisma.orders.count({
+        where: { createdAt: { gte: today } },
+      }),
+      prisma.orders.count({
+        where: {
+          createdAt: {
+            gte: yesterday,
+            lt: today,
+          },
+        },
+      }),
+      prisma.orders.aggregate({
+        where: { createdAt: { gte: today } },
+        _sum: { total: true },
+      }),
+      prisma.orders.aggregate({
+        where: {
+          createdAt: {
+            gte: yesterday,
+            lt: today,
+          },
+        },
+        _sum: { total: true },
+      }),
+
+      // Last 7 days stats
+      prisma.orders.count({
+        where: { createdAt: { gte: last7Days } },
+      }),
+      prisma.orders.aggregate({
+        where: { createdAt: { gte: last7Days } },
+        _sum: { total: true },
+      }),
+
+      // Last 30 days stats
+      prisma.orders.count({
+        where: { createdAt: { gte: last30Days } },
+      }),
+      prisma.orders.aggregate({
+        where: { createdAt: { gte: last30Days } },
+        _sum: { total: true },
+      }),
+
+      // This month stats
+      prisma.orders.count({
+        where: { createdAt: { gte: thisMonthStart } },
+      }),
+      prisma.orders.aggregate({
+        where: { createdAt: { gte: thisMonthStart } },
+        _sum: { total: true },
+      }),
+
+      // Last month stats
+      prisma.orders.count({
+        where: {
+          createdAt: {
+            gte: lastMonthStart,
+            lt: lastMonthEnd,
+          },
+        },
+      }),
+      prisma.orders.aggregate({
+        where: {
+          createdAt: {
+            gte: lastMonthStart,
+            lt: lastMonthEnd,
+          },
+        },
+        _sum: { total: true },
+      }),
+
+      // Orders by status
+      prisma.orders.groupBy({
+        by: ["status"],
+        _count: { status: true },
+      }),
+
+      // Recent orders
+      prisma.orders.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        include: {
+          user: {
+            select: { name: true, email: true },
+          },
+          shop: {
+            select: { name: true },
+          },
+        },
+      }),
+
+      // Top products by sales
+      prisma.products.findMany({
+        where: { isDeleted: false },
+        take: 10,
+        orderBy: { totalSales: "desc" },
+        select: {
+          id: true,
+          title: true,
+          totalSales: true,
+          sale_price: true,
+          images: {
+            select: { url: true },
+            take: 1,
+          },
+        },
+      }),
+    ]);
+
+    // Calculate percentage changes
+    const ordersChange =
+      yesterdayOrders > 0
+        ? ((todayOrders - yesterdayOrders) / yesterdayOrders) * 100
+        : todayOrders > 0
+        ? 100
+        : 0;
+
+    const revenueChange =
+      (yesterdayRevenue._sum.total || 0) > 0
+        ? ((todayRevenue._sum.total - (yesterdayRevenue._sum.total || 0)) /
+            (yesterdayRevenue._sum.total || 0)) *
+          100
+        : (todayRevenue._sum.total || 0) > 0
+        ? 100
+        : 0;
+
+    // Prepare response
+    const response = {
+      success: true,
+      data: {
+        overview: {
+          totalUsers,
+          totalSellers,
+          totalProducts,
+          totalEvents,
+          totalOrders,
+          totalRevenue: totalRevenue._sum.total || 0,
+        },
+        today: {
+          orders: todayOrders,
+          revenue: todayRevenue._sum.total || 0,
+        },
+        yesterday: {
+          orders: yesterdayOrders,
+          revenue: yesterdayRevenue._sum.total || 0,
+        },
+        changes: {
+          ordersChange: parseFloat(ordersChange.toFixed(2)),
+          revenueChange: parseFloat(revenueChange.toFixed(2)),
+        },
+        last7Days: {
+          orders: last7DaysOrders,
+          revenue: last7DaysRevenue._sum.total || 0,
+        },
+        last30Days: {
+          orders: last30DaysOrders,
+          revenue: last30DaysRevenue._sum.total || 0,
+        },
+        thisMonth: {
+          orders: thisMonthOrders,
+          revenue: thisMonthRevenue._sum.total || 0,
+        },
+        lastMonth: {
+          orders: lastMonthOrders,
+          revenue: lastMonthRevenue._sum.total || 0,
+        },
+        ordersByStatus: ordersByStatus.reduce((acc, item) => {
+          acc[item.status] = item._count.status;
+          return acc;
+        }, {} as Record<string, number>),
+        recentOrders: recentOrders.map((order) => ({
+          id: order.id,
+          customer: order.user.name,
+          shop: order.shop.name,
+          total: order.total,
+          status: order.status,
+          createdAt: order.createdAt,
+        })),
+        topProducts,
+      },
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+    next(error);
+  }
+};
+
+// Get sales analytics for charts
+export const getSalesAnalytics = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { period = "7d" } = req.query; // 7d, 30d, 1y
+    const now = new Date();
+    let startDate: Date;
+
+    switch (period) {
+      case "7d":
+        startDate = new Date();
+        startDate.setDate(startDate.getDate() - 7);
+        break;
+      case "30d":
+        startDate = new Date();
+        startDate.setDate(startDate.getDate() - 30);
+        break;
+      case "1y":
+        startDate = new Date();
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        break;
+      default:
+        startDate = new Date();
+        startDate.setDate(startDate.getDate() - 7);
+    }
+
+    // Get orders for the period
+    const orders = await prisma.orders.findMany({
+      where: {
+        createdAt: { gte: startDate },
+      },
+      select: {
+        total: true,
+        createdAt: true,
+        status: true,
+      },
+    });
+
+    // Group by date
+    const salesByDate = orders.reduce((acc, order) => {
+      const date = order.createdAt.toISOString().split("T")[0];
+      if (!acc[date]) {
+        acc[date] = {
+          date,
+          revenue: 0,
+          orders: 0,
+          paid: 0,
+          pending: 0,
+          failed: 0,
+        };
+      }
+      acc[date].revenue += order.total;
+      acc[date].orders += 1;
+      if (order.status === "Paid" || order.status === "Delivered") {
+        acc[date].paid += 1;
+      } else if (order.status === "Pending") {
+        acc[date].pending += 1;
+      } else {
+        acc[date].failed += 1;
+      }
+      return acc;
+    }, {} as Record<string, any>);
+
+    const salesData = Object.values(salesByDate).sort((a: any, b: any) =>
+      a.date.localeCompare(b.date)
+    );
+
+    res.status(200).json({
+      success: true,
+      data: salesData,
+    });
+  } catch (error) {
+    console.error("Error fetching sales analytics:", error);
+    next(error);
+  }
+};
+
+
+
+// Get user analytics with device stats
+export const getUserAnalytics = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // Fetch all user analytics records
+    const userAnalyticsData = await prisma.userAnalytics.findMany({
+      select: {
+        device: true,
+        country: true,
+        city: true,
+        createdAt: true,
+      },
+    });
+
+    // --- DEVICE STATS ---
+    const deviceStats: Record<string, number> = {};
+
+    userAnalyticsData.forEach((record) => {
+      if (record.device) {
+        const deviceString = record.device.toLowerCase();
+        let deviceType = "Desktop";
+
+        if (
+          deviceString.includes("mobile") ||
+          deviceString.includes("phone") ||
+          deviceString.includes("android") ||
+          deviceString.includes("ios")
+        ) {
+          deviceType = "Phone";
+        } else if (
+          deviceString.includes("tablet") ||
+          deviceString.includes("ipad")
+        ) {
+          deviceType = "Tablet";
+        }
+
+        deviceStats[deviceType] = (deviceStats[deviceType] || 0) + 1;
+      }
+    });
+
+    const deviceData = Object.entries(deviceStats).map(([name, value]) => ({
+      name,
+      value,
+    }));
+
+    // Default if no records found
+    if (deviceData.length === 0) {
+      deviceData.push(
+        { name: "Phone", value: 0 },
+        { name: "Tablet", value: 0 },
+        { name: "Desktop", value: 0 }
+      );
+    }
+
+    // --- USER GROWTH BY DATE ---
+    const usersByDate = userAnalyticsData.reduce((acc, record) => {
+      const date = record.createdAt.toISOString().split("T")[0];
+      acc[date] = (acc[date] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const usersData = Object.entries(usersByDate)
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    // --- RESPONSE ---
+    res.status(200).json({
+      success: true,
+      data: {
+        deviceStats: deviceData,
+        userGrowth: usersData,
+        totalRecords: userAnalyticsData.length,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching user analytics:", error);
+    next(error);
+  }
+};
+
+
+// Get product analytics
+export const getProductAnalytics = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const [
+      totalProducts,
+      activeProducts,
+      pendingProducts,
+      productsByCategory,
+      topSellingProducts,
+    ] = await Promise.all([
+      prisma.products.count({ where: { isDeleted: false } }),
+      prisma.products.count({ where: { isDeleted: false, status: "Active" } }),
+      prisma.products.count({ where: { isDeleted: false, status: "Pending" } }),
+      prisma.products.groupBy({
+        by: ["category"],
+        where: { isDeleted: false },
+        _count: { category: true },
+      }),
+      prisma.products.findMany({
+        where: { isDeleted: false },
+        take: 10,
+        orderBy: { totalSales: "desc" },
+        select: {
+          id: true,
+          title: true,
+          category: true,
+          totalSales: true,
+          sale_price: true,
+          stock: true,
+          images: {
+            select: { url: true },
+            take: 1,
+          },
+          Shop: {
+            select: { name: true },
+          },
+        },
+      }),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalProducts,
+        activeProducts,
+        pendingProducts,
+        productsByCategory: productsByCategory.map((item) => ({
+          category: item.category,
+          count: item._count.category,
+        })),
+        topSellingProducts,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching product analytics:", error);
+    next(error);
   }
 };

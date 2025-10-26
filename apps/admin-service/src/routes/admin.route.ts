@@ -21,6 +21,10 @@ import {
   markNotificationAsRead,
   uploadBanner,
   uploadLogo,
+  getDashboardStats,
+  getSalesAnalytics,
+  getUserAnalytics,
+  getProductAnalytics,
 } from "../controllers/admin.controller";
 
 const router: Router = express.Router();
@@ -71,5 +75,10 @@ router.delete(
 router.get("/notifications/user/:receiverId", getUserNotifications);
 router.post("/notifications", createNotification);
 
+// Dashboard Analytics
+router.get("/dashboard/stats", isAuthenticated, isAdmin, getDashboardStats);
+router.get("/dashboard/sales-analytics", isAuthenticated, isAdmin, getSalesAnalytics);
+router.get("/dashboard/user-analytics", isAuthenticated, isAdmin, getUserAnalytics);
+router.get("/dashboard/product-analytics", isAuthenticated, isAdmin, getProductAnalytics);
 
 export default router;

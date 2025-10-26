@@ -25,6 +25,8 @@ import {
   updateSellerBanner,
   updateSellerProfile,
   verifySeller,
+  getSellerDashboardStats,
+  getSellerSalesAnalytics,
 } from "../controller/seller.controller";
 
 const router: Router = express.Router();
@@ -103,6 +105,20 @@ router.put(
   isSellerAuthenticated,
   isSeller,
   markAllSellerNotificationsAsRead
+);
+
+// Seller Dashboard Analytics
+router.get(
+  "/dashboard/stats",
+  isSellerAuthenticated,
+  isSeller,
+  getSellerDashboardStats
+);
+router.get(
+  "/dashboard/sales-analytics",
+  isSellerAuthenticated,
+  isSeller,
+  getSellerSalesAnalytics
 );
 
 export default router;

@@ -17,7 +17,7 @@ import {
   UseQueryResult,
 } from "@tanstack/react-query";
 import { saveAs } from "file-saver";
-import axiosInstance from "apps/admin-ui/src/utils/axiosInstance";
+import axiosInstance from '../../../utils/axiosinstance';
 
 // types
 type User = {
