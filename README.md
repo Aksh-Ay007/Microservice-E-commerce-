@@ -1,303 +1,517 @@
----
+# 🛍️ Microservices E-Commerce Platform
+
+A modern, scalable microservices-based e-commerce platform built with Node.js, Next.js, and TypeScript. This project features separate UIs for users, sellers, and admins, with a robust backend architecture utilizing MongoDB, Redis, and Kafka.
+
+## 📋 Table of Contents
+
+- [Features](#-features)
+- [Tech Stack](#️-tech-stack)
+- [System Architecture](#-system-architecture)
+- [Project Structure](#-project-structure)
+- [Microservices Overview](#-microservices-overview)
+- [Installation & Setup](#-installation--setup)
+- [Environment Variables](#-environment-variables)
+- [Running the Application](#-running-the-application)
+- [API Documentation](#-api-documentation)
+- [Database Schema](#-database-schema)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ## 🚀 Features
 
-- **Authentication Microservice**: User & seller registration, login, JWT, OTP, password reset, secure cookies, refresh tokens.
-- **User & Seller UI**: Modern Next.js frontends for both users and sellers, with multi-step signup, login, forgot password, and profile flows.
-- **API Gateway**: Centralized routing and aggregation for microservices.
-- **Prisma ORM + MongoDB**: Flexible, scalable data modeling for users, sellers, shops, reviews, and images.
-- **Redis**: Fast, reliable OTP and request tracking.
-- **Robust Error Handling**: Centralized error middleware and shared error utilities.
-- **Monorepo with Nx**: Unified development, builds, and testing for all services and UIs.
-- **Swagger Docs**: Auto-generated API documentation for auth-services.
-- **Testing**: Jest and E2E test setup for reliability.
-- **CI/CD**: GitHub Actions workflows for continuous integration.
-- **Tailwind CSS**: Utility-first CSS for rapid UI development.
-- **Google Auth**: Social login for users.
+### Authentication & Security
+- **JWT-based Authentication**: Secure access and refresh tokens with automatic token refresh
+- **OTP Verification**: Email-based OTP for registration and password reset
+- **Google OAuth**: Social login integration for users
+- **Secure Cookies**: HttpOnly, secure cookie management
+- **Role-based Access Control**: User, Seller, and Admin roles
+- **Password Hashing**: Bcrypt for secure password storage
 
----
+### User Features
+- **Modern UI**: Responsive Next.js frontend with Tailwind CSS
+- **User Dashboard**: Profile management, wishlist, cart
+- **Order Management**: View and track orders
+- **Product Reviews**: Rate and review products
+- **Real-time Chat**: Communicate with sellers via WebSocket
+
+### Seller Features
+- **Seller Dashboard**: Comprehensive shop management
+- **Product Management**: CRUD operations with rich media support
+- **Order Processing**: Manage orders and deliveries
+- **Analytics**: Track shop performance and sales
+- **Stripe Integration**: Payment processing and subscriptions
+
+### Admin Features
+- **Admin Dashboard**: Site-wide management
+- **User Management**: Monitor and manage users and sellers
+- **Category Management**: Configure product categories
+- **System Configuration**: Site-wide settings
+
+### Technical Features
+- **Microservices Architecture**: Scalable service separation
+- **API Gateway**: Centralized routing and load balancing
+- **Event-Driven Architecture**: Kafka for asynchronous communication
+- **Real-time Logging**: WebSocket-based logging service
+- **Automated Testing**: Jest and E2E test setup
+- **CI/CD Ready**: GitHub Actions workflows
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Node.js, Express, TypeScript, Prisma, MongoDB, Redis, JWT, bcrypt, Nodemailer, Swagger, EJS.
-- **Frontend**: React, Next.js, Tailwind CSS, React Query, React Hook Form, Axios, Lucide Icons, Google Auth.
-- **Monorepo Tooling**: Nx, TypeScript project references, Jest, GitHub Actions.
-- **Testing**: Jest, E2E tests.
-- **Docs**: Swagger (OpenAPI).
-
----
-
-## 🧩 Detailed Module Overview
-
-### Auth Microservice (`apps/auth-services`)
-
-- **Controllers**: All authentication logic in `src/controllers/auth.controller.ts` (register, login, OTP, password reset, refresh tokens, etc.)
-- **Helpers**: `src/utils/auth.helper.ts` for validation, OTP, and security logic.
-- **Email Templates**: EJS templates for OTP and password reset emails.
-- **Swagger Docs**: `src/swagger.js` and `src/swagger.json` for API documentation.
-- **Routes**: `src/routes/auth.router.ts` for all auth endpoints.
-- **Dockerfile**: For containerized deployment.
-
-#### Key Flows:
-
-- **User Registration**: Validates input, checks for existing user, sends OTP, tracks OTP requests, and creates user after OTP verification.
-- **Seller Registration**: Similar to user, but with additional fields (phone, country).
-- **Login**: Validates credentials, issues JWT access and refresh tokens, sets secure cookies.
-- **Password Reset**: Handles forgot password, OTP verification, and password update.
-- **Token Refresh**: Securely refreshes access tokens using refresh tokens.
-
-### User UI (`apps/user-ui`)
-
-- **Pages**: Login, signup (with OTP), forgot password, profile, wishlist, cart.
-- **Hooks**: `src/hooks/useUser.ts` for fetching and caching user data.
-- **Utils**: `src/utils/axiosinstance.ts` for API calls with automatic token refresh.
-- **Widgets**: `src/shared/widgets/header/` for dynamic header and sticky navigation.
-- **Components**: Google login button, OTP input, etc.
-- **Tailwind CSS**: For modern, responsive UI.
-- **React Query**: For data fetching and caching.
-- **React Hook Form**: For robust form validation and UX.
-
-#### Key Flows:
-
-- **Signup**: Multi-step with OTP, password visibility toggle, Google signup.
-- **Login**: Email/password, Google login, "Remember Me", error handling.
-- **Forgot Password**: Email submission, OTP verification, password reset.
-- **Header**: Dynamic user info, profile link, wishlist/cart, sticky navigation.
-
-### Seller UI (`apps/seller-ui`)
-
-- **Pages**: Multi-step signup (with OTP), login, shop setup, bank connection, dashboard.
-- **Form Validation**: Country/phone validation, OTP resend with timer.
-- **Modern UX**: Styled with Tailwind CSS, React Query, React Hook Form.
-
-### API Gateway (`apps/api-gateway`)
-
-- **Express-based**: Central entry point for all microservices.
-- **Proxying**: Forwards requests to appropriate services.
-- **Assets**: Static assets and main entry.
-
-### Shared Packages
-
-- **error-handler**: Custom error classes and Express error middleware.
-- **libs/prisma**: Prisma client and schema.
-- **libs/redis**: Redis client and helpers.
-- **middleware**: Shared Express middleware (e.g., authentication).
-
-### Database Models (`prisma/schema.prisma`)
-
-- **users**: id, name, email, password, avatar, following, reviews, timestamps.
-- **sellers**: id, name, email, phone, country, password, stripeId, shop, timestamps.
-- **shops**: id, name, bio, category, avatar, address, ratings, reviews, sellerId, timestamps.
-- **shopReviews**: id, userId, rating, review, shopId, timestamps.
-- **images**: id, file_id, url, userId, shopId.
-
----
-
-## ⚙️ Setup & Installation
-
-1. **Clone the repo**
-   ```bash
-   git clone https://github.com/yourusername/E-commerceProject-Microservice.git
-   cd E-commerceProject-Microservice
-   ```
-
-<<<<<<< SEARCH
-
-🛠️ Project Workflow
-User/Seller visits UI (Next.js)
-Can register, login, or reset password.
-Registration
-User/Seller submits registration form.
-Auth Service validates data, checks for existing user, sends OTP via email.
-User/Seller enters OTP to verify.
-On success, account is created in MongoDB via Prisma.
-Login
-User/Seller submits credentials.
-Auth Service validates, issues JWT access and refresh tokens, sets cookies.
-UI stores session, fetches user data via /api/logged-in-user.
-Password Reset
-User/Seller requests password reset.
-Auth Service sends OTP to email.
-User/Seller verifies OTP, sets new password.
-Token Refresh
-If access token expires, UI uses refresh token to get a new one (handled by axios interceptor).
-API Gateway
-Routes requests to appropriate microservices (auth, user, seller, etc.).
-Shared Packages
-Error handling, Prisma, Redis, and middleware are reused across services.
-CI/CD
-GitHub Actions run tests and build on push/PR.
-
-flowchart TD
-subgraph Frontend
-A1[User UI (Next.js)]
-A2[Seller UI (Next.js)]
-end
-subgraph Gateway
-B[API Gateway (Express)]
-end
-subgraph Services
-C[Auth Service (Express, Prisma, Redis)]
-D[Other Microservices]
-end
-subgraph DB
-E[(MongoDB)]
-F[(Redis)]
-end
-
-    A1 -- "API Calls" --> B
-    A2 -- "API Calls" --> B
-    B -- "Auth, User, Seller" --> C
-    B -- "Other APIs" --> D
-    C -- "ORM" --> E
-    C -- "OTP, Rate Limit" --> F
-
-=======
-
-## 🛠️ Project Workflow
-
-The workflow below describes the high-level user and system interactions in the E-commerce microservices platform. Each step is designed to ensure security, scalability, and a seamless user experience.
-
-1. **User/Seller visits UI (Next.js)**
-
-   - Users and sellers can register, login, or reset their password from the respective Next.js frontends.
-
-2. **Registration**
-
-   - User/Seller submits the registration form.
-   - Auth Service validates the data, checks for existing accounts, and sends an OTP via email.
-   - User/Seller enters the OTP to verify their account.
-   - On successful verification, the account is created in MongoDB via Prisma.
-
-3. **Login**
-
-   - User/Seller submits their credentials.
-   - Auth Service validates the credentials, issues JWT access and refresh tokens, and sets secure cookies.
-   - The UI stores the session and fetches user data via `/api/logged-in-user`.
-
-4. **Password Reset**
-
-   - User/Seller requests a password reset.
-   - Auth Service sends an OTP to the registered email.
-   - User/Seller verifies the OTP and sets a new password.
-
-5. **Token Refresh**
-
-   - If the access token expires, the UI uses the refresh token to obtain a new one (handled automatically by the axios interceptor).
-
-6. **API Gateway**
-
-   - Routes requests to the appropriate microservices (auth, user, seller, etc.).
-
-7. **Shared Packages**
-
-   - Error handling, Prisma, Redis, and middleware are reused across all services for consistency and maintainability.
-
-8. **CI/CD**
-   - GitHub Actions run tests and build processes on every push or pull request to ensure code quality and reliability.
-
----
-
-## 🗺️ System Architecture Diagram
-
-```mermaid
-flowchart TD
-    subgraph Frontend
-        A1[User UI (Next.js)]
-        A2[Seller UI (Next.js)]
-    end
-    subgraph Gateway
-        B[API Gateway (Express)]
-    end
-    subgraph Services
-        C[Auth Service (Express, Prisma, Redis)]
-        D[Other Microservices]
-    end
-    subgraph DB
-        E[(MongoDB)]
-        F[(Redis)]
-    end
-
-    A1 -- "API Calls" --> B
-    A2 -- "API Calls" --> B
-    B -- "Auth, User, Seller" --> C
-    B -- "Other APIs" --> D
-    C -- "ORM" --> E
-    C -- "OTP, Rate Limit" --> F
-
-
-
-
-    ///common error
-
-
-1. Your first error
-Failed to clean up the workspace data directory.
-Error: EBUSY: resource busy or locked
-
-
-This happens when some process (like the Nx daemon, Node process, or your editor) is still holding a lock on .nx/workspace-data/...db.
-
-
-solution
-
-
-✅ Fix:
-
-Stop all Node processes:
-
-npx nx reset --force
-taskkill /F /IM node.exe
-
-
-Then retry:
-
-npx nx reset
-
-
-If you want to support time-limited products in the future, add the date filter only when you actually have products with dates set:
-
-const now = new Date();
-const baseFilter: Prisma.productsWhereInput = {
-  isDeleted: false,
-  status: "Active",
-  // Only add date logic when needed
-  OR: [
-    { starting_date: null, ending_date: null },
-    { starting_date: { lte: now }, ending_date: { gte: now } },
-  ],
-};
-
-
-
-
-<!-- nx erroor -->
-
-<!-- isuueee -->
-npx nx g @nx/express:app apps/kafka-service
-
-
- NX   The name should match the pattern "(?:^@[a-zA-Z0-9-*~][a-zA-Z0-9-*._~]*\/[a-zA-Z0-9-~][a-zA-Z0-9-._~]*|^[a-zA-Z][^:]*)$". The provided value "@./kafka-service-e2e" does not match.
-
-Pass --verbose to see the stacktrace.
-
-
-
-
-solution
-npx nx g @nx/express:app kafka-service --directory=apps/kafka-service --e2eTestRunner=none
+### Backend
+- **Runtime**: Node.js with TypeScript
+- **Framework**: Express.js
+- **Database**: MongoDB (via Prisma ORM)
+- **Caching**: Redis
+- **Message Queue**: Kafka (KafkaJS)
+- **Authentication**: JWT, bcrypt
+- **Email**: Nodemailer with EJS templates
+- **Payment**: Stripe
+- **File Upload**: ImageKit
+- **API Documentation**: Swagger/OpenAPI
+
+### Frontend
+- **Framework**: Next.js 15 with React 19
+- **Styling**: Tailwind CSS
+- **State Management**: Jotai, Zustand
+- **Forms**: React Hook Form
+- **Data Fetching**: React Query (TanStack Query)
+- **Charts**: ApexCharts, Recharts
+- **UI Components**: Lucide Icons
+- **Real-time**: WebSockets
+
+### DevOps & Tools
+- **Monorepo**: Nx Workspace
+- **Testing**: Jest, E2E Tests
+- **Build Tool**: Webpack, ESBuild
+- **Code Quality**: TypeScript strict mode
+
+## 🗺️ System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Frontend Layer                          │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
+│  │   User UI    │  │  Seller UI   │  │   Admin UI   │         │
+│  │  (Port 3000) │  │  (Port 3001) │  │  (Port 3002) │         │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘         │
+└─────────┼──────────────────┼──────────────────┼─────────────────┘
+          │                  │                  │
+          └──────────────────┼──────────────────┘
+                             │
+              ┌──────────────▼──────────────┐
+              │      API Gateway            │
+              │      (Port 8080)            │
+              └──────────────┬──────────────┘
+                             │
+        ┌────────────────────┼────────────────────┐
+        │                    │                    │
+        ▼                    ▼                    ▼
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│ Auth Service │    │Product Service│    │Seller Service│
+│  (Port 6001) │    │  (Port 6002)  │    │  (Port 6004) │
+└──────────────┘    └──────────────┘    └──────────────┘
+        │                    │                    │
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│Order Service │    │Admin Service │    │Chat Service  │
+│  (Port 6003) │    │  (Port 6005)  │    │  (Port 6006) │
+└──────────────┘    └──────────────┘    └──────────────┘
+        │                    │                    │
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│Logger Service│    │Recommendation│    │  Kafka       │
+│  (Port 6008) │    │   Service    │    │              │
+└──────────────┘    └──────────────┘    └──────────────┘
+        │                                           │
+        ▼                                           ▼
+┌──────────────┐                          ┌──────────────┐
+│   MongoDB    │                          │    Redis     │
+└──────────────┘                          └──────────────┘
 ```
 
+## 📁 Project Structure
 
+```
+Microservice-E-commerce/
+├── apps/
+│   ├── api-gateway/           # Central API routing
+│   ├── auth-services/         # Authentication & authorization
+│   ├── product-service/       # Product catalog management
+│   ├── order-service/         # Order processing & Stripe
+│   ├── seller-service/        # Seller operations
+│   ├── admin-service/         # Admin operations
+│   ├── chatting-service/      # Real-time chat & WebSocket
+│   ├── logger-service/        # Application logging
+│   ├── recommendation-service/ # ML-based recommendations
+│   ├── user-ui/               # User-facing Next.js app
+│   ├── seller-ui/             # Seller dashboard Next.js app
+│   └── admin-ui/              # Admin dashboard Next.js app
+├── packages/
+│   ├── error-handler/         # Shared error handling
+│   ├── libs/
+│   │   ├── prisma/            # Prisma client
+│   │   ├── redis/             # Redis client
+│   │   ├── imagekit/          # Image upload service
+│   │   └── notification-helper/ # Notification utilities
+│   ├── middleware/            # Shared middleware
+│   │   ├── authorizeRoles/    # RBAC middleware
+│   │   ├── isAuthenticated/   # Auth middleware
+│   │   └── sellerAuth.middleware/
+│   ├── utils/
+│   │   ├── kafka/             # Kafka utilities
+│   │   └── logs/              # Logging utilities
+│   └── components/            # Shared UI components
+├── prisma/
+│   └── schema.prisma          # Database schema
+├── nx.json                    # Nx configuration
+├── package.json               # Root dependencies
+└── README.md                  # This file
+```
 
- taskkill /F /IM node.exe
+## 🧩 Microservices Overview
 
+### 🔐 Auth Service (Port 6001)
+- User and Seller registration with OTP verification
+- Login with JWT tokens
+- Password reset flow
+- Token refresh mechanism
+- Google OAuth integration
+- **API Docs**: `http://localhost:6001/api-docs`
 
+### 📦 Product Service (Port 6002)
+- Product CRUD operations
+- Category and subcategory management
+- Product search and filtering
+- Stock management
+- Product analytics
+- Scheduled jobs for inventory
+- **API Docs**: `http://localhost:6002/api-docs`
 
+### 🛒 Order Service (Port 6003)
+- Order creation and management
+- Stripe payment processing
+- Webhook handling for payment events
+- Order status tracking
+- Discount code application
+- Email notifications
 
- netstat -ano | findstr 9229
+### 🏪 Seller Service (Port 6004)
+- Shop creation and management
+- Seller profile management
+- Shop analytics
+- Follower management
+- Review management
 
- taskkill /PID 23068 /F
+### 👨‍💼 Admin Service (Port 6005)
+- User and seller management
+- Site configuration
+- Category management
+- System analytics
 
+### 💬 Chat Service (Port 6006)
+- Real-time messaging via WebSocket
+- Group and private conversations
+- Message persistence
+- Online/offline status
+- Kafka integration for async messaging
 
- stripe listen --forward-to localhost:6003/api/create-order
+### 📊 Logger Service (Port 6008)
+- Application logging via WebSocket
+- Kafka consumer for log aggregation
+- Real-time log streaming
+
+### 🤖 Recommendation Service
+- User behavior analysis
+- Product recommendations
+- ML-based suggestions
+
+### 🌐 API Gateway (Port 8080)
+- Centralized routing
+- Rate limiting
+- CORS management
+- Request/response aggregation
+- Load balancing
+
+## ⚙️ Installation & Setup
+
+### Prerequisites
+
+- **Node.js** >= 18.x
+- **npm** or **yarn**
+- **MongoDB** (local or Atlas)
+- **Redis** (local or cloud)
+- **Kafka** (for event-driven features)
+- **Stripe Account** (for payments)
+- **ImageKit Account** (for image uploads)
+
+### Installation Steps
+
+1. **Clone the repository**
+
+```bash
+git clone https://github.com/yourusername/Microservice-E-commerce-.git
+cd Microservice-E-commerce-
+```
+
+2. **Install dependencies**
+
+```bash
+npm install
+```
+
+3. **Set up Prisma**
+
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+4. **Configure environment variables**
+
+Create `.env` files in each service directory or use a centralized `.env` file at the root.
+
+5. **Start infrastructure services**
+
+```bash
+# Start MongoDB
+mongod
+
+# Start Redis
+redis-server
+
+# Start Kafka (if not using Docker)
+# Follow Kafka installation guide
+```
+
+6. **Build the project**
+
+```bash
+npx nx build --all
+```
+
+7. **Run all services**
+
+```bash
+# Run all microservices and UIs
+npm run dev
+
+# Or run specific services
+npm run user-ui    # User UI only
+npm run seller-ui  # Seller UI only
+npm run admin-ui   # Admin UI only
+```
+
+### Individual Service Commands
+
+```bash
+# Run auth service
+npx nx serve auth-services
+
+# Run product service
+npx nx serve product-service
+
+# Run order service
+npx nx serve order-service
+
+# Similar commands for other services...
+```
+
+## 🔑 Environment Variables
+
+### Database
+```env
+DATABASE_URL="mongodb://localhost:27017/ecommerce"
+```
+
+### Redis
+```env
+REDIS_HOST="localhost"
+REDIS_PORT="6379"
+REDIS_PASSWORD="" # Optional
+```
+
+### JWT
+```env
+JWT_SECRET="your-super-secret-jwt-key"
+JWT_REFRESH_SECRET="your-super-secret-refresh-key"
+JWT_EXPIRY="15m"
+JWT_REFRESH_EXPIRY="7d"
+```
+
+### Email (Nodemailer)
+```env
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-app-password"
+```
+
+### Stripe
+```env
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+```
+
+### ImageKit
+```env
+IMAGEKIT_PUBLIC_KEY="your-public-key"
+IMAGEKIT_PRIVATE_KEY="your-private-key"
+IMAGEKIT_URL_ENDPOINT="https://ik.imagekit.io/your-id"
+```
+
+### Google OAuth
+```env
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+```
+
+### Kafka
+```env
+KAFKA_BROKER="localhost:9092"
+KAFKA_CLIENT_ID="ecommerce-platform"
+```
+
+## 🏃 Running the Application
+
+### Development Mode
+
+```bash
+# Terminal 1: Start all services
+npm run dev
+
+# The application will be available at:
+# - User UI: http://localhost:3000
+# - Seller UI: http://localhost:3001
+# - Admin UI: http://localhost:3002
+# - API Gateway: http://localhost:8080
+```
+
+### Production Mode
+
+```bash
+# Build all applications
+npx nx build --all
+
+# Run production builds
+# (Commands vary based on deployment strategy)
+```
+
+### Docker Deployment
+
+```bash
+# Build Docker images
+docker-compose build
+
+# Start all services
+docker-compose up
+
+# Stop all services
+docker-compose down
+```
+
+## 📚 API Documentation
+
+### Swagger Documentation
+
+Access interactive API documentation for services that support Swagger:
+
+- **Auth Service**: http://localhost:6001/api-docs
+- **Product Service**: http://localhost:6002/api-docs
+
+### API Endpoints Summary
+
+#### Authentication
+- `POST /api/register/user` - User registration
+- `POST /api/register/seller` - Seller registration
+- `POST /api/login` - Login
+- `POST /api/logout` - Logout
+- `POST /api/refresh-token` - Refresh access token
+- `POST /api/forgot-password` - Request password reset
+- `POST /api/reset-password` - Reset password with OTP
+
+#### Products
+- `GET /api/products` - List all products
+- `GET /api/products/:id` - Get product details
+- `POST /api/products` - Create product (seller)
+- `PUT /api/products/:id` - Update product (seller)
+- `DELETE /api/products/:id` - Delete product (seller)
+
+#### Orders
+- `POST /api/create-order` - Create order (Stripe webhook)
+- `GET /api/orders` - Get user orders
+- `GET /api/orders/:id` - Get order details
+
+#### Chat
+- `GET /api/conversations` - Get user conversations
+- `POST /api/conversations` - Create conversation
+- `POST /api/messages` - Send message
+
+## 🗄️ Database Schema
+
+### Key Models
+
+- **users**: User profiles and authentication
+- **sellers**: Seller accounts and shop ownership
+- **shops**: Shop information and settings
+- **products**: Product catalog with rich metadata
+- **orders**: Order management and tracking
+- **orderItems**: Individual order line items
+- **ratings**: Product reviews and ratings
+- **messages**: Real-time chat messages
+- **notifications**: User notifications
+- **analytics**: User, product, and shop analytics
+
+See `prisma/schema.prisma` for complete schema definition.
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run tests for specific service
+npx nx test auth-services
+
+# Run E2E tests
+npx nx e2e auth-services-e2e
+
+# Generate coverage report
+npm run test:coverage
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Development Guidelines
+
+- Follow TypeScript best practices
+- Write unit tests for new features
+- Update API documentation (Swagger)
+- Follow the existing code style
+- Add comments for complex logic
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 👥 Authors
+
+- Your Name - [GitHub Profile](https://github.com/yourusername)
+
+## 🙏 Acknowledgments
+
+- Nx Team for the excellent monorepo tooling
+- Next.js team for the amazing framework
+- All the open-source contributors
+
+## 📞 Support
+
+For support, email your-email@example.com or open an issue in this repository.
+
+---
+
+Made with ❤️ using TypeScript, Node.js, and Next.js
