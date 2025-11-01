@@ -494,13 +494,6 @@ npm run test:coverage
 - Follow the existing code style
 - Add comments for complex logic
 
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 👥 Authors
-
-- Your Name - [GitHub Profile](https://github.com/yourusername)
 
 ## 🙏 Acknowledgments
 
@@ -508,10 +501,5 @@ This project is licensed under the MIT License.
 - Next.js team for the amazing framework
 - All the open-source contributors
 
-## 📞 Support
-
-For support, email your-email@example.com or open an issue in this repository.
-
----
 
 Made with ❤️ using TypeScript, Node.js, and Next.js
