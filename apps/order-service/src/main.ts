@@ -10,7 +10,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || ["http://localhost:3000"],
     allowedHeaders: ["Authorization", "Content-Type"],
     credentials: true,
   })

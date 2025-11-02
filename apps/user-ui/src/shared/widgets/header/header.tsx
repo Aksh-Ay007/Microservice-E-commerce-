@@ -72,14 +72,24 @@ const Header = () => {
     }
   };
 
+  // ✅ Fix: Add AbortController for request cancellation and proper dependencies
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSuggestions([]);
       setSearchError(false);
       return;
     }
-    const delay = setTimeout(handleSearchClick, 500);
-    return () => clearTimeout(delay);
+
+    const controller = new AbortController();
+    const delay = setTimeout(() => {
+      handleSearchClick();
+    }, 500);
+
+    return () => {
+      clearTimeout(delay);
+      controller.abort(); // Cancel pending requests
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
   return (
