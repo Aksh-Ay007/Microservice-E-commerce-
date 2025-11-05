@@ -74,30 +74,34 @@ export const createPaymentSession = async (
         .sort((a, b) => a.id.localeCompare(b.id))
     );
 
-    const keys = await redis.keys("payment-session:*");
-
-    for (const key of keys) {
-      const data = await redis.get(key);
+    // Use a more efficient approach with user-specific session tracking
+    const userSessionKey = `user-session:${userId}`;
+    const existingSessionId = await redis.get(userSessionKey);
+    
+    if (existingSessionId) {
+      const sessionKey = `payment-session:${existingSessionId}`;
+      const data = await redis.get(sessionKey);
+      
       if (data) {
         const session = JSON.parse(data);
-        if (session.userId === userId) {
-          const existingCart = JSON.stringify(
-            session.cart
-              .map((item: any) => ({
-                id: item.id,
-                quantity: item.quantity,
-                sale_price: item.sale_price,
-                shopId: item.shopId,
-                selectedOptions: item.selectedOptions || {},
-              }))
-              .sort((a: any, b: any) => a.id.localeCompare(b.id))
-          );
+        const existingCart = JSON.stringify(
+          session.cart
+            .map((item: any) => ({
+              id: item.id,
+              quantity: item.quantity,
+              sale_price: item.sale_price,
+              shopId: item.shopId,
+              selectedOptions: item.selectedOptions || {},
+            }))
+            .sort((a: any, b: any) => a.id.localeCompare(b.id))
+        );
 
-          if (existingCart === normalizedCart) {
-            return res.status(200).json({ sessionId: key.split(":")[1] });
-          } else {
-            await redis.del(key);
-          }
+        if (existingCart === normalizedCart) {
+          return res.status(200).json({ sessionId: existingSessionId });
+        } else {
+          // Clean up old session
+          await redis.del(sessionKey);
+          await redis.del(userSessionKey);
         }
       }
     }
@@ -150,6 +154,13 @@ export const createPaymentSession = async (
       `payment-session:${sessionId}`,
       600,
       JSON.stringify(sessionData)
+    );
+
+    // Store user-session mapping for efficient lookup
+    await redis.setex(
+      `user-session:${userId}`,
+      600,
+      sessionId
     );
 
     res.status(201).json({ sessionId });
@@ -306,17 +317,28 @@ console.log(
           },
         });
 
-        // Update product stock and analytics
+        // Update product stock and analytics with atomic operations
         for (const item of orderItems) {
           const { id: productId, quantity } = item;
 
-          await prisma.products.update({
-            where: { id: productId },
+          // Use atomic update with stock validation to prevent negative stock
+          const updatedProduct = await prisma.products.updateMany({
+            where: { 
+              id: productId,
+              stock: { gte: quantity } // Only update if sufficient stock
+            },
             data: {
               stock: { decrement: quantity },
               totalSales: { increment: quantity },
             },
           });
+
+          // Check if the update was successful (affected rows > 0)
+          if (updatedProduct.count === 0) {
+            console.error(`Insufficient stock for product ${productId}. Required: ${quantity}`);
+            // In a real scenario, you might want to handle this differently
+            // For now, we'll continue but log the issue
+          }
 
           await prisma.productAnalytics.upsert({
             where: { productId },
@@ -416,8 +438,9 @@ console.log(
         },
       });
 
-      // Clean up Redis session
+      // Clean up Redis session and user mapping
       await redis.del(sessionKey);
+      await redis.del(`user-session:${userId}`);
     }
 
     // ✅ Respond OK to Stripe
